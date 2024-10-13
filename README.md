@@ -38,6 +38,8 @@ Das Projekt enthält zwei Referenzmodelle die dasselbe Petri-Netz in unterschied
 * `woped_reference_model.pnml` können Sie mit dem [Workflow Petri Net Designer](https://woped.dhbw-karlsruhe.de/?page_id=22) öffnen
 
 
+
+
 ## Inductive miner
 
 Der [Inductive miner visualizer](https://im-viz.informatik.uni-mannheim.de/) der Uni Mannheim führt den Inductive miner schrittweise durch.
