@@ -1,17 +1,17 @@
 # Codegerüst
-63681 Fachpraktikum Programmiersysteme
+63681 Fachpraktikum Programmiersysteme - Gruppe Norden
 
 
 ## Entwicklungsumgebung
 
-Um den Codegerüst zum Laufen zu bringen, brauchen Sie die Laufzeitumgebung `Node.js`. Das Projekt basiert auf Angular 18.
+Um das Codegerüst zum Laufen zu bringen, brauchen Sie die Laufzeitumgebung `Node.js`. Das Projekt basiert auf Angular 18.
 
 Die Liste von kompatiblen `Node.js` Versionen finden Sie [hier](https://angular.dev/reference/versions). Offizielle Angular Anweisungen zur Einrichtung der Entwicklungsumgebung finden Sie [hier](https://angular.dev/tools/cli/setup-local).
 
 
 ## Dokumentation
 
-Die Seitenelementen sind überwiegend mithilfe von CSS Flexbox ausgerichtet. Hilfreiche Unterlagen zum layouten mit Flexbox finden Sie [hier](https://css-tricks.com/snippets/css/a-guide-to-flexbox/).
+Die Seitenelemente sind überwiegend mithilfe von CSS Flexbox ausgerichtet. Hilfreiche Unterlagen zum layouten mit Flexbox finden Sie [hier](https://css-tricks.com/snippets/css/a-guide-to-flexbox/).
 
 Das Projekt enthält die folgenden Bibliotheken:
 
