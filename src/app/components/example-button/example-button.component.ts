@@ -1,4 +1,5 @@
 import {Component, Input} from '@angular/core';
+import {ToastService} from "../../services/toast/toast.service";
 
 @Component({
     selector: 'app-example-button',
@@ -11,8 +12,7 @@ export class ExampleButtonComponent {
 
     @Input() title: string | undefined;
 
-    constructor() {
-    }
+    constructor(private toastService: ToastService) {}
 
     prevent(e: Event) {
         e.preventDefault();
@@ -32,7 +32,11 @@ export class ExampleButtonComponent {
     }
 
     processMouseClick(e: MouseEvent) {
-        console.log(`Template button "${this.title}" clicked`, e);
+        this.toastService.showToast({
+            text: '`Template button "${this.title}" clicked`!',
+            type: 'success',
+            duration: 3000,
+        });
     }
 
 }
