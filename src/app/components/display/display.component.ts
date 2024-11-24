@@ -1,11 +1,15 @@
 import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
-import {DisplayService} from '../../services/display.service';
+import {HttpClient} from "@angular/common/http";
+
 import {catchError, of, Subscription, take} from 'rxjs';
-import {SvgService} from '../../services/svg.service';
-import {Diagram} from '../../classes/diagram/diagram';
-import {ExampleFileComponent} from "../example-file/example-file.component";
+
 import {FileReaderService} from "../../services/file-reader.service";
-import { HttpClient } from "@angular/common/http";
+import {DisplayService} from '../../services/display.service';
+import {SvgService} from '../../services/svg.service';
+
+import {ExampleFileComponent} from "../../components/example-file/example-file.component";
+
+import {Graph} from '../../classes/graph-representation/graph';
 
 @Component({
     selector: 'app-display',
@@ -14,101 +18,134 @@ import { HttpClient } from "@angular/common/http";
 })
 export class DisplayComponent implements OnDestroy {
 
-    @ViewChild('drawingArea') drawingArea: ElementRef<SVGElement> | undefined;
+    /* properties */
 
-    @Output('fileContent') fileContent: EventEmitter<string>;
+    @ViewChild('drawingArea') drawingArea : ElementRef<SVGElement> | undefined;
 
-    private _sub: Subscription;
-    private _diagram: Diagram | undefined;
+    @Output('fileData') fileData : EventEmitter<[string, string]>;
 
-    constructor(private _svgService: SvgService,
-                private _displayService: DisplayService,
-                private _fileReaderService: FileReaderService,
-                private _http: HttpClient) {
+    /* attributes */
 
-        this.fileContent = new EventEmitter<string>();
+    private _sub : Subscription;
+    private _graph : Graph | undefined;
 
-        this._sub  = this._displayService.diagram$.subscribe(diagram => {
-            console.log('new diagram');
+    /* methods - constructor */
 
-            this._diagram = diagram;
-            this.draw();
-        });
-    }
+    public constructor(
+        private _svgService: SvgService,
+        private _displayService: DisplayService,
+        private _fileReaderService: FileReaderService,
+        private _http: HttpClient
+    ) {
+        this.fileData = new EventEmitter<[string, string]>();
+        this._sub  = this._displayService.graph$.subscribe(
+            graph => {
+                console.log('display_component noticed new graph');
+                this._graph = graph;
+                this.draw();
+            }
+        );
+    };
+
+    /* methods - on destroy */
 
     ngOnDestroy(): void {
         this._sub.unsubscribe();
-        this.fileContent.complete();
-    }
+        this.fileData.complete();
+    };
 
-    public processDropEvent(e: DragEvent) {
-        e.preventDefault();
+    /* methods - other */
 
-        const fileLocation = e.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
-
+    public processDropEvent(inEvent : DragEvent) : void {
+        inEvent.preventDefault();
+        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
         if (fileLocation) {
             this.fetchFile(fileLocation);
         } else {
-            this.readFile(e.dataTransfer?.files);
-        }
-    }
+            this.readFile(inEvent.dataTransfer?.files);
+        };
+    };
 
-    public prevent(e: DragEvent) {
+    public prevent(inEvent : DragEvent) : void {
         // dragover must be prevented for drop to work
-        e.preventDefault();
-    }
+        inEvent.preventDefault();
+    };
 
-    private fetchFile(link: string) {
-        this._http.get(link,{
-            responseType: 'text'
-        }).pipe(
-            catchError(err => {
-                console.error('Error while fetching file from link', link, err);
-                return of(undefined);
-            }),
+    private fetchFile(inLink: string) : void {
+        this._http.get(
+            inLink, 
+            {responseType: 'text'}
+        ).pipe(
+            catchError(
+                error => {
+                    console.error('Error while fetching file from link', inLink, error);
+                    return of(undefined);
+                }
+            ),
             take(1)
-        ).subscribe(content => {
-            this.emitFileContent(content);
-        })
-    }
+        ).subscribe(
+            fileContent => {
+                const fileType : string | undefined = inLink.split('.').pop();
+                if (fileType !== undefined) {
+                    this.emitFileData(fileType, fileContent);
+                    /* to be removed - start */
+                    console.log();
+                    console.log('"fetchFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + inLink + '"');
+                    console.log();
+                    /* to be removed - start */
+                };
+            }
+        )
+    };
 
-    private readFile(files: FileList | undefined | null) {
+    private readFile(files: FileList | undefined | null) : void {
         if (files === undefined || files === null || files.length === 0) {
             return;
-        }
-        this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(content => {
-            this.emitFileContent(content);
-        });
-    }
+        };
+        const fileType : string = files[0].type;
+        this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
+            fileContent => {
+                this.emitFileData(fileType, fileContent);
+                /* to be removed - start */
+                console.log();
+                console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
+                console.log();
+                /* to be removed - start */
+            }
+        );
+    };
 
-    private emitFileContent(content: string | undefined) {
-        if (content === undefined) {
+    private emitFileData(inFileType : string | undefined, inFileContent : string | undefined) : void {
+        if (inFileType === undefined || inFileContent === undefined) {
             return;
-        }
-        this.fileContent.emit(content);
-    }
+        };
+        this.fileData.emit([inFileType, inFileContent]);
+    };
 
-    private draw() {
+    private draw() : void {
         if (this.drawingArea === undefined) {
             console.debug('drawing area not ready yet')
             return;
-        }
-
+        };
         this.clearDrawingArea();
-        const elements = this._svgService.createSvgElements(this._displayService.diagram);
-        for (const element of elements) {
-            this.drawingArea.nativeElement.appendChild(element);
-        }
-    }
+        const arcs = this._svgService.createSvgArcs(this._displayService.graph);
+        for (const arc of arcs) {
+            this.drawingArea.nativeElement.appendChild(arc);
+        };
+        const nodes = this._svgService.createSvgNodes(this._displayService.graph);
+        for (const node of nodes) {
+            this.drawingArea.nativeElement.appendChild(node);
+        };
+    };
 
-    private clearDrawingArea() {
+    private clearDrawingArea() : void {
         const drawingArea = this.drawingArea?.nativeElement;
         if (drawingArea?.childElementCount === undefined) {
             return;
-        }
-
+        };
         while (drawingArea.childElementCount > 0) {
             drawingArea.removeChild(drawingArea.lastChild as ChildNode);
-        }
-    }
-}
+        };
+    };
+    
+};

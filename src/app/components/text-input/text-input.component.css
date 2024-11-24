@@ -1,0 +1,12 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 230px;
+    width: 100%;
+}
+
+.full-width {
+    width: 100%;
+}
