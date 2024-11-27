@@ -93,6 +93,8 @@ export class DisplayComponent implements OnDestroy {
                     console.log('"fetchFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + inLink + '"');
                     console.log();
                     /* to be removed - start */
+                } else {
+                    throw new Error('#cmp.dsp.ftf.000: ' + 'fetching file failed - filetype was assigned "undefined"');
                 };
             }
         )
@@ -100,19 +102,33 @@ export class DisplayComponent implements OnDestroy {
 
     private readFile(files: FileList | undefined | null) : void {
         if (files === undefined || files === null || files.length === 0) {
+            /* to be removed - start */
+            console.log();
+            console.log('"readFile" could not detect file');
+            console.log();
+            /* to be removed - start */
             return;
         };
-        const fileType : string = files[0].type;
-        this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
-            fileContent => {
-                this.emitFileData(fileType, fileContent);
-                /* to be removed - start */
-                console.log();
-                console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
-                console.log();
-                /* to be removed - start */
-            }
-        );
+        /* to be removed - start */
+        console.log();
+        console.log('"readFile" detected file "' + files[0] + '" with name "' + files[0].name + '"');
+        console.log();
+        /* to be removed - start */
+        const fileType : string | undefined = files[0].name.split('.').pop();
+        if (fileType !== undefined) {
+            this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
+                fileContent => {
+                    this.emitFileData(fileType, fileContent);
+                    /* to be removed - start */
+                    console.log();
+                    console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
+                    console.log();
+                    /* to be removed - start */
+                }
+            );
+        } else {
+            throw new Error('#cmp.dsp.rdf.000: ' + 'reading file failed - filetype was assigned "undefined"');
+        };
     };
 
     private emitFileData(inFileType : string | undefined, inFileContent : string | undefined) : void {
