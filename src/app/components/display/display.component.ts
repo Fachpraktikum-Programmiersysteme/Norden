@@ -1,15 +1,16 @@
-import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
 
-import {catchError, of, Subscription, take} from 'rxjs';
+import { catchError, of, Subscription, take } from 'rxjs';
 
-import {FileReaderService} from "../../services/file-reader.service";
-import {DisplayService} from '../../services/display.service';
-import {SvgService} from '../../services/svg.service';
+import { FileReaderService } from "../../services/file-reader.service";
+import { DisplayService } from '../../services/display.service';
+import { SvgService } from '../../services/svg.service';
 
-import {ExampleFileComponent} from "../../components/example-file/example-file.component";
+import { ExampleFileComponent } from "../../components/example-file/example-file.component";
 
-import {Graph} from '../../classes/graph-representation/graph';
+import { Graph } from '../../classes/graph-representation/graph';
+import { Cut } from '../../classes/graph-representation/cut';
 
 @Component({
     selector: 'app-display',
@@ -20,14 +21,15 @@ export class DisplayComponent implements OnDestroy {
 
     /* properties */
 
-    @ViewChild('drawingArea') drawingArea : ElementRef<SVGElement> | undefined;
+    @ViewChild('drawingArea') drawingArea: ElementRef<SVGElement> | undefined;
 
-    @Output('fileData') fileData : EventEmitter<[string, string]>;
+    @Output('fileData') fileData: EventEmitter<[string, string]>;
 
     /* attributes */
 
-    private _sub : Subscription;
-    private _graph : Graph | undefined;
+    private _sub: Subscription;
+    private _graph: Graph | undefined;
+    private _cut: Cut | undefined;
 
     /* methods - constructor */
 
@@ -38,7 +40,7 @@ export class DisplayComponent implements OnDestroy {
         private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
-        this._sub  = this._displayService.graph$.subscribe(
+        this._sub = this._displayService.graph$.subscribe(
             graph => {
                 console.log('display_component noticed new graph');
                 this._graph = graph;
@@ -56,7 +58,7 @@ export class DisplayComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processDropEvent(inEvent : DragEvent) : void {
+    public processDropEvent(inEvent: DragEvent): void {
         inEvent.preventDefault();
         const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
         if (fileLocation) {
@@ -66,15 +68,55 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
-    public prevent(inEvent : DragEvent) : void {
+    public prevent(inEvent: DragEvent): void {
         // dragover must be prevented for drop to work
         inEvent.preventDefault();
     };
 
-    private fetchFile(inLink: string) : void {
+    public startCut(inEvent: MouseEvent): void {
+        this._cut = new Cut(inEvent.offsetX, inEvent.offsetY, true);
+    };
+
+    public drawCut(inEvent: MouseEvent): void {
+        if (!this._cut?.isDrawing) return;
+        const cutLine = this._svgService.createSvgCut(this._cut.tempX, this._cut.tempY, inEvent.offsetX, inEvent.offsetY);
+        this._cut.tempCutLines.push({ x1: this._cut.tempX, y1: this._cut.tempY, x2: inEvent.offsetX, y2: inEvent.offsetY });
+        this.drawingArea?.nativeElement.appendChild(cutLine);
+        this._cut.tempX = inEvent.offsetX;
+        this._cut.tempY = inEvent.offsetY;
+    };
+
+    public endCut(inEvent: MouseEvent): void {
+        if (!this._cut?.isDrawing) return;
+        this._cut.isDrawing = false;
+        if (this._graph?.arcs) {
+            for (const arc of this._graph.arcs) {
+                const existingLine = { x1: arc[0].x, y1: arc[0].y, x2: arc[1].x, y2: arc[1].y };
+                for (const cutLine of this._cut.tempCutLines) {
+                    if (this._cut.cutArcs.some(cutArc => cutArc[0].id == arc[0].id && cutArc[1].id == arc[1].id)) {
+                        continue;
+                    }
+                    if (this._cut.checkIntersection(cutLine, existingLine)) {
+                        this._cut.cutArcs.push(arc);
+                    }
+                }
+            }
+            // hier muss dann der Inductive Miner aufgerufen werden zur Prüfung des Cuts
+            if (this._cut.cutArcs.length > 0) {
+                console.log('Folgende Kanten wurden geschnitten: ')
+                this._cut.cutArcs.forEach(cutArc => {
+                    console.log(cutArc);
+                });
+            }
+            this._cut.removeSvgCuts(this.drawingArea?.nativeElement)
+            this._cut = undefined;
+        }
+    };
+
+    private fetchFile(inLink: string): void {
         this._http.get(
-            inLink, 
-            {responseType: 'text'}
+            inLink,
+            { responseType: 'text' }
         ).pipe(
             catchError(
                 error => {
@@ -85,7 +127,7 @@ export class DisplayComponent implements OnDestroy {
             take(1)
         ).subscribe(
             fileContent => {
-                const fileType : string | undefined = inLink.split('.').pop();
+                const fileType: string | undefined = inLink.split('.').pop();
                 if (fileType !== undefined) {
                     this.emitFileData(fileType, fileContent);
                     /* to be removed - start */
@@ -98,11 +140,11 @@ export class DisplayComponent implements OnDestroy {
         )
     };
 
-    private readFile(files: FileList | undefined | null) : void {
+    private readFile(files: FileList | undefined | null): void {
         if (files === undefined || files === null || files.length === 0) {
             return;
         };
-        const fileType : string = files[0].type;
+        const fileType: string = files[0].type;
         this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
             fileContent => {
                 this.emitFileData(fileType, fileContent);
@@ -115,14 +157,14 @@ export class DisplayComponent implements OnDestroy {
         );
     };
 
-    private emitFileData(inFileType : string | undefined, inFileContent : string | undefined) : void {
+    private emitFileData(inFileType: string | undefined, inFileContent: string | undefined): void {
         if (inFileType === undefined || inFileContent === undefined) {
             return;
         };
         this.fileData.emit([inFileType, inFileContent]);
     };
 
-    private draw() : void {
+    private draw(): void {
         if (this.drawingArea === undefined) {
             console.debug('drawing area not ready yet')
             return;
@@ -138,7 +180,7 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
-    private clearDrawingArea() : void {
+    private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
         if (drawingArea?.childElementCount === undefined) {
             return;
@@ -147,5 +189,5 @@ export class DisplayComponent implements OnDestroy {
             drawingArea.removeChild(drawingArea.lastChild as ChildNode);
         };
     };
-    
+
 };
