@@ -5,7 +5,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
-import {JsonWriterService} from 'src/app/services/json-writer.service';
+import {FileWriterService} from 'src/app/services/file-writer.service';
 
 @Component({
     selector: 'save-button',
@@ -31,7 +31,7 @@ export class SaveButtonComponent implements OnDestroy {
 
     constructor(
         private _displayService : DisplayService,
-        private _jsonWriterService : JsonWriterService
+        private _fileWriterService : FileWriterService
     ) {
         this._outId = 0;
         this._disabled = true;
@@ -71,8 +71,7 @@ export class SaveButtonComponent implements OnDestroy {
         console.log(' >> save button clicked - event : ' + inEvent);
         /* to be removed - end */
         const currentGraph = this._displayService.graph;
-        const isPN : boolean = this._jsonWriterService.isPetriNet(currentGraph);
-        const fileExtension : string = 'json';
+        const isPN : boolean = this._fileWriterService.isPetriNet(currentGraph);
         let fileName : string = 'out';
         /* to be removed - start */
         // let savePath : string = '../../../assets/files-out';
@@ -82,8 +81,7 @@ export class SaveButtonComponent implements OnDestroy {
         } else {
             fileName = (fileName + '_' + this._outId + '_Graph');
         };
-        console.log(' >> trying to save as : ' + fileName + '.' + fileExtension);
-        this._jsonWriterService.writeJSON(fileName, fileExtension, currentGraph)
+        this._fileWriterService.writeFile(fileName, currentGraph)
         this._outId++;
     };
 
