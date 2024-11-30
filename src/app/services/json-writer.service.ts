@@ -2,7 +2,6 @@ import {Injectable} from "@angular/core";
 
 import {Graph} from '../classes/graph-representation/graph';
 import {JsonGraph} from '../classes/file-management/json-graph';
-import {JsonPetriNet} from "../classes/file-management/json-petri-net";
 
 @Injectable({
     providedIn: 'root'
@@ -15,9 +14,10 @@ export class JsonWriterService {
 
     /* methods : other */
 
-    private toJSON(inGraph : Graph) : JsonGraph {
+    private toJSON(inGraph : Graph, inEventLog : number[][], inIsPetriNet : boolean) : JsonGraph {
 
         const jsonGraph : JsonGraph = {
+            log: [],
             supports: [], 
             events: [], 
             places: [], 
@@ -35,7 +35,8 @@ export class JsonWriterService {
         let placeCount : number = 0;
         let transitionCount : number = 0;
         let arcCount : number = 0;
-
+        
+        jsonGraph.log = [];
         jsonGraph.supports = [];
         jsonGraph.events = [];
         jsonGraph.places = [];
@@ -104,7 +105,16 @@ export class JsonWriterService {
         };
         if (arcCount !== inGraph.arcCount) {
             throw new Error('#srv.jws.toj.004: ' + 'conversion of graph to json failed - number of converted arcs (' + arcCount + ') is not equal to original number of arcs (' + inGraph.arcCount + ')');
-        }
+        };
+        if (!inIsPetriNet) {
+            for (const trace of inEventLog) {
+                let eventsArray : string[] = [];
+                for (const event of trace) {
+                    eventsArray.push(nodeIds[event]);
+                };
+                jsonGraph.log.push(eventsArray);
+            };
+        };
         return jsonGraph;
     };
 
@@ -118,35 +128,36 @@ export class JsonWriterService {
         );
     };
 
-    public writeJSON(inFileName : string, inFileExtension : string, inGraph : Graph) : void {
+    public writeJSON(inFileName : string, inFileExtension : string, inGraph : Graph, inEventLog : number[][]) : void {
         /* to be removed - start */
         console.log();
         console.log(' >> starting to write to .json file');
         /* to be removed - end*/
-        if (this.isPetriNet(inGraph)) {
+        const isPN : boolean = this.isPetriNet(inGraph)
+        if (isPN) {
             /* to be removed - start */
             console.log('    >> given graph is a petri net');
             /* to be removed - end*/
-            const jsonGraph : JsonGraph = this.toJSON(inGraph);
+            const jsonGraph : JsonGraph = this.toJSON(inGraph, inEventLog, isPN);
             const jsonString : string = JSON.stringify(jsonGraph, null, 4);
-            const splitArray : string[] = jsonString.split('"supports": []\,\n    "events": []\,\n    ');
+            const splitArray : string[] = jsonString.split('"log": []\,\n    "supports": []\,\n    "events": []\,\n    ');
             const modifiedString : string = (splitArray[0] + splitArray[1]);
             const jsonFile : File = new File([modifiedString], (inFileName + '.' + inFileExtension));
             const jsonLink : HTMLAnchorElement = document.createElement("a");
             jsonLink.href = URL.createObjectURL(jsonFile);
-            jsonLink.download = inFileName;
+            jsonLink.download = inFileName + '.' + inFileExtension;
             jsonLink.click();
             jsonLink.remove();
         } else {
             /* to be removed - start */
             console.log('    >> given graph is not a petri net');
             /* to be removed - end*/
-            const jsonGraph : JsonGraph = this.toJSON(inGraph);
+            const jsonGraph : JsonGraph = this.toJSON(inGraph, inEventLog, isPN);
             const jsonString : string = JSON.stringify(jsonGraph, null, 4);
             const jsonFile : File = new File([jsonString], (inFileName + '.' + inFileExtension));
             const jsonLink : HTMLAnchorElement = document.createElement("a");
             jsonLink.href = URL.createObjectURL(jsonFile);
-            jsonLink.download = inFileName;
+            jsonLink.download = inFileName + '.' + inFileExtension;
             jsonLink.click();
             jsonLink.remove();
         };

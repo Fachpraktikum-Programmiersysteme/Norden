@@ -32,11 +32,11 @@ export class TextParserService {
 
     };
 
-    public parse(inLogString : string): Graph {
+    public parse(inLogString : string): [Graph, number[][]] {
 
         if (inLogString === '') {
 
-            return new Graph();
+            return [new Graph(), []];
 
         } else {
 
@@ -44,18 +44,23 @@ export class TextParserService {
 
             let undefEvents : number = 0;
             let unnamedEvents : number = 0;
+
+            let eventsArray : number[] = [];
+            let tracesArray : number[][] = [];
     
             let currentNode : Node | undefined = undefined;
             let lastNode : Node | undefined = undefined;
     
             const startNode : Node = new Node(0, 'support', 'play', 850, 50);
-            const endNode : Node = new Node(0, 'support', 'stop', 850, 350);
+            const endNode : Node = new Node(0, 'support', 'stop', 850, 550);
     
             const graph : Graph = new Graph([startNode, endNode]);
     
             logArray = this.processLogString(inLogString)
     
             for (const trace of logArray) {
+                eventsArray = [];
+                eventsArray.push(0);
                 for (const event of trace) {
                     let eventLabel : string;
                     if (event === undefined) {
@@ -69,6 +74,7 @@ export class TextParserService {
                     };
                     let nodeAdded : [boolean, number] = graph.addNode('event', eventLabel);
                     currentNode = graph.nodes[nodeAdded[1]];
+                    eventsArray.push(nodeAdded[1]);
                     if (currentNode !== undefined) {
                         if (lastNode !== undefined) {
                             graph.addArc(lastNode, currentNode);
@@ -93,9 +99,11 @@ export class TextParserService {
                     };
                     lastNode = undefined;
                 };
+                eventsArray.push(1);
+                tracesArray.push(eventsArray);
             };
     
-            return graph;
+            return [graph, tracesArray];
 
         };
 

@@ -1,4 +1,12 @@
-<svg #drawingArea class="canvas"
+<svg #drawingArea 
+     class="canvas"
+     viewBox="0 0 1800 600" 
      (drop)="processDropEvent($event)"
-     (dragover)="prevent($event)">
+     (dragover)="prevent($event)"
+     (mouseenter)="processMouseEnter($event)"
+     (mousedown)="processMouseDown($event)"
+     (mousemove)="processMouseMove($event)"
+     (mouseup)="processMouseUp($event)"
+     (mouseleave)="processMouseLeave($event)"
+>
 </svg>

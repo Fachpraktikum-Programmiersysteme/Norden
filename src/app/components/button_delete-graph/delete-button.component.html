@@ -1,6 +1,6 @@
 <button 
     mat-fab 
-    matTooltip = "delete currently displayed graph" 
+    [matTooltip]="tooltip" 
     [disabled]="disabled"
     (click)="processMouseClick($event)" 
 >

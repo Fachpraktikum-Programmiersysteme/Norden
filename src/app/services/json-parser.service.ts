@@ -16,9 +16,10 @@ export class JsonParserService {
 
     /* methods : other */
 
-    public parse(inJsonString : string): Graph {
+    public parse(inJsonString : string): [Graph, number[][]] {
 
         let graph : Graph = new Graph();
+        let log : number[][] = [];
 
         try {
 
@@ -35,13 +36,15 @@ export class JsonParserService {
 
             graph = this.parseArcs(jsonGraph, nodeIds, graph)
 
+            log = this.parseTraces(jsonGraph, nodeIds)
+
         } catch (error) {
 
             console.error('parsing of .json file failed - ', error);
 
         };
 
-        return graph;
+        return [graph, log];
 
     };
 
@@ -261,26 +264,43 @@ export class JsonParserService {
 
     private parseArcs(
         inJsonGraph : JsonGraph, 
-        inoutNodeIds : {[jsonNodeId: string]: number}, 
+        inNodeIds : {[jsonNodeId: string]: number}, 
         inoutGraph : Graph
     ): Graph {
-        let currentNodeIds : {[jsonNodeId: string]: number} = inoutNodeIds;
         let currentGraph : Graph = inoutGraph;
         for (const arc in inJsonGraph.arcs) {
             let idPair : string[] = arc.split(',')
-            let sourceNode : Node | undefined = currentGraph.nodes[currentNodeIds[idPair[0]]];
-            let targetNode : Node | undefined = currentGraph.nodes[currentNodeIds[idPair[1]]];
+            let sourceNode : Node | undefined = currentGraph.nodes[inNodeIds[idPair[0]]];
+            let targetNode : Node | undefined = currentGraph.nodes[inNodeIds[idPair[1]]];
             if (sourceNode !== undefined) {
                 if (targetNode !== undefined) {
                     currentGraph.addArc(sourceNode, targetNode, inJsonGraph.arcs[arc]);
                 } else {
-                    throw new Error('#srv.jps.psa.000: ' + 'parsing arcs from .json file failed - target node is undefined (node id in .json: "' + idPair[1] + '", node id in graph: "' + currentNodeIds[idPair[1]] + '")');
+                    throw new Error('#srv.jps.psa.000: ' + 'parsing arcs from .json file failed - target node is undefined (node id in .json: "' + idPair[1] + '", node id in graph: "' + inNodeIds[idPair[1]] + '")');
                 };
             } else {
-                throw new Error('#srv.jps.psa.000: ' + 'parsing arcs from .json file failed - source node is undefined (node id in .json: "' + idPair[0] + '", node id in graph: "' + currentNodeIds[idPair[0]] + '")');
+                throw new Error('#srv.jps.psa.000: ' + 'parsing arcs from .json file failed - source node is undefined (node id in .json: "' + idPair[0] + '", node id in graph: "' + inNodeIds[idPair[0]] + '")');
             };
         };
         return currentGraph;
+    };
+
+    private parseTraces(
+        inJsonGraph : JsonGraph, 
+        inNodeIds : {[jsonNodeId: string]: number}
+    ): number[][] {
+        let eventsArray : number[] = [];
+        let tracesArray : number[][] = [];
+        if (inJsonGraph.log !== undefined) {
+            for (const trace of inJsonGraph.log) {
+                eventsArray = [];
+                for (const event of trace) {
+                    eventsArray.push(inNodeIds[event]);
+                };
+                tracesArray.push(eventsArray);
+            };
+        };
+        return tracesArray;
     };
 
 };

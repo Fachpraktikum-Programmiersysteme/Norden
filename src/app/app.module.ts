@@ -14,9 +14,11 @@ import {DisplayComponent} from './components/display/display.component';
 import {DeleteButtonComponent} from './components/button_delete-graph/delete-button.component';
 import {ExampleButtonComponent} from "./components/example-button/example-button.component";
 import {ExampleFileComponent} from './components/example-file/example-file.component';
+import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
 import {FooterComponent} from './components/footer/footer.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
+import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
 
 @NgModule({
     declarations: [
@@ -26,19 +28,21 @@ import {TextInputComponent} from './components/text-input/text-input.component';
     ],bootstrap: [
         AppComponent
     ], imports: [
-        BrowserAnimationsModule,
-        BrowserModule,
-        DeleteButtonComponent,
-        ExampleButtonComponent,
-        ExampleFileComponent,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        ReactiveFormsModule,
-        SaveButtonComponent,
-        TextInputComponent
-    ], providers: [
+    BrowserAnimationsModule,
+    BrowserModule,
+    DeleteButtonComponent,
+    ExampleButtonComponent,
+    ExampleFileComponent,
+    InfoButtonComponent,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    SaveButtonComponent,
+    TextInputComponent,
+    TracesButtonComponent
+], providers: [
         {
             provide: APP_BASE_HREF,
             useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),

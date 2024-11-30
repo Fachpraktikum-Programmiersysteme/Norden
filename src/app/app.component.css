@@ -24,6 +24,11 @@
     height:30px; 
 }
 
+.gap_40px {
+    width:100%; 
+    height:40px; 
+}
+
 .inputConatiner {
     width:20%; 
 }

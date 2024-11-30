@@ -5,19 +5,19 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
-import {JsonWriterService} from 'src/app/services/json-writer.service';
+import {SvgService} from '../../services/svg.service';
 
 @Component({
-    selector: 'save-button',
-    templateUrl: './save-button.component.html',
-    styleUrls: ['./save-button.component.css'],
+    selector: 'info-button',
+    templateUrl: './info-button.component.html',
+    styleUrls: ['./info-button.component.css'],
     standalone: true,
     imports: [
         MatIconModule,
         MatTooltipModule
     ]
 })
-export class SaveButtonComponent implements OnDestroy {
+export class InfoButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -25,19 +25,18 @@ export class SaveButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
 
-    private _outId : number;
+    private _overwriteActive : boolean = false;
 
     /* methods - constructor */
 
     constructor(
         private _displayService : DisplayService,
-        private _jsonWriterService : JsonWriterService
+        private _svgService : SvgService
     ) {
-        this._outId = 0;
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('save-button_component noticed new graph, graph-empty detected "' + this._displayService.graphEmpty + '"');
+                console.log('info-button_component noticed new graph');
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
                 } else {
@@ -57,16 +56,20 @@ export class SaveButtonComponent implements OnDestroy {
 
     public get disabled() : boolean {
         return this._disabled;
-    };
+    }
+
+    public get overwriteActive() : boolean {
+        return this._overwriteActive;
+    }
 
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
         } else {
-            return 'save currently displayed graph';
+            return 'display all node information';
         };
     };
-
+    
     /* methods - other */
 
     private prevent(inEvent: Event) {
@@ -76,24 +79,11 @@ export class SaveButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log(' >> save button clicked - event : ' + inEvent);
+        console.log('info button clicked - event : ' + inEvent);
         /* to be removed - end */
-        const currentGraph = this._displayService.graph;
-        const currentLog = this._displayService.log;
-        const isPN : boolean = this._jsonWriterService.isPetriNet(currentGraph);
-        const fileExtension : string = 'json';
-        let fileName : string = 'out';
-        /* to be removed - start */
-        // let savePath : string = '../../../assets/files-out';
-        /* to be removed - end */
-        if (isPN) {
-            fileName = (fileName + '_' + this._outId + '_PetriNet');
-        } else {
-            fileName = (fileName + '_' + this._outId + '_Graph');
-        };
-        console.log(' >> trying to save as : ' + fileName + '.' + fileExtension);
-        this._jsonWriterService.writeJSON(fileName, fileExtension, currentGraph, currentLog)
-        this._outId++;
+        this._overwriteActive = !(this._overwriteActive);
+        this._svgService.infoOverwrite = this._overwriteActive;
+        this._displayService.refreshData();
     };
 
 };

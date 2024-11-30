@@ -5,18 +5,19 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
+import {SvgService} from '../../services/svg.service';
 
 @Component({
-    selector: 'delete-button',
-    templateUrl: './delete-button.component.html',
-    styleUrls: ['./delete-button.component.css'],
+    selector: 'traces-button', 
+    templateUrl: './traces-button.component.html',
+    styleUrls: ['./traces-button.component.css'],
     standalone: true,
     imports: [
         MatIconModule,
         MatTooltipModule
     ]
 })
-export class DeleteButtonComponent implements OnDestroy {
+export class TracesButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -24,16 +25,19 @@ export class DeleteButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
 
+    private _animationsDiabled : boolean = false;
+
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService
+        private _displayService : DisplayService,
+        private _svgService : SvgService
     ) {
         this._disabled = true;
-        this._sub  = this._displayService.graph$.subscribe(
-            graph => {
-                console.log('delete-button_component noticed new graph');
-                if (this._displayService.graphEmpty) {
+        this._sub  = this._displayService.log$.subscribe(
+            log => {
+                console.log('traces-button_component noticed new log');
+                if (this._displayService.logEmpty) {
                     this._disabled = true;
                 } else {
                     this._disabled = false;
@@ -54,11 +58,15 @@ export class DeleteButtonComponent implements OnDestroy {
         return this._disabled;
     }
 
+    public get animationsDiabled() : boolean {
+        return this._animationsDiabled;
+    }
+
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
         } else {
-            return 'delete currently displayed graph';
+            return 'display traces as animated objects';
         };
     };
     
@@ -71,9 +79,11 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('delete button clicked - event : ' + inEvent);
+        console.log('traces button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._displayService.deleteData();
+        this._animationsDiabled = !(this._animationsDiabled);
+        this._svgService.noAnimations = this._animationsDiabled;
+        this._displayService.refreshData();
     };
 
 };

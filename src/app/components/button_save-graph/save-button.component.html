@@ -1,6 +1,6 @@
 <button 
     mat-fab 
-    matTooltip = "save currently displayed graph" 
+    [matTooltip]="tooltip" 
     [disabled]="disabled"
     (click)="processMouseClick($event)" 
 >
