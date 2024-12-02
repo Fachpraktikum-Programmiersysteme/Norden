@@ -42,6 +42,18 @@ export class SvgService {
         return arcSvgArray;
     };
 
+    public createSvgCut(startX: number, startY: number, endX: number, endY: number): SVGElement {
+        const svg: SVGElement = this.createSvgElement('line');
+        svg.setAttribute('x1', `${startX}`);
+        svg.setAttribute('y1', `${startY}`);
+        svg.setAttribute('x2', `${endX}`);
+        svg.setAttribute('y2', `${endY}`);
+        svg.setAttribute('stroke-width', `2`);
+        svg.setAttribute('stroke', 'red');
+        svg.setAttribute('customType', 'cut');
+        return svg;
+    }
+
     private createSvgForNode(inNode : Node) : SVGElement {
         let svg : SVGElement;
         switch (inNode.type) {
