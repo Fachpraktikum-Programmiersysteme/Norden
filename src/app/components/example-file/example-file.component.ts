@@ -1,9 +1,14 @@
 import {Component, Input} from '@angular/core';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 @Component({
-    selector: 'app-example-file',
-    templateUrl: './example-file.component.html',
-    styleUrls: ['./example-file.component.css']
+    selector: 'app-example-file', 
+    templateUrl: './example-file.component.html', 
+    styleUrls: ['./example-file.component.css'], 
+    standalone: true, 
+    imports: [
+        MatTooltipModule
+    ]
 })
 export class ExampleFileComponent {
 

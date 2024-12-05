@@ -1,32 +1,46 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {Diagram} from '../classes/diagram/diagram';
+import {Graph} from '../classes/graph-representation/graph';
 
 @Injectable({
     providedIn: 'root'
 })
 export class DisplayService implements OnDestroy {
 
-    private _diagram$: BehaviorSubject<Diagram>;
+    /* attributes */
 
-    constructor() {
-        this._diagram$ = new BehaviorSubject<Diagram>(new Diagram([]));
+    private readonly _graph$: BehaviorSubject<Graph>;
+
+    /* methods - constructor */
+
+    public constructor() {
+        this._graph$ = new BehaviorSubject<Graph>(new Graph());
     }
+
+    /* methods - on destroy */
 
     ngOnDestroy(): void {
-        this._diagram$.complete();
+        this._graph$.complete();
     }
 
-    public get diagram$(): Observable<Diagram> {
-        return this._diagram$.asObservable();
+    /* methods - getters */
+
+    public get graph$(): Observable<Graph> {
+        return this._graph$.asObservable();
     }
 
-    public get diagram(): Diagram {
-        return this._diagram$.getValue();
+    public get graph(): Graph {
+        return this._graph$.getValue();
     }
 
-    public display(net: Diagram) {
-        this._diagram$.next(net);
+    /* methods - other */
+
+    public deleteGraph() : void {
+        this._graph$.next(new Graph());
+    }
+
+    public display(inGraph: Graph) : void {
+        this._graph$.next(inGraph);
     }
 
 }

@@ -1,10 +1,15 @@
 import {Component, Input} from '@angular/core';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {ToastService} from "../../services/toast/toast.service";
 
 @Component({
     selector: 'app-example-button',
     templateUrl: './example-button.component.html',
-    styleUrls: ['./example-button.component.css']
+    styleUrls: ['./example-button.component.css'],
+    standalone: true,
+    imports: [
+        MatTooltipModule
+    ]
 })
 export class ExampleButtonComponent {
 
@@ -12,7 +17,9 @@ export class ExampleButtonComponent {
 
     @Input() title: string | undefined;
 
-    constructor(private toastService: ToastService) {}
+    constructor(
+        private toastService: ToastService
+    ) {}
 
     prevent(e: Event) {
         e.preventDefault();

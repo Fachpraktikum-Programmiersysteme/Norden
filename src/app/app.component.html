@@ -1,37 +1,104 @@
 <div class="flexColumnAlignStartStretch">
+
     <!--  Header  -->
     <div class="flexRowAlignCenterCenter">
-        <a href="https://www.fernuni-hagen.de/ilovepetrinets/"><h1>I <span class="red">❤</span> Petri Nets</h1></a>
+        <a href="https://www.fernuni-hagen.de/ilovepetrinets/">
+            <h1>I <span class="red">❤</span> Petri Nets</h1>
+        </a>
     </div>
     <h2>
-        <i>Fachpraktikum Programmiersysteme WiSe24/25</i> by<br>
-        ..., ..., ... and Florian Vossler
+        <i>Fachpraktikum Programmiersysteme WiSe24/25</i> by <br>
+        Matthäus Müller, Alexander Reuter, Senai Tesfamicael & Florian Vossler
     </h2>
 
     <!-- Toast -->
     <app-toast></app-toast>
 
     <!--    Main content    -->
-    <app-display class="padding full-size" (fileContent)="processSourceChange($event)"></app-display>
-
-
-    <div class="flexRowAlignSpaceEvenlyStart">
-        <app-example-button title="Button"></app-example-button>
-
-        <app-example-file title="File" link="assets/example.json" description="An example .json Petri net"></app-example-file>
-
-        <mat-form-field appearance="outline"
-                        class="textarea">
-            <mat-label>File content</mat-label>
-            <textarea matInput
-                      cdkTextareaAutosize
-                      cdkAutosizeMinRows="10"
-                      cdkAutosizeMaxRows="20"
-                      [formControl]="textareaFc"></textarea>
+    <app-display 
+        class="padding full-size" 
+        (fileData)="processSourceChange($event)"
+    >
+    </app-display>
+    <div 
+        class="gap_30px"
+    >
+    </div>
+    <div 
+        class="flexRowAlignSpaceEvenlyStart"
+    >
+        <text-input 
+            class="inputConatiner" 
+            (textData)="processSourceChange($event)"
+        >
+        </text-input>
+        <save-button>
+        </save-button>
+        <delete-button>
+        </delete-button>
+        <mat-form-field 
+            appearance="outline" 
+            class="outputContainer"> 
+            <mat-label> 
+                File Content
+            </mat-label>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize 
+                cdkAutosizeMinRows="3" 
+                cdkAutosizeMaxRows="7" 
+                [formControl]="textAreaFc">
+            </textarea>
         </mat-form-field>
+        <app-example-button 
+            title="Test Button">
+        </app-example-button>
+    </div>
+    <div 
+        class="gap_30px"
+    >
+    </div>
+    <div 
+        class="flexRowAlignSpaceEvenlyStart"
+    >
+        <app-example-file 
+            title=".json File I" 
+            link="assets/files-in/example.json" 
+            description="The given Petri Net in .json format.">
+        </app-example-file>
+        <app-example-file 
+            title=".json File II" 
+            link="assets/files-in/pn-test.json" 
+            description="Another small Petri Net in .json format.">
+        </app-example-file>
+        <app-example-file 
+            title=".json File III" 
+            link="assets/files-in/empty.json" 
+            description="An empty .json file.">
+        </app-example-file>
+    </div>
+    <div 
+        class="flexRowAlignSpaceEvenlyStart"
+    >
+        <app-example-file 
+            title=".xes File I" 
+            link="assets/files-in/teleclaimsExample.xes" 
+            description="A large example Event Log in .xes format.">
+        </app-example-file>
+        <app-example-file 
+            title=".xes File II" 
+            link="assets/files-in/teleclaimsShortest.xes" 
+            description="A very short Event Log in .xes format.">
+        </app-example-file>
+        <app-example-file 
+            title=".xes File III" 
+            link="assets/files-in/empty.xes" 
+            description="An empty .xes file.">
+        </app-example-file>
     </div>
 
     <!--  Footer  -->
     <hr>
     <app-footer></app-footer>
+
 </div>
