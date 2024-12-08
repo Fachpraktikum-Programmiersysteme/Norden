@@ -91,6 +91,18 @@ export class SvgService {
         return arcSvgArray;
     };
 
+    public createSvgCut(startX: number, startY: number, endX: number, endY: number): SVGElement {
+        const svg: SVGElement = this.createSvgElement('line');
+        svg.setAttribute('x1', `${startX}`);
+        svg.setAttribute('y1', `${startY}`);
+        svg.setAttribute('x2', `${endX}`);
+        svg.setAttribute('y2', `${endY}`);
+        svg.setAttribute('stroke-width', `2`);
+        svg.setAttribute('stroke', 'red');
+        svg.setAttribute('customType', 'cut');
+        return svg;
+    }
+
     public createSvgInfos(inGraph : Graph) : Array<SVGElement> {
         const infoSvgArray: Array<SVGElement> = [];
         let nodeId : number = 0;
@@ -149,6 +161,7 @@ export class SvgService {
                 svg.setAttribute('id', ('place_' + inNodeId));
                 svg.setAttribute('cx', `${inNode.x}`);
                 svg.setAttribute('cy', `${inNode.y}`);
+                //svg.setAttribute('r', `${this.svgDefaultRadius}`);
                 svg.setAttribute('r', `${this.svgDefaultNodeRadius}`);
                 break;
             }
@@ -190,8 +203,8 @@ export class SvgService {
         return(svg);
     };
 
-    private createSvgArc(inNodes : [Node, Node], inMarking : boolean, inArcId : number) : SVGElement {
-        const svg : SVGElement = this.createSvgElement('line');
+    private createSvgArc(inNodes: [Node, Node], inMarking: boolean, inArcId: number): SVGElement {
+        const svg: SVGElement = this.createSvgElement('line');
         svg.setAttribute('id', ('arc_' + inArcId));
         svg.setAttribute('x1', `${inNodes[0].x}`);
         svg.setAttribute('y1', `${inNodes[0].y}`);
@@ -362,7 +375,7 @@ export class SvgService {
         return svg;
     };
 
-    private createSvgElement(name : string): SVGElement {
+    private createSvgElement(name: string): SVGElement {
         return document.createElementNS('http://www.w3.org/2000/svg', name);
     };
 

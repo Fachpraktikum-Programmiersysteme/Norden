@@ -1,15 +1,16 @@
-import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
 
-import {catchError, of, Subscription, take} from 'rxjs';
+import { catchError, of, Subscription, take } from 'rxjs';
 
-import {FileReaderService} from "../../services/file-reader.service";
-import {DisplayService} from '../../services/display.service';
-import {SvgService} from '../../services/svg.service';
+import { FileReaderService } from "../../services/file-reader.service";
+import { DisplayService } from '../../services/display.service';
+import { SvgService } from '../../services/svg.service';
 
-import {ExampleFileComponent} from "../../components/example-file/example-file.component";
+import { ExampleFileComponent } from "../example-file/example-file.component";
 
-import {Graph} from '../../classes/graph-representation/graph';
+import { Graph } from '../../classes/graph-representation/graph';
+import { Cut } from '../../classes/graph-representation/cut';
 import {Node} from 'src/app/classes/graph-representation/node';
 
 @Component({
@@ -21,13 +22,15 @@ export class DisplayComponent implements OnDestroy {
 
     /* properties */
 
-    @ViewChild('drawingArea') drawingArea : ElementRef<SVGElement> | undefined;
+    @ViewChild('drawingArea') drawingArea: ElementRef<SVGElement> | undefined;
 
-    @Output('fileData') fileData : EventEmitter<[string, string]>;
+    @Output('fileData') fileData: EventEmitter<[string, string]>;
 
     /* attributes */
 
-    private _sub : Subscription;
+    private _sub: Subscription;
+    //private _graph: Graph | undefined;
+    private _cut: Cut | undefined;
 
     private _graph : Graph = new Graph();
     private _log : number[][] = [];
@@ -51,13 +54,13 @@ export class DisplayComponent implements OnDestroy {
     /* methods - constructor */
 
     public constructor(
-        private _svgService : SvgService,
-        private _displayService : DisplayService,
-        private _fileReaderService : FileReaderService,
-        private _http : HttpClient
+        private _svgService: SvgService,
+        private _displayService: DisplayService,
+        private _fileReaderService: FileReaderService,
+        private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
-        this._sub  = this._displayService.graph$.subscribe(
+        this._sub = this._displayService.graph$.subscribe(
             graph => {
                 /* to be removed - start*/
                 console.log('display_component noticed new graph through subscription');
@@ -79,13 +82,23 @@ export class DisplayComponent implements OnDestroy {
 
     /* methods - other */
 
+    public processDropEvent(inEvent: DragEvent): void {
+        inEvent.preventDefault();
+        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
+        if (fileLocation) {
+            this.fetchFile(fileLocation);
+        } else {
+            this.readFile(inEvent.dataTransfer?.files);
+        }
+    };
+
     private getNode(inId : number) : Node {
         const node : Node |undefined = this._graph.nodes[inId];
         if (node !== undefined) {
             return node;
         } else {
-            throw new Error('#cmp.dsp.pmm.000: ' + 'node retieval failed - node with given id is undefined');
-        };
+            throw new Error('#cmp.dsp.pmm.000: ' + 'node retrieval failed - node with given id is undefined');
+        }
     };
 
     private getArc(inId : number) : [Node, Node, number, boolean] {
@@ -93,8 +106,8 @@ export class DisplayComponent implements OnDestroy {
         if (arc !== undefined) {
             return arc;
         } else {
-            throw new Error('#cmp.dsp.pmm.000: ' + 'node retieval failed - arc with given id is undefined');
-        };
+            throw new Error('#cmp.dsp.pmm.000: ' + 'node retrieval failed - arc with given id is undefined');
+        }
     };
 
     private getMousePosition(inEvent : MouseEvent) : void {
@@ -108,28 +121,11 @@ export class DisplayComponent implements OnDestroy {
         console.log ('event.xy       : (' + inEvent.x + '|' + inEvent.y + ')');
     };
 
-    // private justTarget(inEvent : MouseEvent) : SVGElement | undefined {
-    //     inEvent.preventDefault();
-    //     const target = inEvent.target;
-    //     if (target instanceof SVGElement) {
-    //         const targetId : string | null = target.getAttribute('id'); 
-    //         if (targetId !== null) {
-    //             const svgId : string[]  = targetId.split('_');
-    //             if (svgId[0] === 'support' || svgId[0] === 'event' || svgId[0] === 'place' || svgId[0] === 'transition') {
-    //                 return target;
-    //             } else if (svgId[0] === 'arc') {
-    //                 return undefined;
-    //             };
-    //         };
-    //     };
-    //     return undefined;
-    // };
-
     private getMouseTarget(inEvent : MouseEvent) : ['node' | 'arc' | 'else', number] {
         inEvent.preventDefault();
         const target = inEvent.target;
         if (target instanceof SVGElement) {
-            const targetId : string | null = target.getAttribute('id'); 
+            const targetId : string | null = target.getAttribute('id');
             if (targetId !== null) {
                 const svgId : string[]  = targetId.split('_');
                 if (svgId[0] === 'support' || svgId[0] === 'event' || svgId[0] === 'place' || svgId[0] === 'transition') {
@@ -142,9 +138,9 @@ export class DisplayComponent implements OnDestroy {
                     console.log('display-component found target: arc');
                     /* to be removed - end */
                     return ['arc', parseInt(svgId[1])];
-                };
-            };
-        };
+                }
+            }
+        }
         /* to be removed - start */
         console.log('display-component found target: neither node nor arc');
         /* to be removed - end */
@@ -189,13 +185,13 @@ export class DisplayComponent implements OnDestroy {
                 // console.log(' >> check action set hover & cancel to "false" for Node ' + inNode.id);
                 /* to be removed - end*/
                 this.redraw();
-            };
+            }
         } else {
             /* active hover was overwritten by old check --> case is ignored, move mouse to fix */
             /* to be removed - start*/
             console.log('hover was overwritten (move mouse onto node again to fix)');
             /* to be removed - end*/
-        };
+        }
         /* to be removed - start*/
         // console.log('[hoverActive : "' + inNode.isHoverActive + '", hoverCancelled : "' + inNode.wasHoverCancelled + '"');
         /* to be removed - end*/
@@ -238,13 +234,13 @@ export class DisplayComponent implements OnDestroy {
                                     this.infoActive = false;
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.000: ' + 'deactivation of info failed - affiliated node is undefined');
-                                };
+                                }
                             } else if (this.activeNode.isHoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                                 /* to be removed - end*/
-                            };
+                            }
                             this.activeNode.active = false;
                             this.activeNode = this.getNode(targetInfo[1]);
                             this.activeNode.active = true;
@@ -255,10 +251,10 @@ export class DisplayComponent implements OnDestroy {
                             /* to be removed - end*/
                             this.checkMouseHover(this.activeNode);
                             redrawNeeded = true;
-                        };
+                        }
                     } else {
                         throw new Error('#cmp.dsp.pmd.001: ' + 'deactivation of node failed - node is undefined');
-                    };
+                    }
                 } else {
                     if (this.arcActive) {
                         if (this.activeArc !== undefined) {
@@ -267,8 +263,8 @@ export class DisplayComponent implements OnDestroy {
                             this.arcActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmd.002: ' + 'deactivation of arc failed - arc is undefined');
-                        };
-                    };
+                        }
+                    }
                     this.nodeActive = true;
                     this.activeNode = this.getNode(targetInfo[1]);
                     this.activeNode.active = true;
@@ -279,7 +275,7 @@ export class DisplayComponent implements OnDestroy {
                     /* to be removed - end*/
                     this.checkMouseHover(this.activeNode);
                     redrawNeeded = true;
-                };
+                }
                 this.nodeHeld = true;
                 this.heldNode = this.activeNode;
                 break;
@@ -292,10 +288,10 @@ export class DisplayComponent implements OnDestroy {
                             this.activeArc = this.getArc(targetInfo[1]);
                             this.activeArc[3] = true;
                             redrawNeeded = true;
-                        };
+                        }
                     } else {
                         throw new Error('#cmp.dsp.pmd.003: ' + 'deactivation of arc failed - arc is undefined');
-                    };
+                    }
                 } else {
                     if (this.nodeActive) {
                         if (this.activeNode !== undefined) {
@@ -309,25 +305,25 @@ export class DisplayComponent implements OnDestroy {
                                     this.infoActive = false;
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.004: ' + 'deactivation of info failed - affiliated node is undefined');
-                                };
+                                }
                             } else if (this.activeNode.isHoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                                 /* to be removed - end*/
-                            };
+                            }
                             this.activeNode.active = false;
                             this.activeNode = undefined;
                             this.nodeActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmd.005: ' + 'deactivation of node failed - node is undefined');
-                        };
-                    };
+                        }
+                    }
                     this.arcActive = true;
                     this.activeArc = this.getArc(targetInfo[1]);
                     this.activeArc[3] = true;
                     redrawNeeded = true;
-                };
+                }
                 break;
             }
             case 'else' : {
@@ -343,19 +339,19 @@ export class DisplayComponent implements OnDestroy {
                                 this.infoActive = false;
                             } else {
                                 throw new Error('#cmp.dsp.pmd.006: ' + 'deactivation of info failed - affiliated node is undefined');
-                            };
+                            }
                         } else if (this.activeNode.isHoverActive) {
                             this.activeNode.hoverCancelled = true;
                             /* to be removed - start*/
                             // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                             /* to be removed - end*/
-                        };
+                        }
                         this.activeNode.active = false;
                         this.activeNode = undefined;
                         this.nodeActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pmd.007: ' + 'deactivation of node failed - node is undefined');
-                    };
+                    }
                     redrawNeeded = true;
                 } else if (this.arcActive) {
                     if (this.activeArc !== undefined) {
@@ -364,15 +360,15 @@ export class DisplayComponent implements OnDestroy {
                         this.arcActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pmd.008: ' + 'deactivation of arc failed - arc is undefined');
-                    };
+                    }
                     redrawNeeded = true;
-                };
+                }
                 break;
             }
-        };
+        }
         if (redrawNeeded) {
             this.redraw();
-        };
+        }
     };
 
     public processMouseMove(inEvent : MouseEvent) {
@@ -389,7 +385,7 @@ export class DisplayComponent implements OnDestroy {
                 this.draggedNode.y = inEvent.offsetY;
             } else {
                 throw new Error('#cmp.dsp.pmm.000: ' + 'drag of node failed - node is undefined');
-            };
+            }
             redrawNeeded = true;
         } else {
             const targetInfo : ['node' | 'arc' | 'else', number] = this.getMouseTarget(inEvent);
@@ -408,13 +404,13 @@ export class DisplayComponent implements OnDestroy {
                                         this.infoActive = false;
                                     } else {
                                         throw new Error('#cmp.dsp.pmm.001: ' + 'deactivation of info failed - affiliated node is undefined');
-                                    };
+                                    }
                                 } else if (this.activeNode.isHoverActive) {
                                     this.activeNode.hoverCancelled = true;
                                     /* to be removed - start*/
                                     // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
                                     /* to be removed - end*/
-                                };
+                                }
                                 this.activeNode.active = false;
                                 this.activeNode = this.getNode(targetInfo[1]);
                                 this.activeNode.active = true;
@@ -425,10 +421,10 @@ export class DisplayComponent implements OnDestroy {
                                 /* to be removed - end*/
                                 this.checkMouseHover(this.activeNode);
                                 redrawNeeded = true;
-                            };
+                            }
                         } else {
                             throw new Error('#cmp.dsp.pmm.002: ' + 'deactivation of node failed - node is undefined');
-                        };
+                        }
                     } else {
                         if (this.arcActive) {
                             if (this.activeArc !== undefined) {
@@ -437,8 +433,8 @@ export class DisplayComponent implements OnDestroy {
                                 this.arcActive = false;
                             } else {
                                 throw new Error('#cmp.dsp.pmm.003: ' + 'deactivation of arc failed - arc is undefined');
-                            };
-                        };
+                            }
+                        }
                         this.nodeActive = true;
                         this.activeNode = this.getNode(targetInfo[1]);
                         this.activeNode.active = true;
@@ -449,7 +445,7 @@ export class DisplayComponent implements OnDestroy {
                         /* to be removed - end*/
                         this.checkMouseHover(this.activeNode);
                         redrawNeeded = true;
-                    };
+                    }
                     break;
                 }
                 case 'arc' : {
@@ -460,10 +456,10 @@ export class DisplayComponent implements OnDestroy {
                                 this.activeArc = this.getArc(targetInfo[1]);
                                 this.activeArc[3] = true;
                                 redrawNeeded = true;
-                            };
+                            }
                         } else {
                             throw new Error('#cmp.dsp.pmm.004: ' + 'deactivation of arc failed - arc is undefined');
-                        };
+                        }
                     } else {
                         if (this.nodeActive) {
                             if (this.activeNode !== undefined) {
@@ -477,25 +473,25 @@ export class DisplayComponent implements OnDestroy {
                                         this.infoActive = false;
                                     } else {
                                         throw new Error('#cmp.dsp.pmm.005: ' + 'deactivation of info failed - affiliated node is undefined');
-                                    };
+                                    }
                                 } else if (this.activeNode.isHoverActive) {
                                     this.activeNode.hoverCancelled = true;
                                     /* to be removed - start*/
                                     // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
                                     /* to be removed - end*/
-                                };
+                                }
                                 this.activeNode.active = false;
                                 this.activeNode = undefined;
                                 this.nodeActive = false;
                             } else {
                                 throw new Error('#cmp.dsp.pmm.006: ' + 'deactivation of node failed - node is undefined');
-                            };
-                        };
+                            }
+                        }
                         this.arcActive = true;
                         this.activeArc = this.getArc(targetInfo[1]);
                         this.activeArc[3] = true;
                         redrawNeeded = true;
-                    };
+                    }
                     break;
                 }
                 case 'else' : {
@@ -511,19 +507,19 @@ export class DisplayComponent implements OnDestroy {
                                     this.infoActive = false;
                                 } else {
                                     throw new Error('#cmp.dsp.pmm.008: ' + 'deactivation of info failed - affiliated node is undefined');
-                                };
+                                }
                             } else if (this.activeNode.isHoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
                                 /* to be removed - end*/
-                            };
+                            }
                             this.activeNode.active = false;
                             this.activeNode = undefined;
                             this.nodeActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmm.009: ' + 'deactivation of node failed - node is undefined');
-                        };
+                        }
                         redrawNeeded = true;
                     } else if (this.arcActive) {
                         if (this.activeArc !== undefined) {
@@ -532,16 +528,16 @@ export class DisplayComponent implements OnDestroy {
                             this.arcActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmm.010: ' + 'deactivation of arc failed - arc is undefined');
-                        };
+                        }
                         redrawNeeded = true;
-                    };
+                    }
                     break;
                 }
-            };
-        };
+            }
+        }
         if (redrawNeeded) {
             this.redraw();
-        };
+        }
     };
 
     public processMouseUp(inEvent : MouseEvent) {
@@ -558,12 +554,12 @@ export class DisplayComponent implements OnDestroy {
                     this.heldNode.marked = !(this.heldNode.isMarked);
                 } else {
                     throw new Error('#cmp.dsp.pmu.000: ' + 'click of node failed - node is undefined');
-                };
-            };
+                }
+            }
             this.nodeHeld = false;
             this.heldNode = undefined;
             this.redraw();
-        };
+        }
     };
 
     public processMouseLeave(inEvent : MouseEvent) {
@@ -576,10 +572,10 @@ export class DisplayComponent implements OnDestroy {
                 if (this.dragInProgress) {
                     this.draggedNode = undefined;
                     this.dragInProgress = false;
-                };
+                }
                 this.heldNode = undefined;
                 this.nodeHeld = false;
-            };
+            }
             if (this.activeNode !== undefined) {
                 if (this.infoActive) {
                     if (this.activeInfo !== undefined) {
@@ -591,53 +587,83 @@ export class DisplayComponent implements OnDestroy {
                         this.infoActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pml.000: ' + 'deactivation of info failed - affiliated node is undefined');
-                    };
+                    }
                 } else if (this.activeNode.isHoverActive) {
                     this.activeNode.hoverCancelled = true;
                     /* to be removed - start*/
                     // console.log(' >> leave action set cancel to "true" for Node ' + this.activeNode.id);
                     /* to be removed - end*/
-                };
+                }
                 this.activeNode.active = false;
             } else {
                 throw new Error('#cmp.dsp.pml.001: ' + 'deactivation of node failed - node is undefined');
-            };
+            }
             this.activeNode = undefined;
             this.nodeActive = false;
             this.redraw();
-        };
+        }
     };
 
-    public processDropEvent(inEvent : DragEvent) : void {
-        inEvent.preventDefault();
-        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
-        if (fileLocation) {
-            this.fetchFile(fileLocation);
-        } else {
-            this.readFile(inEvent.dataTransfer?.files);
-        };
-    };
-
-    public prevent(inEvent : DragEvent) : void {
+    public prevent(inEvent: DragEvent): void {
         // dragover must be prevented for drop to work
         inEvent.preventDefault();
     };
 
-    private fetchFile(inLink: string) : void {
+    public startCut(inEvent: MouseEvent): void {
+        this._cut = new Cut(inEvent.offsetX, inEvent.offsetY, true);
+    };
+
+    public drawCut(inEvent: MouseEvent): void {
+        if (!this._cut?.isDrawing) return;
+        const cutLine = this._svgService.createSvgCut(this._cut.tempX, this._cut.tempY, inEvent.offsetX, inEvent.offsetY);
+        this._cut.tempCutLines.push({ x1: this._cut.tempX, y1: this._cut.tempY, x2: inEvent.offsetX, y2: inEvent.offsetY });
+        this.drawingArea?.nativeElement.appendChild(cutLine);
+        this._cut.tempX = inEvent.offsetX;
+        this._cut.tempY = inEvent.offsetY;
+    };
+
+    public endCut(inEvent: MouseEvent): void {
+        if (!this._cut?.isDrawing) return;
+        this._cut.isDrawing = false;
+        if (this._graph?.arcs) {
+            for (const arc of this._graph.arcs) {
+                const existingLine = { x1: arc[0].x, y1: arc[0].y, x2: arc[1].x, y2: arc[1].y };
+                for (const cutLine of this._cut.tempCutLines) {
+                    if (this._cut.cutArcs.some(cutArc => cutArc[0].id == arc[0].id && cutArc[1].id == arc[1].id)) {
+                        continue;
+                    }
+                    if (this._cut.checkIntersection(cutLine, existingLine)) {
+                        this._cut.cutArcs.push(arc);
+                    }
+                }
+            }
+            // hier muss dann der Inductive Miner aufgerufen werden zur Prüfung des Cuts
+            if (this._cut.cutArcs.length > 0) {
+                console.log('Folgende Kanten wurden geschnitten: ')
+                this._cut.cutArcs.forEach(cutArc => {
+                    console.log(cutArc);
+                });
+            }
+            this._cut.removeSvgCuts(this.drawingArea?.nativeElement)
+            this._cut = undefined;
+        }
+    };
+
+    private fetchFile(inLink: string): void {
         this._http.get(
-            inLink, 
-            {responseType: 'text'}
+            inLink,
+            { responseType: 'text' }
         ).pipe(
             catchError(
                 error => {
-                    console.log('Error while fetching file from link', inLink, error);
+                    console.error('Error while fetching file from link', inLink, error);
                     return of(undefined);
                 }
             ),
             take(1)
         ).subscribe(
             fileContent => {
-                const fileType : string | undefined = inLink.split('.').pop();
+                const fileType: string | undefined = inLink.split('.').pop();
                 if (fileType !== undefined) {
                     this.emitFileData(fileType, fileContent);
                     /* to be removed - start */
@@ -645,32 +671,48 @@ export class DisplayComponent implements OnDestroy {
                     console.log('"fetchFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + inLink + '"');
                     console.log();
                     /* to be removed - start */
-                };
+                } else {
+                    throw new Error('#cmp.dsp.ftf.000: ' + 'fetching file failed - filetype was assigned "undefined"');
+                }
             }
         )
     };
 
     private readFile(files: FileList | undefined | null) : void {
         if (files === undefined || files === null || files.length === 0) {
+            /* to be removed - start */
+            console.log();
+            console.log('"readFile" could not detect file');
+            console.log();
+            /* to be removed - start */
             return;
-        };
-        const fileType : string = files[0].type;
-        this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
-            fileContent => {
-                this.emitFileData(fileType, fileContent);
-                /* to be removed - start */
-                console.log();
-                console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
-                console.log();
-                /* to be removed - start */
-            }
-        );
+        }
+        /* to be removed - start */
+        console.log();
+        console.log('"readFile" detected file "' + files[0] + '" with name "' + files[0].name + '"');
+        console.log();
+        /* to be removed - start */
+        const fileType : string | undefined = files[0].name.split('.').pop();
+        if (fileType !== undefined) {
+            this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
+                fileContent => {
+                    this.emitFileData(fileType, fileContent);
+                    /* to be removed - start */
+                    console.log();
+                    console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
+                    console.log();
+                    /* to be removed - start */
+                }
+            );
+        } else {
+            throw new Error('#cmp.dsp.rdf.000: ' + 'reading file failed - filetype was assigned "undefined"');
+        }
     };
 
-    private emitFileData(inFileType : string | undefined, inFileContent : string | undefined) : void {
+    private emitFileData(inFileType: string | undefined, inFileContent: string | undefined): void {
         if (inFileType === undefined || inFileContent === undefined) {
             return;
-        };
+        }
         this.fileData.emit([inFileType, inFileContent]);
     };
 
@@ -682,38 +724,38 @@ export class DisplayComponent implements OnDestroy {
         if (this.drawingArea === undefined) {
             console.debug('drawing area not ready yet')
             return;
-        };
+        }
         this.clearDrawingArea();
-        const arcs : SVGElement[] = this._svgService.createSvgArcs(this._graph);
+        const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
         for (const arc of arcs) {
             this.drawingArea.nativeElement.appendChild(arc);
-        };
-        const nodes : SVGElement[] = this._svgService.createSvgNodes(this._graph);
+        }
+        const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
         for (const node of nodes) {
             this.drawingArea.nativeElement.appendChild(node);
-        };
+        }
         const infos : SVGElement[] = this._svgService.createSvgInfos(this._graph);
         for (const info of infos) {
             this.drawingArea.nativeElement.appendChild(info);
-        };
+        }
         if (!(this.dragInProgress)) {
-            /* for improving performance, trace-elements are not loaded while a node is being dragged around the canvas, 
+            /* for improving performance, trace-elements are not loaded while a node is being dragged around the canvas,
                 they are rendered again after the drag has ended */
             const traces : SVGElement[] = this._svgService.createSvgTraces(this._graph, this._log, this._max);
             for (const trace of traces) {
                 this.drawingArea.nativeElement.appendChild(trace);
-            };
-        };
+            }
+        }
     };
 
-    private clearDrawingArea() : void {
+    private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
         if (drawingArea?.childElementCount === undefined) {
             return;
-        };
+        }
         while (drawingArea.childElementCount > 0) {
             drawingArea.removeChild(drawingArea.lastChild as ChildNode);
-        };
+        }
     };
-    
-};
+
+}
