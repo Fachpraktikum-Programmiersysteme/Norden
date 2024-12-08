@@ -1,0 +1,16 @@
+<button 
+    mat-fab 
+    [matTooltip]="tooltip" 
+    [disabled]="disabled"
+    (click)="processMouseClick($event)" 
+>
+    @if (overwriteActive) {
+        <mat-icon>
+            subtitles
+        </mat-icon>
+    } @else {
+        <mat-icon>
+            subtitles_off
+        </mat-icon>
+    }
+</button>

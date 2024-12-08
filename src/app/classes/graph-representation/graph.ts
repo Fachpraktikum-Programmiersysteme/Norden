@@ -11,7 +11,7 @@ export class Graph {
     private _placeCount : number;
     private _transitionCount : number;
 
-    private _arcs : Array<[Node, Node, number]>;
+    private _arcs : Array<[Node, Node, number, boolean]>;
     private _arcCount : number;
 
     private _initialState : boolean;
@@ -63,7 +63,7 @@ export class Graph {
         return this._transitionCount;
     };
 
-    public get arcs(): Array<[Node, Node, number]> {
+    public get arcs(): Array<[Node, Node, number, boolean]> {
         return this._arcs;
     };
 
@@ -209,7 +209,7 @@ export class Graph {
                     throw new Error('#cls.grp.ada.000: ' + 'arc addition failed - impossible error');
                 };
             } else {
-                this._arcs.push([inSource, inTarget, 1]);
+                this._arcs.push([inSource, inTarget, 1, false]);
                 this._arcCount++;
             };
         } else {
@@ -223,7 +223,7 @@ export class Graph {
                         throw new Error('#cls.grp.ada.001: ' + 'arc addition failed - impossible error');
                     };
                 } else {
-                    this._arcs.push([inSource, inTarget, inWeight]);
+                    this._arcs.push([inSource, inTarget, inWeight, false]);
                     this._arcCount = this._arcCount + inWeight;
                 };
             } else if (inWeight === 0) {

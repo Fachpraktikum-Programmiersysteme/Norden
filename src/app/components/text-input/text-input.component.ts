@@ -30,11 +30,7 @@ export class TextInputComponent implements OnDestroy {
 
     /* attributes */
 
-    private readonly _sub : Subscription;
-
     private _inputText: string;
-
-    private _disabled : boolean;
 
     /* methods - constructor */
 
@@ -42,27 +38,16 @@ export class TextInputComponent implements OnDestroy {
         private _displayService: DisplayService,
     ) {
         this.textData = new EventEmitter<[string, string]>();
-        this._sub  = this._displayService.graph$.subscribe(
-            graph => {
-                console.log('text-input_component noticed new graph');
-            }
-        );
         this._inputText = '';
-        this._disabled = false;
     };
 
     /* methods - on destroy */
 
     ngOnDestroy(): void {
-        this._sub.unsubscribe();
         this.textData.complete();
     };
 
     /* methods - getters */
-
-    public get disabled() : boolean {
-        return this._disabled;
-    }
 
     public get inputText() : string {
         return this._inputText;

@@ -6,6 +6,8 @@ import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
 import {FileWriterService} from 'src/app/services/file-writer.service';
+import {MatFabButton} from "@angular/material/button";
+
 
 @Component({
     selector: 'save-button',
@@ -14,7 +16,8 @@ import {FileWriterService} from 'src/app/services/file-writer.service';
     standalone: true,
     imports: [
         MatIconModule,
-        MatTooltipModule
+        MatTooltipModule,
+        MatFabButton
     ]
 })
 export class SaveButtonComponent implements OnDestroy {
@@ -42,7 +45,7 @@ export class SaveButtonComponent implements OnDestroy {
                     this._disabled = true;
                 } else {
                     this._disabled = false;
-                };
+                }
             }
         );
     };
@@ -66,6 +69,14 @@ export class SaveButtonComponent implements OnDestroy {
         inEvent.stopPropagation();
     };
 
+    public get tooltip() : string {
+        if (this._disabled) {
+            return '[currently disabled]';
+        } else {
+            return 'save currently displayed graph';
+        }
+    }
+
     processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
         console.log(' >> save button clicked - event : ' + inEvent);
@@ -80,7 +91,7 @@ export class SaveButtonComponent implements OnDestroy {
             fileName = (fileName + '_' + this._outId + '_PetriNet');
         } else {
             fileName = (fileName + '_' + this._outId + '_Graph');
-        };
+        }
         this._fileWriterService.writeFile(fileName, currentGraph)
         this._outId++;
     };

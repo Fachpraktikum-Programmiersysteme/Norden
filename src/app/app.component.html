@@ -13,6 +13,7 @@
 
     <!--    Main content    -->
     <app-display 
+        id="canvas" 
         class="padding full-size" 
         (fileData)="processSourceChange($event)"
     >
@@ -29,10 +30,30 @@
             (textData)="processSourceChange($event)"
         >
         </text-input>
+        <div 
+            class="flexColumnAlignStartStretch"
+        >
         <save-button>
         </save-button>
+        <div 
+        class="gap_40px"
+        >
+        </div>
         <delete-button>
         </delete-button>
+        </div>
+        <div 
+            class="flexColumnAlignStartStretch"
+        >
+        <info-button>
+        </info-button>
+        <div 
+        class="gap_40px"
+        >
+        </div>
+        <traces-button>
+        </traces-button>
+        </div>
         <mat-form-field 
             appearance="outline" 
             class="outputContainer"> 

@@ -37,7 +37,7 @@ export class AppComponent {
         console.log('processing SourceChange-event - type: "' + inSourceData[0] + '", content: "' + inSourceData[1] + '"');
         /* to be removed - end*/
         this.textAreaFc.setValue(inSourceData[1]);
-        let parsedContent : Graph | undefined;
+        let parsedContent : [Graph, number[][]] | undefined;
         switch (inSourceData[0]) {
             case 'txt' : {
                 parsedContent = this._txtParserService.parse(inSourceData[1]);
@@ -53,7 +53,7 @@ export class AppComponent {
             };
         };
         if (parsedContent !== undefined) {
-            this._displayService.display(parsedContent);
+            this._displayService.updateData(parsedContent[0], parsedContent[1]);
         };
     };
     

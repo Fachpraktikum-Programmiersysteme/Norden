@@ -5,18 +5,19 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
+import {SvgService} from '../../services/svg.service';
 
 @Component({
-    selector: 'delete-button',
-    templateUrl: './delete-button.component.html',
-    styleUrls: ['./delete-button.component.css'],
+    selector: 'info-button',
+    templateUrl: './info-button.component.html',
+    styleUrls: ['./info-button.component.css'],
     standalone: true,
     imports: [
         MatIconModule,
         MatTooltipModule
     ]
 })
-export class DeleteButtonComponent implements OnDestroy {
+export class InfoButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -24,15 +25,18 @@ export class DeleteButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
 
+    private _overwriteActive : boolean = false;
+
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService
+        private _displayService : DisplayService,
+        private _svgService : SvgService
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('delete-button_component noticed new graph');
+                console.log('info-button_component noticed new graph');
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
                 } else {
@@ -54,11 +58,15 @@ export class DeleteButtonComponent implements OnDestroy {
         return this._disabled;
     }
 
+    public get overwriteActive() : boolean {
+        return this._overwriteActive;
+    }
+
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
         } else {
-            return 'delete currently displayed graph';
+            return 'display all node information';
         };
     };
     
@@ -71,9 +79,11 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('delete button clicked - event : ' + inEvent);
+        console.log('info button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._displayService.deleteData();
+        this._overwriteActive = !(this._overwriteActive);
+        this._svgService.infoOverwrite = this._overwriteActive;
+        this._displayService.refreshData();
     };
 
 };

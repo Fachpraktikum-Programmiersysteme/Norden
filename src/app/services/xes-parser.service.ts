@@ -17,7 +17,7 @@ export class XesParserService {
 
     /* methods : other */
 
-    public parse(inXesString : string): Graph {
+    public parse(inXesString : string): [Graph, number[][]] {
 
         let currentLine : number = 0;
     
@@ -36,10 +36,8 @@ export class XesParserService {
         let eventName : string | undefined = undefined;
         let eventLifecycle : string | undefined = undefined;
 
-        /* to be removed - start*/
-        let eventsArray : string[] = [];
-        let tracesArray : string[][] = [];
-        /* to be removed - end*/
+        let eventsArray : number[] = [];
+        let tracesArray : number[][] = [];
 
         let noEvent : boolean = true;
     
@@ -47,7 +45,7 @@ export class XesParserService {
         let lastNode : Node | undefined = undefined;
 
         const startNode : Node = new Node(0, 'support', 'play', 850, 50);
-        const endNode : Node = new Node(0, 'support', 'stop', 850, 350);
+        const endNode : Node = new Node(0, 'support', 'stop', 850, 550);
 
         const graph : Graph = new Graph([startNode, endNode]);
 
@@ -69,9 +67,8 @@ export class XesParserService {
                         } else {
                             openedTraceFlag = true;
                             openedTraceLine = currentLine;
-                            /* to be removed - start*/
                             eventsArray = [];
-                            /* to be removed - end*/
+                            eventsArray.push(0);
                         };
                         break;
                     }
@@ -110,11 +107,9 @@ export class XesParserService {
                             } else {
                                 eventLabel = (eventName);
                             };
-                            /* to be removed - start*/
-                            eventsArray.push(eventLabel);
-                            /* to be removed - end*/
                             let nodeAdded : [boolean, number] = graph.addNode('event', eventLabel);
                             currentNode = graph.nodes[nodeAdded[1]];
+                            eventsArray.push(nodeAdded[1]);
                             noEvent = false;
                             if (currentNode !== undefined) {
                                 if (lastNode !== undefined) {
@@ -144,9 +139,8 @@ export class XesParserService {
                         } else {
                             openedTraceFlag = false;
                             closedTraceLine = currentLine;
-                            /* to be removed - start*/
+                            eventsArray.push(1);
                             tracesArray.push(eventsArray);
-                            /* to be removed - end*/
                             if (lastNode !== undefined) {
                                 if (graph.nodes[1] !== undefined) {
                                     graph.addArc(lastNode, graph.nodes[1])
@@ -218,13 +212,13 @@ export class XesParserService {
                 };
             };
             
-            return graph;
+            return [graph, tracesArray];
 
         } catch (error) {
 
             console.error('parsing of .xes file failed - ', error);
 
-            return new Graph();
+            return [new Graph(), tracesArray];
 
         };
 

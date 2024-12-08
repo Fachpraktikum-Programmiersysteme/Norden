@@ -8,7 +8,7 @@ export class Cut {
     private _tempY: number = 0;
     private _isDrawing = false;
     private _tempCutLines: Array<{ x1: number; y1: number; x2: number; y2: number; }> = [];
-    private _cutArcs: Array<[Node, Node, number]> = [];
+    private _cutArcs: Array<[Node, Node, number, boolean]> = [];
 
 
     /* methods : constructor */
@@ -41,7 +41,7 @@ export class Cut {
         return this._tempCutLines;
     }
 
-    public get cutArcs(): Array<[Node, Node, number]> {
+    public get cutArcs(): Array<[Node, Node, number, boolean]> {
         return this._cutArcs;
     }
 
@@ -63,7 +63,7 @@ export class Cut {
         this._tempCutLines = value;
     }
 
-    public set cutArcs(value: Array<[Node, Node, number]>) {
+    public set cutArcs(value: Array<[Node, Node, number, boolean]>) {
         this._cutArcs = value;
     }
 
@@ -91,7 +91,7 @@ export class Cut {
 
     public removeSvgCuts(drawingArea: SVGElement | undefined) {
         if (!drawingArea) return;
-        const elements = Array.from(drawingArea.querySelectorAll(`[customType="cut"]`)); 
+        const elements = Array.from(drawingArea.querySelectorAll(`[customType="cut"]`));
         elements.forEach(element => element.remove());
     }
 };

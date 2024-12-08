@@ -2,6 +2,8 @@ import {Coords} from './coordinates';
 
 export interface JsonGraph {
 
+    log?: Array<Array<string>>
+
     supports?: Array<string>,
 
     events?: Array<string>,
@@ -21,17 +23,5 @@ export interface JsonGraph {
     layout?: {
         [id_idPair: string]: Coords | Array<Coords>
     },
-
-    /* to be removed - start */
-
-    /* fields 'marking' & 'actions' should not be needed */
-    
-    /* to be removed - end */
-
-    // marking?: {
-    //     [pId: string]: number
-    // },
-
-    // actions?: Array<string>
 
 };
