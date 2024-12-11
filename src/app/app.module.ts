@@ -12,7 +12,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {AppComponent} from './app.component';
 import {DisplayComponent} from './components/display/display.component';
 import {DeleteButtonComponent} from './components/button_delete-graph/delete-button.component';
-import {ExampleButtonComponent} from "./components/example-button/example-button.component";
 import {ExampleFileComponent} from './components/example-file/example-file.component';
 import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
 import {FooterComponent} from './components/footer/footer.component';
@@ -31,7 +30,6 @@ import {TracesButtonComponent} from "./components/button_display-traces/traces-b
     BrowserAnimationsModule,
     BrowserModule,
     DeleteButtonComponent,
-    ExampleButtonComponent,
     ExampleFileComponent,
     InfoButtonComponent,
     MatButtonModule,

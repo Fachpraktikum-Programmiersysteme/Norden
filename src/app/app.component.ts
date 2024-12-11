@@ -16,7 +16,8 @@ export class AppComponent {
 
     /* attributes */
 
-    public textAreaFc: FormControl;
+    public fileAreaFc: FormControl;
+    public logAreaFc: FormControl;
 
     /* methods - constructor */
 
@@ -26,8 +27,10 @@ export class AppComponent {
         private _jsonParserService: JsonParserService,
         private _displayService: DisplayService
     ) {
-        this.textAreaFc = new FormControl();
-        this.textAreaFc.disable();
+        this.fileAreaFc = new FormControl();
+        this.fileAreaFc.disable();
+        this.logAreaFc = new FormControl();
+        this.logAreaFc.disable();
     };
 
     /* methods - other */
@@ -36,7 +39,7 @@ export class AppComponent {
         /* to be removed - start*/
         console.log('processing SourceChange-event - type: "' + inSourceData[0] + '", content: "' + inSourceData[1] + '"');
         /* to be removed - end*/
-        this.textAreaFc.setValue(inSourceData[1]);
+        this.fileAreaFc.setValue(inSourceData[1]);
         let parsedContent : [Graph, number[][]] | undefined;
         switch (inSourceData[0]) {
             case 'txt' : {
@@ -54,6 +57,7 @@ export class AppComponent {
         };
         if (parsedContent !== undefined) {
             this._displayService.updateData(parsedContent[0], parsedContent[1]);
+            this.logAreaFc.setValue(parsedContent[1]);
         };
     };
     

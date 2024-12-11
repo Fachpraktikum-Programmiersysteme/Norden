@@ -368,7 +368,10 @@ export class DisplayComponent implements OnDestroy {
         }
         if (redrawNeeded) {
             this.redraw();
-        }
+        };
+        if (targetInfo[0] !== 'node') {
+            this.startCut(inEvent);
+        };
     };
 
     public processMouseMove(inEvent : MouseEvent) {
@@ -537,7 +540,8 @@ export class DisplayComponent implements OnDestroy {
         }
         if (redrawNeeded) {
             this.redraw();
-        }
+        };
+        this.drawCut(inEvent);
     };
 
     public processMouseUp(inEvent : MouseEvent) {
@@ -560,6 +564,7 @@ export class DisplayComponent implements OnDestroy {
             this.heldNode = undefined;
             this.redraw();
         }
+        this.endCut(inEvent);
     };
 
     public processMouseLeave(inEvent : MouseEvent) {
@@ -602,6 +607,7 @@ export class DisplayComponent implements OnDestroy {
             this.nodeActive = false;
             this.redraw();
         }
+        this.endCut(inEvent);
     };
 
     public prevent(inEvent: DragEvent): void {

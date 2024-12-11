@@ -65,12 +65,23 @@
                 cdkTextareaAutosize 
                 cdkAutosizeMinRows="3" 
                 cdkAutosizeMaxRows="7" 
-                [formControl]="textAreaFc">
+                [formControl]="fileAreaFc">
             </textarea>
         </mat-form-field>
-        <app-example-button 
-            title="Test Button">
-        </app-example-button>
+        <mat-form-field 
+            appearance="outline" 
+            class="outputContainer"> 
+            <mat-label> 
+                Event Log
+            </mat-label>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize 
+                cdkAutosizeMinRows="3" 
+                cdkAutosizeMaxRows="7" 
+                [formControl]="logAreaFc">
+            </textarea>
+        </mat-form-field>
     </div>
     <div 
         class="gap_30px"
