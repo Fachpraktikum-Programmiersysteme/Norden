@@ -1,17 +1,19 @@
-import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
+import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
 
-import { catchError, of, Subscription, take } from 'rxjs';
+import {catchError, of, Subscription, take} from 'rxjs';
 
-import { FileReaderService } from "../../services/file-reader.service";
-import { DisplayService } from '../../services/display.service';
-import { SvgService } from '../../services/svg.service';
+import {FileReaderService} from "../../services/file-reader.service";
+import {DisplayService} from '../../services/display.service';
+import {SvgService} from '../../services/svg.service';
 
-import { ExampleFileComponent } from "../example-file/example-file.component";
+import {ExampleFileComponent} from "../../components/example-file/example-file.component";
 
-import { Graph } from '../../classes/graph-representation/graph';
-import { Cut } from '../../classes/graph-representation/cut';
+import {Graph} from '../../classes/graph-representation/graph';
 import {Node} from 'src/app/classes/graph-representation/node';
+import {Cut} from '../../classes/graph-representation/cut';
+
+
 
 @Component({
     selector: 'app-display',
@@ -29,15 +31,13 @@ export class DisplayComponent implements OnDestroy {
     /* attributes */
 
     private _sub: Subscription;
-    //private _graph: Graph | undefined;
-    private _cut: Cut | undefined;
 
     private _graph : Graph = new Graph();
     private _log : number[][] = [];
     private _max : number = 0;
 
     private arcActive  : boolean = false;
-    private activeArc : [Node, Node, number, boolean] | undefined;
+    private activeArc : [Node, Node, number, boolean, boolean] | undefined;
 
     private nodeActive  : boolean = false;
     private activeNode : Node | undefined;
@@ -50,6 +50,9 @@ export class DisplayComponent implements OnDestroy {
 
     private infoActive  : boolean = false;
     private activeInfo : Node | undefined;
+
+    private cutActive: boolean = false;
+    private activeCut: Cut | undefined;
 
     /* methods - constructor */
 
@@ -101,8 +104,8 @@ export class DisplayComponent implements OnDestroy {
         }
     };
 
-    private getArc(inId : number) : [Node, Node, number, boolean] {
-        const arc : [Node, Node, number, boolean] |undefined = this._graph.arcs[inId];
+    private getArc(inId : number) : [Node, Node, number, boolean, boolean] {
+        const arc : [Node, Node, number, boolean, boolean] |undefined = this._graph.arcs[inId];
         if (arc !== undefined) {
             return arc;
         } else {
@@ -234,13 +237,13 @@ export class DisplayComponent implements OnDestroy {
                                     this.infoActive = false;
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.000: ' + 'deactivation of info failed - affiliated node is undefined');
-                                }
+                                };
                             } else if (this.activeNode.isHoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                                 /* to be removed - end*/
-                            }
+                            };
                             this.activeNode.active = false;
                             this.activeNode = this.getNode(targetInfo[1]);
                             this.activeNode.active = true;
@@ -251,20 +254,20 @@ export class DisplayComponent implements OnDestroy {
                             /* to be removed - end*/
                             this.checkMouseHover(this.activeNode);
                             redrawNeeded = true;
-                        }
+                        };
                     } else {
                         throw new Error('#cmp.dsp.pmd.001: ' + 'deactivation of node failed - node is undefined');
-                    }
+                    };
                 } else {
                     if (this.arcActive) {
                         if (this.activeArc !== undefined) {
-                            this.activeArc[3] = false;
+                            this.activeArc[4] = false;
                             this.activeArc = undefined;
                             this.arcActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmd.002: ' + 'deactivation of arc failed - arc is undefined');
-                        }
-                    }
+                        };
+                    };
                     this.nodeActive = true;
                     this.activeNode = this.getNode(targetInfo[1]);
                     this.activeNode.active = true;
@@ -275,7 +278,7 @@ export class DisplayComponent implements OnDestroy {
                     /* to be removed - end*/
                     this.checkMouseHover(this.activeNode);
                     redrawNeeded = true;
-                }
+                };
                 this.nodeHeld = true;
                 this.heldNode = this.activeNode;
                 break;
@@ -284,14 +287,14 @@ export class DisplayComponent implements OnDestroy {
                 if (this.arcActive) {
                     if (this.activeArc !== undefined) {
                         if (this.activeArc !== this.getArc(targetInfo[1])) {
-                            this.activeArc[3] = false;
+                            this.activeArc[4] = false;
                             this.activeArc = this.getArc(targetInfo[1]);
-                            this.activeArc[3] = true;
+                            this.activeArc[4] = true;
                             redrawNeeded = true;
-                        }
+                        };
                     } else {
                         throw new Error('#cmp.dsp.pmd.003: ' + 'deactivation of arc failed - arc is undefined');
-                    }
+                    };
                 } else {
                     if (this.nodeActive) {
                         if (this.activeNode !== undefined) {
@@ -305,25 +308,25 @@ export class DisplayComponent implements OnDestroy {
                                     this.infoActive = false;
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.004: ' + 'deactivation of info failed - affiliated node is undefined');
-                                }
+                                };
                             } else if (this.activeNode.isHoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                                 /* to be removed - end*/
-                            }
+                            };
                             this.activeNode.active = false;
                             this.activeNode = undefined;
                             this.nodeActive = false;
                         } else {
                             throw new Error('#cmp.dsp.pmd.005: ' + 'deactivation of node failed - node is undefined');
-                        }
-                    }
+                        };
+                    };
                     this.arcActive = true;
                     this.activeArc = this.getArc(targetInfo[1]);
-                    this.activeArc[3] = true;
+                    this.activeArc[4] = true;
                     redrawNeeded = true;
-                }
+                };
                 break;
             }
             case 'else' : {
@@ -339,37 +342,38 @@ export class DisplayComponent implements OnDestroy {
                                 this.infoActive = false;
                             } else {
                                 throw new Error('#cmp.dsp.pmd.006: ' + 'deactivation of info failed - affiliated node is undefined');
-                            }
+                            };
                         } else if (this.activeNode.isHoverActive) {
                             this.activeNode.hoverCancelled = true;
                             /* to be removed - start*/
                             // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
                             /* to be removed - end*/
-                        }
+                        };
                         this.activeNode.active = false;
                         this.activeNode = undefined;
                         this.nodeActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pmd.007: ' + 'deactivation of node failed - node is undefined');
-                    }
+                    };
                     redrawNeeded = true;
                 } else if (this.arcActive) {
                     if (this.activeArc !== undefined) {
-                        this.activeArc[3] = false;
+                        this.activeArc[4] = false;
                         this.activeArc = undefined;
                         this.arcActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pmd.008: ' + 'deactivation of arc failed - arc is undefined');
-                    }
+                    };
                     redrawNeeded = true;
-                }
+                };
                 break;
             }
-        }
+        };
         if (redrawNeeded) {
             this.redraw();
         };
-        if (targetInfo[0] !== 'node') {
+        if (!(this.nodeHeld)) {
+            this.cutActive = true;
             this.startCut(inEvent);
         };
     };
@@ -388,82 +392,119 @@ export class DisplayComponent implements OnDestroy {
                 this.draggedNode.y = inEvent.offsetY;
             } else {
                 throw new Error('#cmp.dsp.pmm.000: ' + 'drag of node failed - node is undefined');
-            }
+            };
             redrawNeeded = true;
         } else {
-            const targetInfo : ['node' | 'arc' | 'else', number] = this.getMouseTarget(inEvent);
-            switch (targetInfo[0]) {
-                case 'node' : {
-                    if (this.nodeActive) {
-                        if (this.activeNode !== undefined) {
-                            if (this.activeNode !== this.getNode(targetInfo[1])) {
-                                if (this.infoActive) {
-                                    if (this.activeInfo !== undefined) {
+            if (this.cutActive) {
+                this.drawCut(inEvent);
+            } else {
+                const targetInfo : ['node' | 'arc' | 'else', number] = this.getMouseTarget(inEvent);
+                switch (targetInfo[0]) {
+                    case 'node' : {
+                        if (this.nodeActive) {
+                            if (this.activeNode !== undefined) {
+                                if (this.activeNode !== this.getNode(targetInfo[1])) {
+                                    if (this.infoActive) {
+                                        if (this.activeInfo !== undefined) {
+                                            /* to be removed - start*/
+                                            // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
+                                            /* to be removed - end*/
+                                            this.activeInfo.infoActive = false;
+                                            this.activeInfo = undefined;
+                                            this.infoActive = false;
+                                        } else {
+                                            throw new Error('#cmp.dsp.pmm.001: ' + 'deactivation of info failed - affiliated node is undefined');
+                                        };
+                                    } else if (this.activeNode.isHoverActive) {
+                                        this.activeNode.hoverCancelled = true;
                                         /* to be removed - start*/
-                                        // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
+                                        // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
                                         /* to be removed - end*/
-                                        this.activeInfo.infoActive = false;
-                                        this.activeInfo = undefined;
-                                        this.infoActive = false;
-                                    } else {
-                                        throw new Error('#cmp.dsp.pmm.001: ' + 'deactivation of info failed - affiliated node is undefined');
-                                    }
-                                } else if (this.activeNode.isHoverActive) {
-                                    this.activeNode.hoverCancelled = true;
+                                    };
+                                    this.activeNode.active = false;
+                                    this.activeNode = this.getNode(targetInfo[1]);
+                                    this.activeNode.active = true;
+                                    this.activeNode.visited = true;
+                                    this.activeNode.hoverActive = true;
                                     /* to be removed - start*/
-                                    // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
+                                    // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
                                     /* to be removed - end*/
-                                }
-                                this.activeNode.active = false;
-                                this.activeNode = this.getNode(targetInfo[1]);
-                                this.activeNode.active = true;
-                                this.activeNode.visited = true;
-                                this.activeNode.hoverActive = true;
-                                /* to be removed - start*/
-                                // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
-                                /* to be removed - end*/
-                                this.checkMouseHover(this.activeNode);
-                                redrawNeeded = true;
-                            }
+                                    this.checkMouseHover(this.activeNode);
+                                    redrawNeeded = true;
+                                };
+                            } else {
+                                throw new Error('#cmp.dsp.pmm.002: ' + 'deactivation of node failed - node is undefined');
+                            };
                         } else {
-                            throw new Error('#cmp.dsp.pmm.002: ' + 'deactivation of node failed - node is undefined');
-                        }
-                    } else {
+                            if (this.arcActive) {
+                                if (this.activeArc !== undefined) {
+                                    this.activeArc[4] = false;
+                                    this.activeArc = undefined;
+                                    this.arcActive = false;
+                                } else {
+                                    throw new Error('#cmp.dsp.pmm.003: ' + 'deactivation of arc failed - arc is undefined');
+                                };
+                            };
+                            this.nodeActive = true;
+                            this.activeNode = this.getNode(targetInfo[1]);
+                            this.activeNode.active = true;
+                            this.activeNode.visited = true;
+                            this.activeNode.hoverActive = true;
+                            /* to be removed - start*/
+                            // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
+                            /* to be removed - end*/
+                            this.checkMouseHover(this.activeNode);
+                            redrawNeeded = true;
+                        };
+                        break;
+                    }
+                    case 'arc' : {
                         if (this.arcActive) {
                             if (this.activeArc !== undefined) {
-                                this.activeArc[3] = false;
-                                this.activeArc = undefined;
-                                this.arcActive = false;
+                                if (this.activeArc !== this.getArc(targetInfo[1])) {
+                                    this.activeArc[4] = false;
+                                    this.activeArc = this.getArc(targetInfo[1]);
+                                    this.activeArc[4] = true;
+                                    redrawNeeded = true;
+                                };
                             } else {
-                                throw new Error('#cmp.dsp.pmm.003: ' + 'deactivation of arc failed - arc is undefined');
-                            }
-                        }
-                        this.nodeActive = true;
-                        this.activeNode = this.getNode(targetInfo[1]);
-                        this.activeNode.active = true;
-                        this.activeNode.visited = true;
-                        this.activeNode.hoverActive = true;
-                        /* to be removed - start*/
-                        // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
-                        /* to be removed - end*/
-                        this.checkMouseHover(this.activeNode);
-                        redrawNeeded = true;
-                    }
-                    break;
-                }
-                case 'arc' : {
-                    if (this.arcActive) {
-                        if (this.activeArc !== undefined) {
-                            if (this.activeArc !== this.getArc(targetInfo[1])) {
-                                this.activeArc[3] = false;
-                                this.activeArc = this.getArc(targetInfo[1]);
-                                this.activeArc[3] = true;
-                                redrawNeeded = true;
-                            }
+                                throw new Error('#cmp.dsp.pmm.004: ' + 'deactivation of arc failed - arc is undefined');
+                            };
                         } else {
-                            throw new Error('#cmp.dsp.pmm.004: ' + 'deactivation of arc failed - arc is undefined');
-                        }
-                    } else {
+                            if (this.nodeActive) {
+                                if (this.activeNode !== undefined) {
+                                    if (this.infoActive) {
+                                        if (this.activeInfo !== undefined) {
+                                            /* to be removed - start*/
+                                            // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
+                                            /* to be removed - end*/
+                                            this.activeInfo.infoActive = false;
+                                            this.activeInfo = undefined;
+                                            this.infoActive = false;
+                                        } else {
+                                            throw new Error('#cmp.dsp.pmm.005: ' + 'deactivation of info failed - affiliated node is undefined');
+                                        };
+                                    } else if (this.activeNode.isHoverActive) {
+                                        this.activeNode.hoverCancelled = true;
+                                        /* to be removed - start*/
+                                        // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
+                                        /* to be removed - end*/
+                                    };
+                                    this.activeNode.active = false;
+                                    this.activeNode = undefined;
+                                    this.nodeActive = false;
+                                } else {
+                                    throw new Error('#cmp.dsp.pmm.006: ' + 'deactivation of node failed - node is undefined');
+                                };
+                            };
+                            this.arcActive = true;
+                            this.activeArc = this.getArc(targetInfo[1]);
+                            this.activeArc[4] = true;
+                            redrawNeeded = true;
+                        };
+                        break;
+                    }
+                    case 'else' : {
                         if (this.nodeActive) {
                             if (this.activeNode !== undefined) {
                                 if (this.infoActive) {
@@ -475,73 +516,39 @@ export class DisplayComponent implements OnDestroy {
                                         this.activeInfo = undefined;
                                         this.infoActive = false;
                                     } else {
-                                        throw new Error('#cmp.dsp.pmm.005: ' + 'deactivation of info failed - affiliated node is undefined');
-                                    }
+                                        throw new Error('#cmp.dsp.pmm.008: ' + 'deactivation of info failed - affiliated node is undefined');
+                                    };
                                 } else if (this.activeNode.isHoverActive) {
                                     this.activeNode.hoverCancelled = true;
                                     /* to be removed - start*/
                                     // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
                                     /* to be removed - end*/
-                                }
+                                };
                                 this.activeNode.active = false;
                                 this.activeNode = undefined;
                                 this.nodeActive = false;
                             } else {
-                                throw new Error('#cmp.dsp.pmm.006: ' + 'deactivation of node failed - node is undefined');
-                            }
-                        }
-                        this.arcActive = true;
-                        this.activeArc = this.getArc(targetInfo[1]);
-                        this.activeArc[3] = true;
-                        redrawNeeded = true;
+                                throw new Error('#cmp.dsp.pmm.009: ' + 'deactivation of node failed - node is undefined');
+                            };
+                            redrawNeeded = true;
+                        } else if (this.arcActive) {
+                            if (this.activeArc !== undefined) {
+                                this.activeArc[4] = false;
+                                this.activeArc = undefined;
+                                this.arcActive = false;
+                            } else {
+                                throw new Error('#cmp.dsp.pmm.010: ' + 'deactivation of arc failed - arc is undefined');
+                            };
+                            redrawNeeded = true;
+                        };
+                        break;
                     }
-                    break;
-                }
-                case 'else' : {
-                    if (this.nodeActive) {
-                        if (this.activeNode !== undefined) {
-                            if (this.infoActive) {
-                                if (this.activeInfo !== undefined) {
-                                    /* to be removed - start*/
-                                    // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
-                                    /* to be removed - end*/
-                                    this.activeInfo.infoActive = false;
-                                    this.activeInfo = undefined;
-                                    this.infoActive = false;
-                                } else {
-                                    throw new Error('#cmp.dsp.pmm.008: ' + 'deactivation of info failed - affiliated node is undefined');
-                                }
-                            } else if (this.activeNode.isHoverActive) {
-                                this.activeNode.hoverCancelled = true;
-                                /* to be removed - start*/
-                                // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
-                                /* to be removed - end*/
-                            }
-                            this.activeNode.active = false;
-                            this.activeNode = undefined;
-                            this.nodeActive = false;
-                        } else {
-                            throw new Error('#cmp.dsp.pmm.009: ' + 'deactivation of node failed - node is undefined');
-                        }
-                        redrawNeeded = true;
-                    } else if (this.arcActive) {
-                        if (this.activeArc !== undefined) {
-                            this.activeArc[3] = false;
-                            this.activeArc = undefined;
-                            this.arcActive = false;
-                        } else {
-                            throw new Error('#cmp.dsp.pmm.010: ' + 'deactivation of arc failed - arc is undefined');
-                        }
-                        redrawNeeded = true;
-                    }
-                    break;
-                }
-            }
-        }
+                };
+            };
+        };
         if (redrawNeeded) {
             this.redraw();
         };
-        this.drawCut(inEvent);
     };
 
     public processMouseUp(inEvent : MouseEvent) {
@@ -558,13 +565,15 @@ export class DisplayComponent implements OnDestroy {
                     this.heldNode.marked = !(this.heldNode.isMarked);
                 } else {
                     throw new Error('#cmp.dsp.pmu.000: ' + 'click of node failed - node is undefined');
-                }
-            }
+                };
+            };
             this.nodeHeld = false;
             this.heldNode = undefined;
             this.redraw();
-        }
-        this.endCut(inEvent);
+        } else if (this.cutActive) {
+            this.endCut(inEvent);
+            this.cutActive = false;
+        };
     };
 
     public processMouseLeave(inEvent : MouseEvent) {
@@ -580,7 +589,7 @@ export class DisplayComponent implements OnDestroy {
                 }
                 this.heldNode = undefined;
                 this.nodeHeld = false;
-            }
+            };
             if (this.activeNode !== undefined) {
                 if (this.infoActive) {
                     if (this.activeInfo !== undefined) {
@@ -592,22 +601,25 @@ export class DisplayComponent implements OnDestroy {
                         this.infoActive = false;
                     } else {
                         throw new Error('#cmp.dsp.pml.000: ' + 'deactivation of info failed - affiliated node is undefined');
-                    }
+                    };
                 } else if (this.activeNode.isHoverActive) {
                     this.activeNode.hoverCancelled = true;
                     /* to be removed - start*/
                     // console.log(' >> leave action set cancel to "true" for Node ' + this.activeNode.id);
                     /* to be removed - end*/
-                }
+                };
                 this.activeNode.active = false;
             } else {
                 throw new Error('#cmp.dsp.pml.001: ' + 'deactivation of node failed - node is undefined');
-            }
+            };
             this.activeNode = undefined;
             this.nodeActive = false;
             this.redraw();
-        }
-        this.endCut(inEvent);
+        };
+        if (this.cutActive) {
+            this.endCut(inEvent);
+            this.cutActive = false;
+        };
     };
 
     public prevent(inEvent: DragEvent): void {
@@ -616,43 +628,47 @@ export class DisplayComponent implements OnDestroy {
     };
 
     public startCut(inEvent: MouseEvent): void {
-        this._cut = new Cut(inEvent.offsetX, inEvent.offsetY, true);
+        this.activeCut = new Cut(inEvent.offsetX, inEvent.offsetY, true);
     };
 
     public drawCut(inEvent: MouseEvent): void {
-        if (!this._cut?.isDrawing) return;
-        const cutLine = this._svgService.createSvgCut(this._cut.tempX, this._cut.tempY, inEvent.offsetX, inEvent.offsetY);
-        this._cut.tempCutLines.push({ x1: this._cut.tempX, y1: this._cut.tempY, x2: inEvent.offsetX, y2: inEvent.offsetY });
+        if (!this.activeCut?.isDrawing) return;
+        const cutLine = this._svgService.createSvgCut(this.activeCut.tempX, this.activeCut.tempY, inEvent.offsetX, inEvent.offsetY);
+        this.activeCut.tempCutLines.push({ x1: this.activeCut.tempX, y1: this.activeCut.tempY, x2: inEvent.offsetX, y2: inEvent.offsetY });
         this.drawingArea?.nativeElement.appendChild(cutLine);
-        this._cut.tempX = inEvent.offsetX;
-        this._cut.tempY = inEvent.offsetY;
+        this.activeCut.tempX = inEvent.offsetX;
+        this.activeCut.tempY = inEvent.offsetY;
     };
 
     public endCut(inEvent: MouseEvent): void {
-        if (!this._cut?.isDrawing) return;
-        this._cut.isDrawing = false;
+        if (!this.activeCut?.isDrawing) return;
+        this.activeCut.isDrawing = false;
         if (this._graph?.arcs) {
             for (const arc of this._graph.arcs) {
                 const existingLine = { x1: arc[0].x, y1: arc[0].y, x2: arc[1].x, y2: arc[1].y };
-                for (const cutLine of this._cut.tempCutLines) {
-                    if (this._cut.cutArcs.some(cutArc => cutArc[0].id == arc[0].id && cutArc[1].id == arc[1].id)) {
+                for (const cutLine of this.activeCut.tempCutLines) {
+                    if (this.activeCut.cutArcs.some(cutArc => cutArc[0].id == arc[0].id && cutArc[1].id == arc[1].id)) {
                         continue;
-                    }
-                    if (this._cut.checkIntersection(cutLine, existingLine)) {
-                        this._cut.cutArcs.push(arc);
-                    }
-                }
-            }
-            // hier muss dann der Inductive Miner aufgerufen werden zur Prüfung des Cuts
-            if (this._cut.cutArcs.length > 0) {
+                    };
+                    if (this.activeCut.checkIntersection(cutLine, existingLine)) {
+                        this.activeCut.cutArcs.push(arc);
+                    };
+                };
+            };
+            // TODO - call inductive miner here
+            if (this.activeCut.cutArcs.length > 0) {
                 console.log('Folgende Kanten wurden geschnitten: ')
-                this._cut.cutArcs.forEach(cutArc => {
-                    console.log(cutArc);
-                });
-            }
-            this._cut.removeSvgCuts(this.drawingArea?.nativeElement)
-            this._cut = undefined;
-        }
+                this.activeCut.cutArcs.forEach(
+                    cutArc => {
+                        cutArc[4] = true;
+                        console.log(cutArc);
+                    }
+                );
+                this.redraw();
+            };
+            this.activeCut.removeCutSvgs(this.drawingArea?.nativeElement)
+            this.activeCut = undefined;
+        };
     };
 
     private fetchFile(inLink: string): void {
@@ -730,28 +746,28 @@ export class DisplayComponent implements OnDestroy {
         if (this.drawingArea === undefined) {
             console.debug('drawing area not ready yet')
             return;
-        }
+        };
         this.clearDrawingArea();
         const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
         for (const arc of arcs) {
             this.drawingArea.nativeElement.appendChild(arc);
-        }
+        };
         const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
         for (const node of nodes) {
             this.drawingArea.nativeElement.appendChild(node);
-        }
+        };
         const infos : SVGElement[] = this._svgService.createSvgInfos(this._graph);
         for (const info of infos) {
             this.drawingArea.nativeElement.appendChild(info);
-        }
+        };
         if (!(this.dragInProgress)) {
             /* for improving performance, trace-elements are not loaded while a node is being dragged around the canvas,
                 they are rendered again after the drag has ended */
             const traces : SVGElement[] = this._svgService.createSvgTraces(this._graph, this._log, this._max);
             for (const trace of traces) {
                 this.drawingArea.nativeElement.appendChild(trace);
-            }
-        }
+            };
+        };
     };
 
     private clearDrawingArea(): void {

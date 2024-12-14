@@ -33,7 +33,7 @@ export class SvgService {
     private readonly svgActiveNodeFill : CssColorName = 'Lime';
     private readonly svgVisitedNodeStroke : CssColorName = 'Blue';
     private readonly svgVisitedNodeFill : CssColorName = 'Aqua';
-    private readonly svgMarkedNodeStroke : CssColorName = 'Maroon';
+    private readonly svgMarkedNodeStroke : CssColorName = 'Fuchsia';
     private readonly svgMarkedArcColor : CssColorName = 'Fuchsia';
     private readonly svgDefaultTraceStroke : CssColorName = 'Olive';
     private readonly svgDefaultTraceFill : CssColorName = 'Yellow';
@@ -82,7 +82,7 @@ export class SvgService {
         let arcId : number = 0;
         for (const arc of inGraph.arcs) {
             if (arc !== undefined) {
-                arcSvgArray.push(this.createSvgArc([arc[0], arc[1]], arc[3], arcId));
+                arcSvgArray.push(this.createSvgArc([arc[0], arc[1]], arc[3], arc[4], arcId));
             } else {
                 /* skip undefined arc */
             };
@@ -90,18 +90,6 @@ export class SvgService {
         };
         return arcSvgArray;
     };
-
-    public createSvgCut(startX: number, startY: number, endX: number, endY: number): SVGElement {
-        const svg: SVGElement = this.createSvgElement('line');
-        svg.setAttribute('x1', `${startX}`);
-        svg.setAttribute('y1', `${startY}`);
-        svg.setAttribute('x2', `${endX}`);
-        svg.setAttribute('y2', `${endY}`);
-        svg.setAttribute('stroke-width', `2`);
-        svg.setAttribute('stroke', 'red');
-        svg.setAttribute('customType', 'cut');
-        return svg;
-    }
 
     public createSvgInfos(inGraph : Graph) : Array<SVGElement> {
         const infoSvgArray: Array<SVGElement> = [];
@@ -131,13 +119,26 @@ export class SvgService {
             };
         };
         return traceSvgArray;
-    }
+    };
+
+    public createSvgCut(startX: number, startY: number, endX: number, endY: number): SVGElement {
+        const svg: SVGElement = this.createSvgElement('line');
+        svg.setAttribute('customType', 'cut');
+        svg.setAttribute('x1', `${startX}`);
+        svg.setAttribute('y1', `${startY}`);
+        svg.setAttribute('x2', `${endX}`);
+        svg.setAttribute('y2', `${endY}`);
+        svg.setAttribute('stroke-width', '2');
+        svg.setAttribute('stroke', 'red');
+        return svg;
+    };
 
     private createSvgNode(inNode : Node, inNodeId : number) : SVGElement {
         let svg : SVGElement;
         switch (inNode.type) {
             case 'support' : {
                 svg = this.createSvgElement('rect');
+                svg.setAttribute('customType', 'support-node');
                 svg.setAttribute('id', ('support_' + inNodeId));
                 svg.setAttribute('x', `${inNode.x - this.svgDefaultNodeRadius + 1}`);
                 svg.setAttribute('y', `${inNode.y - this.svgDefaultNodeRadius + 1}`);
@@ -148,6 +149,7 @@ export class SvgService {
             }
             case 'event' : {
                 svg = this.createSvgElement('rect');
+                svg.setAttribute('customType', 'event-node');
                 svg.setAttribute('id', ('event_' + inNodeId));
                 svg.setAttribute('x', `${inNode.x - this.svgDefaultNodeRadius + 1}`);
                 svg.setAttribute('y', `${inNode.y - this.svgDefaultNodeRadius + 1}`);
@@ -158,15 +160,16 @@ export class SvgService {
             }
             case 'place' : {
                 svg = this.createSvgElement('circle');
+                svg.setAttribute('customType', 'place-node');
                 svg.setAttribute('id', ('place_' + inNodeId));
                 svg.setAttribute('cx', `${inNode.x}`);
                 svg.setAttribute('cy', `${inNode.y}`);
-                //svg.setAttribute('r', `${this.svgDefaultRadius}`);
                 svg.setAttribute('r', `${this.svgDefaultNodeRadius}`);
                 break;
             }
             case 'transition' : {
                 svg = this.createSvgElement('rect');
+                svg.setAttribute('customType', 'transition-node');
                 svg.setAttribute('id', ('transition_' + inNodeId));
                 svg.setAttribute('x', `${inNode.x - this.svgDefaultNodeRadius + 1}`);
                 svg.setAttribute('y', `${inNode.y - this.svgDefaultNodeRadius + 1}`);
@@ -203,14 +206,28 @@ export class SvgService {
         return(svg);
     };
 
-    private createSvgArc(inNodes: [Node, Node], inMarking: boolean, inArcId: number): SVGElement {
+    private createSvgArc(inNodes: [Node, Node], inBiDirectional: boolean, inMarking: boolean, inArcId: number): SVGElement {
         const svg: SVGElement = this.createSvgElement('line');
+        svg.setAttribute('customType', 'arc');
         svg.setAttribute('id', ('arc_' + inArcId));
-        svg.setAttribute('x1', `${inNodes[0].x}`);
-        svg.setAttribute('y1', `${inNodes[0].y}`);
-        svg.setAttribute('x2', `${inNodes[1].x}`);
-        svg.setAttribute('y2', `${inNodes[1].y}`);
         svg.setAttribute('stroke-width', `${this.svgDefaultStrokeWidth}`);
+        let arcVectorX : number = ((inNodes[1].x) - (inNodes[0].x));
+        let arcVectorY : number = ((inNodes[1].y) - (inNodes[0].y));
+        let arcVectorLength : number = (Math.sqrt((arcVectorX * arcVectorX) + (arcVectorY * arcVectorY)));
+        let offVectorLength : number = ((this.svgDefaultNodeRadius / 4) / arcVectorLength);
+        let offsetX : number = (Math.floor(offVectorLength * arcVectorY * (-1)));
+        let offsetY : number = (Math.floor(offVectorLength * arcVectorX));
+        if (inBiDirectional) {
+            svg.setAttribute('x1', `${(inNodes[0].x + offsetX)}`);
+            svg.setAttribute('y1', `${(inNodes[0].y + offsetY)}`);
+            svg.setAttribute('x2', `${(inNodes[1].x + offsetX)}`);
+            svg.setAttribute('y2', `${(inNodes[1].y + offsetY)}`);
+        } else {
+            svg.setAttribute('x1', `${inNodes[0].x}`);
+            svg.setAttribute('y1', `${inNodes[0].y}`);
+            svg.setAttribute('x2', `${inNodes[1].x}`);
+            svg.setAttribute('y2', `${inNodes[1].y}`);
+        };
         if (inMarking) {
             svg.setAttribute('stroke', this.svgMarkedArcColor);
             svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
@@ -221,6 +238,34 @@ export class SvgService {
         this.arrowSVG.appendChild(svg);
         return svg;
     };
+
+    // private createSvgArc(inNodes: [Node, Node], inBiDirectional: boolean, inMarking: boolean, inArcId: number): SVGElement {
+    //     const svg: SVGElement = this.createSvgElement('path');
+    //     svg.setAttribute('customType', 'arc');
+    //     svg.setAttribute('id', ('arc_' + inArcId));
+    //     svg.setAttribute('fill', 'Transparent');
+    //     svg.setAttribute('stroke-width', `${this.svgDefaultStrokeWidth}`);
+    //     let arcVectorX : number = ((inNodes[1].x) - (inNodes[0].x));
+    //     let arcVectorY : number = ((inNodes[1].y) - (inNodes[0].y));
+    //     let halfX : number = ((arcVectorX) / (2));
+    //     let halfY : number = ((arcVectorY) / (2));
+    //     let controlX : number = ((inNodes[0].x) + (halfX) - (halfY));
+    //     let controlY : number = ((inNodes[0].y) + (halfY) + (halfX));
+    //     if (inBiDirectional) {
+    //         svg.setAttribute('d', `M ${inNodes[0].x} ${inNodes[0].y} Q ${controlX} ${controlY} ${inNodes[1].x} ${inNodes[1].y}`);
+    //     } else {
+    //         svg.setAttribute('d', `M ${inNodes[0].x} ${inNodes[0].y} ${inNodes[1].x} ${inNodes[1].y}`);
+    //     };
+    //     if (inMarking) {
+    //         svg.setAttribute('stroke', this.svgMarkedArcColor);
+    //         svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
+    //     } else {
+    //         svg.setAttribute('stroke', this.svgDefaultArcColor);
+    //         svg.setAttribute('marker-end', 'url(#arrow_head_default)');
+    //     };
+    //     this.arrowSVG.appendChild(svg);
+    //     return svg;
+    // };
 
     private createSvgInfo(inNode : Node, inNodeId : number) : SVGElement {
         let x : number;
@@ -258,7 +303,7 @@ export class SvgService {
         const text2 = this.createSvgElement('text');
         const text3 = this.createSvgElement('text');
         const text4 = this.createSvgElement('text');
-        // svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        svg.setAttribute('customType', 'node-info-panel');
         if (this._infoOverwrite) {
             svg.setAttribute('visibility', 'visible');
         } else  if (inNode.isInfoActive) {
@@ -345,6 +390,7 @@ export class SvgService {
 
     private createSvgTrace(inGraph : Graph, inTrace : number[], inAnimationDelay : number, inAnimationDuration : number) : SVGElement {
         const svg : SVGElement = this.createSvgElement('circle');
+        svg.setAttribute('customType', 'trace-animation');
         svg.setAttribute('cx', '0');
         svg.setAttribute('cy', '0');
         svg.setAttribute('r', `${this.svgDefaultTraceRadius}`);

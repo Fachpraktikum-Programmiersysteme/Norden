@@ -1,4 +1,5 @@
 import {Component, OnDestroy} from '@angular/core';
+// import {MatFabButton} from "@angular/material/button";
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
@@ -13,6 +14,7 @@ import {SvgService} from '../../services/svg.service';
     styleUrls: ['./traces-button.component.css'],
     standalone: true,
     imports: [
+        // MatFabButton,
         MatIconModule,
         MatTooltipModule
     ]
