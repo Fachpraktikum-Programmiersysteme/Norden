@@ -3,7 +3,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
-
+import { ToastService } from '../../services/toast/toast.service';
 import {DisplayService} from '../../services/display.service';
 
 @Component({
@@ -27,7 +27,8 @@ export class DeleteButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService
+        private _displayService : DisplayService,
+        private toastService: ToastService
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
@@ -61,19 +62,23 @@ export class DeleteButtonComponent implements OnDestroy {
             return 'delete currently displayed graph';
         };
     };
-    
+
     /* methods - other */
 
     private prevent(inEvent: Event) {
         inEvent.preventDefault();
         inEvent.stopPropagation();
     };
+    triggerToast() {
+        this.toastService.showToast('Delete button clicked', 'success');
+    }
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
         console.log('delete button clicked - event : ' + inEvent);
         /* to be removed - end */
         this._displayService.deleteData();
+        this.triggerToast();
     };
 
-};
+}
