@@ -14,12 +14,12 @@ import {ToastService} from "../../services/toast/toast.service";
 export class ExampleButtonComponent {
 
     public static readonly META_DATA_CODE = 'drag-file-location';
+    toastMessages: Array<{ message: string, type: string, duration: number }> = [];
 
     @Input() title: string | undefined;
 
-    constructor(
-        private toastService: ToastService
-    ) {}
+
+    constructor(private toastService: ToastService) { }
 
     prevent(e: Event) {
         e.preventDefault();
@@ -38,12 +38,12 @@ export class ExampleButtonComponent {
         target.classList.remove('mouse-hover');
     }
 
+    triggerToast() {
+        this.toastService.showToast('Dies ist eine erfolgreiche Nachricht!', 'success');
+    }
+
     processMouseClick(e: MouseEvent) {
-        this.toastService.showToast({
-            text: '`Template button "${this.title}" clicked`!',
-            type: 'success',
-            duration: 3000,
-        });
+        this.triggerToast()
     }
 
 }

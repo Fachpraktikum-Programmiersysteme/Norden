@@ -6,6 +6,7 @@ import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
 import {Graph} from './classes/graph-representation/graph';
+import { ToastService } from './services/toast/toast.service';
 
 @Component({
     selector: 'app-root',
@@ -17,17 +18,24 @@ export class AppComponent {
     /* attributes */
 
     public textAreaFc: FormControl;
+    toastMessages: Array<{ message: string, type: string, duration: number }> = [];
 
     /* methods - constructor */
-
     constructor(
         private _txtParserService: TextParserService,
         private _xesParserService: XesParserService,
         private _jsonParserService: JsonParserService,
-        private _displayService: DisplayService
+        private _displayService: DisplayService,
+        private toastService: ToastService
     ) {
         this.textAreaFc = new FormControl();
         this.textAreaFc.disable();
+        this.toastService.toast$.subscribe(toast => {
+            this.toastMessages.push(toast);
+            setTimeout(() => {
+                this.toastMessages.shift(); // Entfernt den ältesten Toast
+            }, toast.duration);
+        });
     };
 
     /* methods - other */
@@ -56,5 +64,5 @@ export class AppComponent {
             this._displayService.display(parsedContent);
         };
     };
-    
+
 };

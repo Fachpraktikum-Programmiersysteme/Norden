@@ -1,29 +1,23 @@
 import { Injectable } from '@angular/core';
-
-export interface ToastMessage {
-    text: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-    duration?: number;
-}
+import { Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
+
 export class ToastService {
-    private toasts: ToastMessage[] = [];
 
-    getToasts() {
-        return this.toasts;
-    }
+    private toastSubject = new Subject<{
+        message: string,
+        type: 'success' | 'error' | 'info' | 'warning',
+        duration: number }>();
 
-    showToast(message: ToastMessage) {
-        this.toasts.push(message);
-        if (message.duration) {
-            setTimeout(() => this.dismissToast(message), message.duration);
-        }
-    }
+    toast$ = this.toastSubject.asObservable();
 
-    dismissToast(message: ToastMessage) {
-        this.toasts = this.toasts.filter((toast) => toast !== message);
+    showToast(
+        message: string,
+        type: 'success' | 'error' | 'info' = 'info',
+        duration: number = 3000) {
+        this.toastSubject.next({ message, type, duration });
     }
 }

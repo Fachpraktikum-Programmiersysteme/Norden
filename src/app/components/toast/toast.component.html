@@ -1,10 +1,7 @@
-<div class="toast-container">
-    <div
-        *ngFor="let toast of toasts"
-        class="toast"
-        [ngClass]="toast.type"
-        (click)="dismiss(toast)"
-    >
-        {{ toast.text }}
+<div class="toast" [ngClass]="[type]" *ngIf="message">
+    <div class="toast-content">
+        <span class="message">{{ message }}</span>
+        <button class="close-btn" (click)="close()">
+        </button>
     </div>
 </div>
