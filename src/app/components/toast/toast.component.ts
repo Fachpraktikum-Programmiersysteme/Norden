@@ -11,9 +11,9 @@ import {Component, Input, OnInit, OnDestroy, NgModule} from '@angular/core';
 
 export class ToastComponent implements OnInit, OnDestroy {
 
-    @Input() message: string = '';
+    @Input() message: string = "";
     @Input() duration: number = 3000; // default-value 3 seconds
-    @Input() type: 'success' | 'error' | 'info' = 'info'; // Toast-Typ: success, error oder info
+    @Input() type: "success" | "error" | "warning" | "info" = "info"; // Toast-Typ: success, error warning or info
 
     private timer: any;
 

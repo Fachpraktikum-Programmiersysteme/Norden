@@ -9,7 +9,7 @@ export class ToastService {
 
     private toastSubject = new Subject<{
         message: string,
-        type: 'success' | 'error' | 'info' | 'warning',
+        type: "success" | "error" | "info" | "warning",
         duration: number }>();
 
     toast$ = this.toastSubject.asObservable();

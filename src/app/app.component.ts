@@ -18,7 +18,10 @@ export class AppComponent {
     /* attributes */
 
     public textAreaFc: FormControl;
-    toastMessages: Array<{ message: string, type: string, duration: number }> = [];
+    toastMessages: Array<{
+        message: string,
+        type: "success" | "error" | "warning"| "info",
+        duration: number }> = [];
 
     /* methods - constructor */
     constructor(
@@ -33,7 +36,7 @@ export class AppComponent {
         this.toastService.toast$.subscribe(toast => {
             this.toastMessages.push(toast);
             setTimeout(() => {
-                this.toastMessages.shift(); // Entfernt den ältesten Toast
+                this.toastMessages.shift(); // removes oldest toast
             }, toast.duration);
         });
     };

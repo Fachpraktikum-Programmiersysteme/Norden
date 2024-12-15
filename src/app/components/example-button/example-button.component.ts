@@ -43,6 +43,7 @@ export class ExampleButtonComponent {
     }
 
     processMouseClick(e: MouseEvent) {
+        console.log(`Template button "${this.title}" clicked`, e);
         this.triggerToast()
     }
 
