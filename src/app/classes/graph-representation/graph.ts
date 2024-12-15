@@ -11,7 +11,7 @@ export class Graph {
     private _placeCount : number;
     private _transitionCount : number;
 
-    private _arcs : Array<[Node, Node, number, boolean]>;
+    private _arcs : Array<[Node, Node, number, boolean, boolean]>;
     private _arcCount : number;
 
     private _initialState : boolean;
@@ -63,7 +63,7 @@ export class Graph {
         return this._transitionCount;
     };
 
-    public get arcs(): Array<[Node, Node, number, boolean]> {
+    public get arcs(): Array<[Node, Node, number, boolean, boolean]> {
         return this._arcs;
     };
 
@@ -209,7 +209,17 @@ export class Graph {
                     throw new Error('#cls.grp.ada.000: ' + 'arc addition failed - impossible error');
                 };
             } else {
-                this._arcs.push([inSource, inTarget, 1, false]);
+                const reverseExists : [boolean, number?] = this.checkArc(inTarget, inSource);
+                if (reverseExists[0]) {
+                    if (reverseExists[1] !== undefined) {
+                        this._arcs[reverseExists[1]][3] = true;
+                    } else {
+                        throw new Error('#cls.grp.ada.001: ' + 'arc addition failed - impossible error');
+                    };
+                    this._arcs.push([inSource, inTarget, 1, true, false]);
+                } else {
+                    this._arcs.push([inSource, inTarget, 1, false, false]);
+                };
                 this._arcCount++;
             };
         } else {
@@ -220,10 +230,20 @@ export class Graph {
                         this._arcs[arcExists[1]][2] = this._arcs[arcExists[1]][2] + inWeight;
                         this._arcCount = this._arcCount + inWeight;
                     } else {
-                        throw new Error('#cls.grp.ada.001: ' + 'arc addition failed - impossible error');
+                        throw new Error('#cls.grp.ada.002: ' + 'arc addition failed - impossible error');
                     };
                 } else {
-                    this._arcs.push([inSource, inTarget, inWeight, false]);
+                    const reverseExists : [boolean, number?] = this.checkArc(inTarget, inSource);
+                    if (reverseExists[0]) {
+                        if (reverseExists[1] !== undefined) {
+                            this._arcs[reverseExists[1]][3] = true;
+                        } else {
+                            throw new Error('#cls.grp.ada.003: ' + 'arc addition failed - impossible error');
+                        };
+                        this._arcs.push([inSource, inTarget, inWeight, true, false]);
+                    } else {
+                        this._arcs.push([inSource, inTarget, inWeight, false, false]);
+                    };
                     this._arcCount = this._arcCount + inWeight;
                 };
             } else if (inWeight === 0) {
@@ -246,28 +266,40 @@ export class Graph {
                         let arcExists : [boolean, number?] = this.checkArc(inSource, inTarget);
                         if (arcExists[0]) {
                             if (arcExists[1] !== undefined) {
+                                if (this._arcs[arcExists[1]][3] === true) {
+                                    const reverseExists : [boolean, number?] = this.checkArc(inTarget, inSource);
+                                    if (reverseExists[0]) {
+                                        if (reverseExists[1] !== undefined) {
+                                            this._arcs[reverseExists[1]][3] = false;
+                                        } else {
+                                            throw new Error('#cls.grp.rma.000: ' + 'arc deletion failed - impossible error');
+                                        };
+                                    } else {
+                                        throw new Error('#cls.grp.rma.001: ' + 'arc deletion failed - arc to be deleted states that a reverse arc exists, but no such arc was found');
+                                    };
+                                };
                                 const foundArcs = this._arcs[arcExists[1]][2];
                                 this._arcs[arcExists[1]][2] = 0;
                                 this._arcCount = (this._arcCount - foundArcs);
                                 this._arcs.splice(arcExists[1], 1);
                                 return foundArcs;
                             } else {
-                                throw new Error('#cls.grp.ada.000: ' + 'arc deletion failed - impossible error');
+                                throw new Error('#cls.grp.rma.002: ' + 'arc deletion failed - impossible error');
                             };
                         } else {
-                            throw new Error('#cls.grp.rma.001: ' + 'arc deletion failed - no arc exists from source node (' + inSource.id + ') to target node (' + inTarget.id + ')');
+                            throw new Error('#cls.grp.rma.003: ' + 'arc deletion failed - no arc exists from source node (' + inSource.id + ') to target node (' + inTarget.id + ')');
                         };
                     } else {
-                        throw new Error('#cls.grp.rma.002: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
+                        throw new Error('#cls.grp.rma.004: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
                     };
                 } else {
-                    throw new Error('#cls.grp.rma.003: ' + 'arc deletion failed - given index of source node (' + inSource.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
+                    throw new Error('#cls.grp.rma.005: ' + 'arc deletion failed - given index of source node (' + inSource.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
                 };
             } else {
-                throw new Error('#cls.grp.rma.004: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is less than zero');
+                throw new Error('#cls.grp.rma.006: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is less than zero');
             };
         } else {
-            throw new Error('#cls.grp.rma.005: ' + 'arc deletion failed - given index of source node  (' + inSource.id + ') is less than zero');
+            throw new Error('#cls.grp.rma.007: ' + 'arc deletion failed - given index of source node  (' + inSource.id + ') is less than zero');
         };
     };
 
