@@ -6,21 +6,21 @@ export class Node {
     private readonly _type : 'support' | 'event' | 'place' | 'transition';
     private readonly _label : string;
 
+    private _dfg : number | undefined;
+
     private _x_coordinate : number;
     private _y_coordinate : number;
 
     private _svgNodeElement : SVGElement | undefined;
     private _svgInfoElement : SVGElement | undefined;
 
-    private _active : boolean;
     private _marked : boolean;
+    private _active : boolean;
     private _visited : boolean;
 
     private _infoActive : boolean;
     private _hoverActive : boolean;
     private _hoverCancelled : boolean;
-    // private _beingClicked : boolean;
-    // private _beingDragged : boolean;
 
     /* methods : constructor */
 
@@ -28,26 +28,26 @@ export class Node {
         inId : number, 
         inType : 'support' | 'event' | 'place' | 'transition', 
         inLabel : string, 
-        inX : number, 
-        inY : number,
-        inNodeSVG? : SVGElement,
+        inDFG : number | undefined, 
+        inX : number,  
+        inY : number, 
+        inNodeSVG? : SVGElement, 
         inInfoSVG? : SVGElement
     ) {
         this._id = inId;
         this._type = inType;
         this._label = inLabel;
+        this._dfg = inDFG;
         this._x_coordinate = inX;
         this._y_coordinate = inY;
         this._svgNodeElement = inNodeSVG;
         this._svgInfoElement = inInfoSVG;
-        this._active = false;
         this._marked = false;
+        this._active = false;
         this._visited = false;
         this._infoActive = false;
         this._hoverActive = false;
         this._hoverCancelled = false;
-        // this._beingClicked = false;
-        // this._beingDragged = false;
     };
 
     /* methods : getters */
@@ -62,6 +62,10 @@ export class Node {
 
     public get label() : string {
         return this._label;
+    };
+
+    public get dfg() : number | undefined {
+        return this._dfg;
     };
 
     public get x() : number {
@@ -110,6 +114,10 @@ export class Node {
     
     /* methods : setters */
 
+    public set dfg(inDFG : number | undefined) {
+        this._dfg = inDFG;
+    };
+
     public set x(inX : number) {
         this._x_coordinate = inX;
     };
@@ -149,112 +157,12 @@ export class Node {
 
     /* methods : other */
 
-    /* to be removed - the following comments may all be deleted once the new display mechanism using the "display.component" has been approved*/
-
     public registerNodeSvg(inSVG: SVGElement) {
         this._svgNodeElement = inSVG;
-        // this._svgElement.onmouseenter = () => {
-        //     this.processMouseEnter();
-        // };
-        // this._svgElement.onmouseleave = () => {
-        //     this.processMouseLeave();
-        // };
-        // this._svgElement.onmousedown = () => {
-        //     this.processMouseDown();
-        // };
-        // this._svgElement.onmousemove = (inEvent : MouseEvent) => {
-        //     this.processMouseMove(inEvent.offsetX, inEvent.offsetY);
-        // };
-        // this._svgElement.onmouseup = () => {
-        //     this.processMouseUp();
-        // };
     };
 
     public registerInfoSvg(inSVG: SVGElement) {
         this._svgInfoElement = inSVG;
     };
-
-    // private processMouseEnter() : void  {
-    //     if (this._svgElement === undefined) {
-    //         return;
-    //     };
-    //     if (!this.active) {
-    //         this.active = true;
-    //     };
-    //     if (!this.visited) {
-    //         this.visited = true;
-    //     };
-    //     if (!this.marked) {
-    //         this._svgElement.setAttribute('stroke', 'green');
-    //     };
-    //     this._svgElement.setAttribute('fill', 'lime');
-    // };
-
-    // private processMouseLeave() : void  {
-    //     if (this._svgElement === undefined) {
-    //         return;
-    //     };
-    //     if (this.active) {
-    //         this.active = false;
-    //     };
-    //     if (!this.marked) {
-    //         this._svgElement.setAttribute('stroke', 'black');
-    //     };
-    //     this._svgElement.setAttribute('fill', 'cyan');
-    //     this._beingClicked = false;
-    // };
-
-    // private processMouseDown() : void {
-    //     if (this._svgElement === undefined) {
-    //         return;
-    //     };
-    //     this._beingClicked = true;
-    // };
-
-    // private processMouseMove(inX : number, inY : number) : void {
-    //     if (this._svgElement === undefined) {
-    //         return;
-    //     };
-    //     if (this._beingClicked) {
-    //         this._beingDragged = true;
-    //         /* to be removed - start*/
-    //         console.log();
-    //         console.log('node element handles MouseMoveEvent');
-    //         console.log(' >> old position : (' + this._x_coordinate + '|' + this._y_coordinate + ')');
-    //         /* to be removed - end*/
-    //         this._x_coordinate = inX;
-    //         this._y_coordinate = inY;
-    //         /* to be removed - start*/
-    //         console.log(' >> new position : (' + this._x_coordinate + '|' + this._y_coordinate + ')');
-    //         console.log();
-    //         /* to be removed - end*/
-    //     };
-    // };
-
-    // private processMouseUp() : void {
-    //     if (this._svgElement === undefined) {
-    //         return;
-    //     }
-    //     if (!this._beingClicked) {
-    //         return;
-    //     };
-    //     if (this._beingDragged) {
-    //         this._beingDragged = false;
-    //     } else {
-    //         switch (this.marked) {
-    //             case false : {
-    //                 this._svgElement.setAttribute('stroke', 'orange');
-    //                 this.marked = true;
-    //                 break;
-    //             }
-    //             case true : {
-    //                 this._svgElement.setAttribute('stroke', 'green');
-    //                 this.marked = false;
-    //                 break;
-    //             };
-    //         };
-    //     };
-    //     this._beingClicked = false;
-    // };
 
 };

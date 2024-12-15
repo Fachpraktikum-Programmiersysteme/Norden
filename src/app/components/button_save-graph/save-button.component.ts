@@ -60,7 +60,7 @@ export class SaveButtonComponent implements OnDestroy {
 
     public get disabled() : boolean {
         return this._disabled;
-    }
+    };
 
     /* methods - other */
 
@@ -75,7 +75,7 @@ export class SaveButtonComponent implements OnDestroy {
         } else {
             return 'save currently displayed graph';
         }
-    }
+    };
 
     processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
@@ -91,7 +91,7 @@ export class SaveButtonComponent implements OnDestroy {
             fileName = (fileName + '_' + this._outId + '_PetriNet');
         } else {
             fileName = (fileName + '_' + this._outId + '_Graph');
-        }
+        };
         this._fileWriterService.writeFile(fileName, currentGraph)
         this._outId++;
     };

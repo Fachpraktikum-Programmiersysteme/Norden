@@ -1,4 +1,5 @@
 import {Node} from '../../classes/graph-representation/node';
+import {Arc} from './arc';
 
 export class Cut {
 
@@ -8,7 +9,7 @@ export class Cut {
     private _tempY: number = 0;
     private _isDrawing = false;
     private _tempCutLines: Array<{ x1: number; y1: number; x2: number; y2: number; }> = [];
-    private _cutArcs: Array<[Node, Node, number, boolean, boolean]> = [];
+    private _cutArcs: Array<Arc> = [];
 
     /* methods : constructor */
 
@@ -40,7 +41,7 @@ export class Cut {
         return this._tempCutLines;
     };
 
-    public get cutArcs(): Array<[Node, Node, number, boolean, boolean]> {
+    public get cutArcs(): Array<Arc> {
         return this._cutArcs;
     };
 

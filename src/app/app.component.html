@@ -25,6 +25,20 @@
     <div 
         class="flexRowAlignSpaceEvenlyStart"
     >
+        <mat-form-field 
+            appearance="outline" 
+            class="outputContainer"> 
+            <mat-label> 
+                Event Log
+            </mat-label>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize 
+                cdkAutosizeMinRows="3" 
+                cdkAutosizeMaxRows="7" 
+                [formControl]="logAreaFc">
+            </textarea>
+        </mat-form-field>    
         <text-input 
             class="inputConatiner" 
             (textData)="processSourceChange($event)"
@@ -33,26 +47,38 @@
         <div 
             class="flexColumnAlignStartStretch"
         >
-        <save-button>
-        </save-button>
-        <div 
-        class="gap_40px"
-        >
-        </div>
-        <delete-button>
-        </delete-button>
+            <save-button>
+            </save-button>
+            <div 
+            class="gap_40px"
+            >
+            </div>
+            <delete-button>
+            </delete-button>
         </div>
         <div 
             class="flexColumnAlignStartStretch"
         >
-        <info-button>
-        </info-button>
-        <div 
-        class="gap_40px"
-        >
+            <info-button>
+            </info-button>
+            <div 
+            class="gap_40px"
+            >
+            </div>
+            <traces-button>
+            </traces-button>
         </div>
-        <traces-button>
-        </traces-button>
+        <div 
+            class="flexColumnAlignStartStretch"
+        >
+            <mode-button>
+            </mode-button>
+        </div>
+        <div 
+            class="flexColumnAlignStartStretch"
+        >
+            <submit-button>
+            </submit-button>
         </div>
         <mat-form-field 
             appearance="outline" 
@@ -68,43 +94,10 @@
                 [formControl]="fileAreaFc">
             </textarea>
         </mat-form-field>
-        <mat-form-field 
-            appearance="outline" 
-            class="outputContainer"> 
-            <mat-label> 
-                Event Log
-            </mat-label>
-            <textarea 
-                matInput 
-                cdkTextareaAutosize 
-                cdkAutosizeMinRows="3" 
-                cdkAutosizeMaxRows="7" 
-                [formControl]="logAreaFc">
-            </textarea>
-        </mat-form-field>
     </div>
     <div 
         class="gap_30px"
     >
-    </div>
-    <div 
-        class="flexRowAlignSpaceEvenlyStart"
-    >
-        <app-example-file 
-            title=".json File I" 
-            link="assets/files-in/example.json" 
-            description="The given Petri Net in .json format.">
-        </app-example-file>
-        <app-example-file 
-            title=".json File II" 
-            link="assets/files-in/pn-test.json" 
-            description="Another small Petri Net in .json format.">
-        </app-example-file>
-        <app-example-file 
-            title=".json File III" 
-            link="assets/files-in/empty.json" 
-            description="An empty .json file.">
-        </app-example-file>
     </div>
     <div 
         class="flexRowAlignSpaceEvenlyStart"
@@ -123,6 +116,25 @@
             title=".xes File III" 
             link="assets/files-in/empty.xes" 
             description="An empty .xes file.">
+        </app-example-file>
+    </div>
+    <div 
+        class="flexRowAlignSpaceEvenlyStart"
+    >
+        <app-example-file 
+            title=".json File I" 
+            link="assets/files-in/example.json" 
+            description="The given Petri Net in .json format.">
+        </app-example-file>
+        <app-example-file 
+            title=".json File II" 
+            link="assets/files-in/pn-test.json" 
+            description="Another small Petri Net in .json format.">
+        </app-example-file>
+        <app-example-file 
+            title=".json File III" 
+            link="assets/files-in/empty.json" 
+            description="An empty .json file.">
         </app-example-file>
     </div>
 

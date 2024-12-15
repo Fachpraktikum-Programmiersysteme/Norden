@@ -1,10 +1,13 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {FormControl} from '@angular/forms';
+
+import {Subscription} from 'rxjs';
 
 import {TextParserService} from './services/text-parser.service';
 import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
+
 import {Graph} from './classes/graph-representation/graph';
 
 @Component({
@@ -12,9 +15,11 @@ import {Graph} from './classes/graph-representation/graph';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
 
     /* attributes */
+
+    private _sub: Subscription;
 
     public fileAreaFc: FormControl;
     public logAreaFc: FormControl;
@@ -31,8 +36,22 @@ export class AppComponent {
         this.fileAreaFc.disable();
         this.logAreaFc = new FormControl();
         this.logAreaFc.disable();
+        this._sub = this._displayService.graph$.subscribe(
+            graph => {
+                /* to be removed - start*/
+                console.log('app_component noticed new graph through subscription');
+                /* to be removed - end*/
+                this.logAreaFc.setValue(this._displayService.graph.logArray);
+            }
+        );
     };
 
+    /* methods - on destroy */
+
+    ngOnDestroy(): void {
+        this._sub.unsubscribe();
+    };
+    
     /* methods - other */
 
     public processSourceChange(inSourceData : [string, string]) : void {
@@ -40,7 +59,7 @@ export class AppComponent {
         console.log('processing SourceChange-event - type: "' + inSourceData[0] + '", content: "' + inSourceData[1] + '"');
         /* to be removed - end*/
         this.fileAreaFc.setValue(inSourceData[1]);
-        let parsedContent : [Graph, number[][]] | undefined;
+        let parsedContent : Graph = new Graph;
         switch (inSourceData[0]) {
             case 'txt' : {
                 parsedContent = this._txtParserService.parse(inSourceData[1]);
@@ -55,10 +74,7 @@ export class AppComponent {
                 break;
             };
         };
-        if (parsedContent !== undefined) {
-            this._displayService.updateData(parsedContent[0], parsedContent[1]);
-            this.logAreaFc.setValue(parsedContent[1]);
-        };
+        this._displayService.updateData(parsedContent);
     };
     
 };

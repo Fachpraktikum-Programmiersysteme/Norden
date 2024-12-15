@@ -6,11 +6,12 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
+import {InductiveMinerService} from '../../services/inductive-miner.service';
 
 @Component({
-    selector: 'delete-button',
-    templateUrl: './delete-button.component.html',
-    styleUrls: ['./delete-button.component.css'],
+    selector: 'submit-button',
+    templateUrl: './submit-button.component.html',
+    styleUrls: ['./submit-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -18,7 +19,7 @@ import {DisplayService} from '../../services/display.service';
         MatTooltipModule
     ]
 })
-export class DeleteButtonComponent implements OnDestroy {
+export class SubmitButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,16 +30,17 @@ export class DeleteButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService
+        private _displayService : DisplayService, 
+        private _minerService : InductiveMinerService
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 console.log('delete-button_component noticed new graph');
-                if (this._displayService.graphEmpty) {
-                    this._disabled = true;
-                } else {
+                if ((this._displayService.graph.markedNodes.length > 0) || (this._displayService.graph.markedArcs.length > 0)) {
                     this._disabled = false;
+                } else {
+                    this._disabled = true;
                 }
             }
         );
@@ -60,7 +62,7 @@ export class DeleteButtonComponent implements OnDestroy {
         if (this._disabled) {
             return '[currently disabled]';
         } else {
-            return 'delete currently displayed graph';
+            return 'check currently selected cut';
         };
     };
     
@@ -73,9 +75,9 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('delete button clicked - event : ' + inEvent);
+        console.log('submit button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._displayService.deleteData();
+        this._minerService.checkCut(this._displayService.graph);
     };
 
 };
