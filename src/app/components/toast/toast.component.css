@@ -23,16 +23,21 @@
     color: white;
 }
 
+.toast.warning {
+    background-color: #f4364c;
+    color: white;
+}
+
 .toast.info {
     background-color: #2196f3;
     color: white;
 }
 
-.toast .message {
+.toast.message {
     font-size: 14px;
 }
 
-.toast .close-btn {
+.toast.close-btn {
     background: none;
     border: none;
     color: white;
