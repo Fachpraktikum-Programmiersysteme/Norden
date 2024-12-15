@@ -18,12 +18,14 @@ import {FooterComponent} from './components/footer/footer.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
+import {ToastComponent} from "./components/toast/toast.component";
 
 @NgModule({
     declarations: [
         AppComponent,
         DisplayComponent,
-        FooterComponent
+        FooterComponent,
+        ToastComponent
     ],bootstrap: [
         AppComponent
     ], imports: [

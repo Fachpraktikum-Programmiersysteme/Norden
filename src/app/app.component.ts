@@ -6,6 +6,7 @@ import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
 import {Graph} from './classes/graph-representation/graph';
+import { ToastService } from './services/toast/toast.service';
 
 @Component({
     selector: 'app-root',
@@ -18,6 +19,10 @@ export class AppComponent {
 
     public fileAreaFc: FormControl;
     public logAreaFc: FormControl;
+    toastMessages: Array<{
+        message: string,
+        type: "success" | "error" | "warning" | "info",
+        duration: number }> = [];
 
     /* methods - constructor */
 
@@ -25,12 +30,19 @@ export class AppComponent {
         private _txtParserService: TextParserService,
         private _xesParserService: XesParserService,
         private _jsonParserService: JsonParserService,
-        private _displayService: DisplayService
+        private _displayService: DisplayService,
+        private toastService: ToastService
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
         this.logAreaFc = new FormControl();
         this.logAreaFc.disable();
+        this.toastService.toast$.subscribe(toast => {
+            this.toastMessages.push(toast);
+            setTimeout(() => {
+                this.toastMessages.shift(); // Entfernt den ältesten Toast
+            }, toast.duration);
+        });
     };
 
     /* methods - other */
@@ -53,12 +65,12 @@ export class AppComponent {
             case 'json' : {
                 parsedContent = this._jsonParserService.parse(inSourceData[1]);
                 break;
-            };
-        };
+            }
+        }
         if (parsedContent !== undefined) {
             this._displayService.updateData(parsedContent[0], parsedContent[1]);
             this.logAreaFc.setValue(parsedContent[1]);
-        };
+        }
     };
-    
-};
+
+}
