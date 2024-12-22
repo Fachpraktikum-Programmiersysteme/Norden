@@ -16,8 +16,8 @@ export class Arc {
 
     private _svgArcElement : SVGElement | undefined;
 
-    private _active : boolean;
     private _marked : boolean;
+    private _active : boolean;
     private _visited : boolean;
     private _overrideMarking : boolean;
 
@@ -31,19 +31,17 @@ export class Arc {
         inSource : Node, 
         inTarget : Node, 
         inWeight : number,
-        inReverseExists : boolean,  
-        inDFG : number | undefined, 
-        inArcSVG? : SVGElement
+        inReverseExists : boolean
     ) {
         // this._id = inId;
         this._sourceNode = inSource;
         this._targetNode = inTarget;
         this._weight = inWeight;
         this._reverseExists = inReverseExists;
-        this._dfg = inDFG;
-        this._svgArcElement = inArcSVG;
-        this._active = false;
+        this._dfg = undefined;
+        this._svgArcElement = undefined;
         this._marked = false;
+        this._active = false;
         this._visited = false;
         this._overrideMarking = false;
         // this._hoverActive = false;
@@ -96,27 +94,27 @@ export class Arc {
         return this._svgArcElement;
     };
 
-    public get isActive() : boolean {
-        return this._active;
-    };
-
-    public get isMarked() : boolean {
+    public get marked() : boolean {
         return this._marked;
     };
 
-    public get wasVisited() : boolean {
+    public get active() : boolean {
+        return this._active;
+    };
+
+    public get visited() : boolean {
         return this._visited;
     };
 
-    public get overrideActive() : boolean {
+    public get overrideMarking() : boolean {
         return this._overrideMarking;
     };
 
-    // public get isHoverActive() : boolean {
+    // public get hoverActive() : boolean {
     //     return this._hoverActive;
     // };
 
-    // public get wasHoverCancelled() : boolean {
+    // public get hoverCancelled() : boolean {
     //     return this._hoverCancelled;
     // };
     
@@ -134,12 +132,12 @@ export class Arc {
         this._dfg = inDFG;
     };
 
-    public set active(inValue : boolean) {
-        this._active = inValue;
-    };
-
     public set marked(inValue : boolean) {
         this._marked = inValue;
+    };
+
+    public set active(inValue : boolean) {
+        this._active = inValue;
     };
 
     public set visited(inValue : boolean) {

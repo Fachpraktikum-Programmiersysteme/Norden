@@ -62,19 +62,19 @@ export class SaveButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    /* methods - other */
-
-    prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
         } else {
             return 'save currently displayed graph';
         }
+    };
+
+    /* methods - other */
+
+    prevent(inEvent: Event) {
+        inEvent.preventDefault();
+        inEvent.stopPropagation();
     };
 
     processMouseClick(inEvent: MouseEvent) {

@@ -12,6 +12,10 @@ export interface JsonGraph {
 
     transitions?: Array<string>,
 
+    start?: string,
+
+    end?: string,
+
     arcs?: {
         [arcID: string]: number
     },
@@ -24,24 +28,16 @@ export interface JsonGraph {
         [nodeID_or_arcID: string]: Coords | Array<Coords>
     },
 
+    dfgs?: {
+        [dfgID: string]: [string, string, Array<string>, Array<string>]
+    },
+
     marked?: [
         {
             [nodeID: string]: boolean
         },
         {
             [arcID: string]: boolean
-        }
-    ],
-
-    dfgs?: [
-        {
-            [nodeID: string]: string
-        },
-        {
-            [arcID: string]: string
-        },
-        {
-            [dfgID: string]: [string, string, Array<string>, Array<string>]
         }
     ],
 

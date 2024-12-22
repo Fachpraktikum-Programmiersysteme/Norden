@@ -1,7 +1,8 @@
 import {Injectable, OnDestroy} from '@angular/core';
+
 import {BehaviorSubject, Observable} from 'rxjs';
+
 import {Graph} from '../classes/graph-representation/graph';
-// import {Node} from '../classes/graph-representation/node';
 
 @Injectable({
     providedIn: 'root'
@@ -41,6 +42,8 @@ export class DisplayService implements OnDestroy {
         return this._graphEmpty;
     };
 
+    /* methods - other */
+
     public deleteData() : void {
         this.updateData(undefined);
     };
@@ -64,6 +67,26 @@ export class DisplayService implements OnDestroy {
                 this._graph$.next(newGraph);
             }
         );
+    };
+
+    public generateOutputLogString() : string {
+        let outLogString : string = '';
+        for (const trace of this.graph.logArray) {
+            let eventIdx : number = 0;
+            for (const event of trace) {
+                if (eventIdx !== 0) {
+                    outLogString = outLogString + ' + "' + event.label + '"'
+                } else {
+                    outLogString = outLogString + '"' + event.label + '"'
+                };
+                eventIdx++;
+            };
+            if (eventIdx !== 0) {
+                outLogString = outLogString + '\n'
+                outLogString = outLogString + '\n'
+            };
+        };
+        return outLogString;
     };
 
 };

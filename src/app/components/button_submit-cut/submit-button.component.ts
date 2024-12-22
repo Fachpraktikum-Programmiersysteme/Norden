@@ -36,11 +36,13 @@ export class SubmitButtonComponent implements OnDestroy {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('delete-button_component noticed new graph');
-                if ((this._displayService.graph.markedNodes.length > 0) || (this._displayService.graph.markedArcs.length > 0)) {
-                    this._disabled = false;
-                } else {
+                console.log('submit-button_component noticed new graph');
+                if (this._minerService.checkTermination(graph)) {
                     this._disabled = true;
+                } else if ((this._displayService.graph.markedNodes.length < 1) && (this._displayService.graph.markedArcs.length < 1)) {
+                    this._disabled = true;
+                } else {
+                    this._disabled = false;
                 }
             }
         );
@@ -73,11 +75,23 @@ export class SubmitButtonComponent implements OnDestroy {
         inEvent.stopPropagation();
     };
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public async processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
         console.log('submit button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._minerService.checkCut(this._displayService.graph);
+        // this._minerService.checkCut(this._displayService.graph);
+        // this._displayService.refreshData();
+        /* to be removed - start */
+        this._minerService.testExclusiveCut(this._displayService.graph);
+        console.error('waiting 5s');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        this._minerService.testUnmarkMarked(this._displayService.graph);
+        this._displayService.refreshData();
+        console.error('waiting 20s');
+        await new Promise(resolve => setTimeout(resolve, 20000));
+        this._minerService.testBaseCase(this._displayService.graph);
+        this._displayService.refreshData();
+        /* to be removed - end */
     };
 
 };

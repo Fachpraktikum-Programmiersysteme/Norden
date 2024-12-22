@@ -24,11 +24,13 @@ export class FileWriterService {
             events: [], 
             places: [], 
             transitions: [], 
+            start: '', 
+            end: '', 
             arcs: {}, 
             labels: {}, 
             layout: {}, 
-            marked: [{}, {}], 
-            dfgs: [{}, {}, {}]
+            dfgs: {}, 
+            marked: [{}, {}]
         };
         let nodeId : string;
         let nodeCount : number = 0;
@@ -55,14 +57,15 @@ export class FileWriterService {
         jsonGraph.events = [];
         jsonGraph.places = [];
         jsonGraph.transitions = [];
+        jsonGraph.start = '';
+        jsonGraph.end = '';
         jsonGraph.labels = {};
         jsonGraph.arcs = {};
         jsonGraph.layout = {};
+        jsonGraph.dfgs = {};
         jsonGraph.marked = [{}, {}];
-        jsonGraph.dfgs = [{}, {}, {}];
         for (const dfg of inGraph.dfgArray) {
             dfgCount++;
-            jsonGraph.dfgs[2][dfgCount] = ['', '', [], []];
             dfgIds[dfg.id] = ('dfg' + dfgCount.toString());
         };
         for (const node of inGraph.nodes) {
@@ -72,16 +75,14 @@ export class FileWriterService {
                         supportCount++;
                         nodeId = ('s' + supportCount.toString());
                         jsonGraph.supports.push(nodeId);
-                        if (!(node.label.includes('undefined_support_label__'))) {
-                            jsonGraph.labels[nodeId] = node.label;
-                        };
+                        jsonGraph.labels[nodeId] = node.label;
                         break;
                     }
                     case 'event' : {
                         eventCount++;
                         nodeId = ('e' + eventCount.toString());
                         jsonGraph.events.push(nodeId);
-                        if (!(node.label.includes('undefined_event_label__'))) {
+                        if (!(node.label.includes('undefined_event_name__'))) {
                             jsonGraph.labels[nodeId] = node.label;
                         };
                         break;
@@ -90,7 +91,7 @@ export class FileWriterService {
                         placeCount++;
                         nodeId = ('p' + placeCount.toString());
                         jsonGraph.places.push(nodeId);
-                        if (!(node.label.includes('undefined_place_label__'))) {
+                        if (node.label !== '') {
                             jsonGraph.labels[nodeId] = node.label;
                         };
                         break;
@@ -106,10 +107,13 @@ export class FileWriterService {
                     };
                 };
                 jsonGraph.layout[nodeId] = {x: node.x, y: node.y};
-                jsonGraph.marked[0][nodeId] = node.isMarked;
-                if (node.dfg !== undefined) {
-                    jsonGraph.dfgs[0][nodeId] = dfgIds[node.dfg];
+                if (node.marked) {
+                    jsonGraph.marked[0][nodeId] = true;
                 };
+                /* TODO - if the service works as intended, remove the following comments */
+                // if (node.dfg !== undefined) {
+                //     jsonGraph.dfgs[0][nodeId] = dfgIds[node.dfg];
+                // };
                 nodeIds[node.id] = nodeId;
                 nodeCount++;
             } else {
@@ -128,14 +132,23 @@ export class FileWriterService {
         if (transitionCount !== inGraph.transitionCount) {
             throw new Error('#srv.jws.toj.003: ' + 'conversion of graph to json failed - number of converted transitions (' + transitionCount + ') is not equal to original number of transitions (' + inGraph.transitionCount + ')');
         };
+        if (inGraph.startNode !== undefined) {
+            jsonGraph.start = nodeIds[inGraph.startNode.id];
+        };
+        if (inGraph.endNode !== undefined) {
+            jsonGraph.end = nodeIds[inGraph.endNode.id];
+        };
         for (const arc of inGraph.arcs) {
             let arcId : string = (nodeIds[arc.source.id] + ',' + nodeIds[arc.target.id]);
             jsonGraph.arcs[arcId] = arc.weight;
             jsonGraph.layout[arcId] = [{x: arc.source.x, y: arc.source.y}, {x: arc.target.x, y: arc.target.y}];
-            jsonGraph.marked[1][arcId] = arc.isMarked;
-                if (arc.dfg !== undefined) {
-                    jsonGraph.dfgs[1][arcId] = dfgIds[arc.dfg];
-                };
+            if (arc.marked) {
+                jsonGraph.marked[1][arcId] = true;
+            };
+            /* TODO - if the service works as intended, remove the following comments */
+            // if (arc.dfg !== undefined) {
+            //     jsonGraph.dfgs[1][arcId] = dfgIds[arc.dfg];
+            // };
             arcIds[arcPos] = arcId;
             arcPos++;
             arcCount = arcCount + arc.weight;
@@ -153,13 +166,12 @@ export class FileWriterService {
         jsonGraph.log = tracesArray;
         for (const dfg of inGraph.dfgArray) {
             const dfgID : string = dfgIds[dfg.id];
-            jsonGraph.dfgs[2][dfgID][0] = nodeIds[dfg.startNode.id];
-            jsonGraph.dfgs[2][dfgID][1] = nodeIds[dfg.endNode.id];
+            jsonGraph.dfgs[dfgID] = [nodeIds[dfg.startNode.id], nodeIds[dfg.endNode.id], [], []];
             for (const node of dfg.nodes) {
-                jsonGraph.dfgs[2][dfgID][2].push(nodeIds[node.id]);
+                jsonGraph.dfgs[dfgID][2].push(nodeIds[node.id]);
             };
             for (let arcID = 0; arcID < dfg.arcs.length; arcID++) {
-                jsonGraph.dfgs[2][dfgID][3].push(arcIds[arcID]);
+                jsonGraph.dfgs[dfgID][3].push(arcIds[arcID]);
             };
         };
         return jsonGraph;
@@ -305,40 +317,40 @@ export class FileWriterService {
                     case 'place' : {
                         placeCount++;
                         nodeIds[node.id] = ('p' + placeCount);
-                        placeString = (placeString + '  <place id="p' + placeCount + '">' + '\,\n');
+                        placeString = (placeString + '  <place id="p' + placeCount + '">' + '\n');
                         if (!(node.label.includes('undefined_place_label__'))) {
-                            placeString = (placeString + '    <name>' + '\,\n');
-                            placeString = (placeString + '      <text>' + '\,\n');
-                            placeString = (placeString + '        ' + node.label + '\,\n');
-                            placeString = (placeString + '      </text>' + '\,\n');
-                            placeString = (placeString + '    </name>' + '\,\n');
+                            placeString = (placeString + '    <name>' + '\n');
+                            placeString = (placeString + '      <text>' + '\n');
+                            placeString = (placeString + '        ' + node.label + '\n');
+                            placeString = (placeString + '      </text>' + '\n');
+                            placeString = (placeString + '    </name>' + '\n');
                         };
-                        placeString = (placeString + '    <graphics>' + '\,\n');
-                        placeString = (placeString + '      <position x="' + node.x + '" y="' + node.y + '"/>' + '\,\n');
-                        placeString = (placeString + '    </graphics>' + '\,\n');
-                        placeString = (placeString + '    <initialMarking>' + '\,\n');
-                        placeString = (placeString + '      <text>' + '\,\n');
-                        placeString = (placeString + '        0' + '\,\n');
-                        placeString = (placeString + '      </text>' + '\,\n');
-                        placeString = (placeString + '    </initialMarking>' + '\,\n');
-                        placeString = (placeString + '  </place>' + '\,\n');
+                        placeString = (placeString + '    <graphics>' + '\n');
+                        placeString = (placeString + '      <position x="' + node.x + '" y="' + node.y + '"/>' + '\n');
+                        placeString = (placeString + '    </graphics>' + '\n');
+                        placeString = (placeString + '    <initialMarking>' + '\n');
+                        placeString = (placeString + '      <text>' + '\n');
+                        placeString = (placeString + '        0' + '\n');
+                        placeString = (placeString + '      </text>' + '\n');
+                        placeString = (placeString + '    </initialMarking>' + '\n');
+                        placeString = (placeString + '  </place>' + '\n');
                         break;
                     }
                     case 'transition' : {
                         transitionCount++;
                         nodeIds[node.id] = ('t' + transitionCount);
-                        transitionString = (transitionString + '  <transition id="t' + transitionCount + '">' + '\,\n');
+                        transitionString = (transitionString + '  <transition id="t' + transitionCount + '">' + '\n');
                         if (!(node.label.includes('undefined_transition_label__'))) {
-                            transitionString = (transitionString + '    <name>' + '\,\n');
-                            transitionString = (transitionString + '      <text>' + '\,\n');
-                            transitionString = (transitionString + '        ' + node.label + '\,\n');
-                            transitionString = (transitionString + '      </text>' + '\,\n');
-                            transitionString = (transitionString + '    </name>' + '\,\n');
+                            transitionString = (transitionString + '    <name>' + '\n');
+                            transitionString = (transitionString + '      <text>' + '\n');
+                            transitionString = (transitionString + '        ' + node.label + '\n');
+                            transitionString = (transitionString + '      </text>' + '\n');
+                            transitionString = (transitionString + '    </name>' + '\n');
                         };
-                        transitionString = (transitionString + '    <graphics>' + '\,\n');
-                        transitionString = (transitionString + '      <position x="' + node.x + '" y="' + node.y + '"/>' + '\,\n');
-                        transitionString = (transitionString + '    </graphics>' + '\,\n');
-                        transitionString = (transitionString + '  </transition>' + '\,\n');
+                        transitionString = (transitionString + '    <graphics>' + '\n');
+                        transitionString = (transitionString + '      <position x="' + node.x + '" y="' + node.y + '"/>' + '\n');
+                        transitionString = (transitionString + '    </graphics>' + '\n');
+                        transitionString = (transitionString + '  </transition>' + '\n');
                         break;
                     };
                 };
@@ -361,35 +373,41 @@ export class FileWriterService {
         };
         for (const arc of inGraph.arcs) {
             arcId++;
-            arcString = (arcString + '  <arc id="a' + arcId + '" source="' + nodeIds[arc.source.id] + '" target="' + nodeIds[arc.target.id] + '">' + '\,\n');
-            arcString = (arcString + '    <inscription>' + '\,\n');
-            arcString = (arcString + '      <text>' + '\,\n');
-            arcString = (arcString + '        1' + '\,\n');
-            arcString = (arcString + '      </text>' + '\,\n');
-            arcString = (arcString + '    </inscription>' + '\,\n');
-            arcString = (arcString + '  </arc>' + '\,\n');
+            arcString = (arcString + '  <arc id="a' + arcId + '" source="' + nodeIds[arc.source.id] + '" target="' + nodeIds[arc.target.id] + '">' + '\n');
+            arcString = (arcString + '    <inscription>' + '\n');
+            arcString = (arcString + '      <text>' + '\n');
+            arcString = (arcString + '        1' + '\n');
+            arcString = (arcString + '      </text>' + '\n');
+            arcString = (arcString + '    </inscription>' + '\n');
+            arcString = (arcString + '  </arc>' + '\n');
             arcCount = arcCount + arc.weight;
         };
         if (arcCount !== inGraph.arcCount) {
             throw new Error('#srv.jws.ntp.007: ' + 'conversion of graph to pnml failed - number of converted arcs (' + arcCount + ') is not equal to original number of arcs (' + inGraph.arcCount + ')');
         }
-        pnmlString = (pnmlString + '<?xml version="1.0" encoding="UTF-8"?>' + '\,\n');
-        pnmlString = (pnmlString + '<pnml>' + '\,\n');
-        pnmlString = (pnmlString + '<net id="unnamed petrinet" type="http://www.pnml.org/version-2009/grammar/pnml">' + '\,\n');
+        pnmlString = (pnmlString + '<?xml version="1.0" encoding="UTF-8"?>' + '\n');
+        pnmlString = (pnmlString + '<pnml>' + '\n');
+        pnmlString = (pnmlString + '<net id="unnamed petrinet" type="http://www.pnml.org/version-2009/grammar/pnml">' + '\n');
         pnmlString = (pnmlString + placeString);
         pnmlString = (pnmlString + transitionString);
         pnmlString = (pnmlString + arcString);
-        pnmlString = (pnmlString + '</net>' + '\,\n');
+        pnmlString = (pnmlString + '</net>' + '\n');
         pnmlString = (pnmlString + '</pnml>');
         return pnmlString;
     };
 
     public isPetriNet(inGraph : Graph) : boolean {
-        return (
-            (inGraph.supportCount === 0) && 
-            (inGraph.eventCount === 0) && 
-            (inGraph.nodeCount === (inGraph.placeCount + inGraph.transitionCount))
-        );
+        if (inGraph.dfgArray.length !== 0) {
+            return false;
+        } else if (inGraph.supportCount !== 0) {
+            return false;
+        } else if (inGraph.eventCount !== 0) {
+            return false;
+        } else if (inGraph.nodeCount !== (inGraph.placeCount + inGraph.transitionCount)) {
+            return false;
+        } else {
+            return true;
+        };
     };
 
     public writeFile(inFileName : string, inGraph : Graph) : void {

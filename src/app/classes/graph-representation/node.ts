@@ -6,10 +6,13 @@ export class Node {
     private readonly _type : 'support' | 'event' | 'place' | 'transition';
     private readonly _label : string;
 
-    private _dfg : number | undefined;
-
     private _x_coordinate : number;
     private _y_coordinate : number;
+
+    private _incomingArcs : number;
+    private _outgoingArcs : number;
+
+    private _dfg : number | undefined;
 
     private _svgNodeElement : SVGElement | undefined;
     private _svgInfoElement : SVGElement | undefined;
@@ -18,6 +21,7 @@ export class Node {
     private _active : boolean;
     private _visited : boolean;
 
+    private _infoOverride : boolean;
     private _infoActive : boolean;
     private _hoverActive : boolean;
     private _hoverCancelled : boolean;
@@ -28,23 +32,23 @@ export class Node {
         inId : number, 
         inType : 'support' | 'event' | 'place' | 'transition', 
         inLabel : string, 
-        inDFG : number | undefined, 
         inX : number,  
-        inY : number, 
-        inNodeSVG? : SVGElement, 
-        inInfoSVG? : SVGElement
+        inY : number
     ) {
         this._id = inId;
         this._type = inType;
         this._label = inLabel;
-        this._dfg = inDFG;
         this._x_coordinate = inX;
         this._y_coordinate = inY;
-        this._svgNodeElement = inNodeSVG;
-        this._svgInfoElement = inInfoSVG;
+        this._incomingArcs = 0;
+        this._outgoingArcs = 0;
+        this._dfg = undefined;
+        this._svgNodeElement = undefined;
+        this._svgInfoElement = undefined;
         this._marked = false;
         this._active = false;
         this._visited = false;
+        this._infoOverride = false;
         this._infoActive = false;
         this._hoverActive = false;
         this._hoverCancelled = false;
@@ -64,10 +68,6 @@ export class Node {
         return this._label;
     };
 
-    public get dfg() : number | undefined {
-        return this._dfg;
-    };
-
     public get x() : number {
         return this._x_coordinate;
     };
@@ -80,6 +80,18 @@ export class Node {
         return [this._x_coordinate, this._y_coordinate];
     };
 
+    public get inArcs() : number {
+        return this._incomingArcs;
+    };
+
+    public get outArcs() : number {
+        return this._outgoingArcs;
+    };
+
+    public get dfg() : number | undefined {
+        return this._dfg;
+    };
+
     public get svgNodeElement() : SVGElement | undefined {
         return this._svgNodeElement;
     };
@@ -88,35 +100,35 @@ export class Node {
         return this._svgInfoElement;
     };
 
-    public get isActive() : boolean {
-        return this._active;
-    };
-
-    public get isMarked() : boolean {
+    public get marked() : boolean {
         return this._marked;
     };
 
-    public get wasVisited() : boolean {
+    public get active() : boolean {
+        return this._active;
+    };
+
+    public get visited() : boolean {
         return this._visited;
     };
 
-    public get isInfoActive() : boolean {
+    public get infoOverride() : boolean {
+        return this._infoOverride;
+    };
+
+    public get infoActive() : boolean {
         return this._infoActive;
     };
 
-    public get isHoverActive() : boolean {
+    public get hoverActive() : boolean {
         return this._hoverActive;
     };
 
-    public get wasHoverCancelled() : boolean {
+    public get hoverCancelled() : boolean {
         return this._hoverCancelled;
     };
     
     /* methods : setters */
-
-    public set dfg(inDFG : number | undefined) {
-        this._dfg = inDFG;
-    };
 
     public set x(inX : number) {
         this._x_coordinate = inX;
@@ -131,16 +143,32 @@ export class Node {
         this._y_coordinate = inCoords[1];
     };
 
-    public set active(inValue : boolean) {
-        this._active = inValue;
+    public set inArcs(inNumber : number) {
+        this._incomingArcs = inNumber;
+    };
+
+    public set outArcs(inNumber : number) {
+        this._outgoingArcs = inNumber;
+    };
+
+    public set dfg(inDFG : number | undefined) {
+        this._dfg = inDFG;
     };
 
     public set marked(inValue : boolean) {
         this._marked = inValue;
     };
 
+    public set active(inValue : boolean) {
+        this._active = inValue;
+    };
+
     public set visited(inValue : boolean) {
         this._visited = inValue;
+    };
+
+    public set infoOverride(inValue : boolean) {
+        this._infoOverride = inValue;
     };
 
     public set infoActive(inValue : boolean) {

@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 
 import {catchError, of, Subscription, take} from 'rxjs';
@@ -29,19 +29,24 @@ export class DisplayComponent implements OnDestroy {
 
     @Output('fileData') fileData: EventEmitter<[string, string]>;
 
+    @HostListener("window:keyup", ['$event'])
+        onKeyUp(event:KeyboardEvent) {
+            this.processKeyPress(event);
+        };
+
     /* attributes */
 
     private _sub: Subscription;
 
     private _graph : Graph = new Graph();
 
-    private arcActive  : boolean = false;
+    private arcActive : boolean = false;
     private activeArc : Arc | undefined;
 
     private arcHeld : boolean = false;
     private heldArc : Arc | undefined;
 
-    private nodeActive  : boolean = false;
+    private nodeActive : boolean = false;
     private activeNode : Node | undefined;
 
     private nodeHeld : boolean = false;
@@ -50,7 +55,7 @@ export class DisplayComponent implements OnDestroy {
     private dragInProgress : boolean = false;
     private draggedNode : Node | undefined;
 
-    private infoActive  : boolean = false;
+    private infoActive : boolean = false;
     private activeInfo : Node | undefined;
 
     private cutActive: boolean = false;
@@ -78,14 +83,14 @@ export class DisplayComponent implements OnDestroy {
 
     /* methods - on destroy */
 
-    ngOnDestroy(): void {
+    ngOnDestroy() : void {
         this._sub.unsubscribe();
         this.fileData.complete();
     };
 
     /* methods - other */
 
-    public processDropEvent(inEvent: DragEvent): void {
+    public processDropEvent(inEvent: DragEvent) : void {
         inEvent.preventDefault();
         const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
         if (fileLocation) {
@@ -109,7 +114,7 @@ export class DisplayComponent implements OnDestroy {
     };
 
     private setElementMarking(inElement : Node | Arc, inValue : boolean) {
-        if (inValue !== inElement.isMarked) {
+        if (inValue !== inElement.marked) {
             if (inElement instanceof Node) {
                 if (inValue) {
                     this._graph.markedNodes.push(inElement);
@@ -194,14 +199,14 @@ export class DisplayComponent implements OnDestroy {
     private async checkMouseHover(inNode : Node) {
         /* to be removed - start*/
         // console.log('checking node ' + inNode.id);
-        // console.log('[hoverActive : "' + inNode.isHoverActive + '", hoverCancelled : "' + inNode.wasHoverCancelled + '"');
+        // console.log('[hoverActive : "' + inNode.hoverActive + '", hoverCancelled : "' + inNode.hoverCancelled + '"');
         /* to be removed - end*/
         await new Promise(resolve => setTimeout(resolve, 500));
-        if (inNode.isHoverActive) {
+        if (inNode.hoverActive) {
             /* to be removed - start*/
             // console.log('hover was active');
             /* to be removed - end*/
-            if (inNode.wasHoverCancelled) {
+            if (inNode.hoverCancelled) {
                 /* to be removed - start*/
                 // console.log('hover was cancelled');
                 /* to be removed - end*/
@@ -237,7 +242,7 @@ export class DisplayComponent implements OnDestroy {
             /* to be removed - end*/
         }
         /* to be removed - start*/
-        // console.log('[hoverActive : "' + inNode.isHoverActive + '", hoverCancelled : "' + inNode.wasHoverCancelled + '"');
+        // console.log('[hoverActive : "' + inNode.hoverActive + '", hoverCancelled : "' + inNode.hoverCancelled + '"');
         /* to be removed - end*/
     };
 
@@ -279,7 +284,7 @@ export class DisplayComponent implements OnDestroy {
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.000: ' + 'deactivation of info failed - affiliated node is undefined');
                                 };
-                            } else if (this.activeNode.isHoverActive) {
+                            } else if (this.activeNode.hoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
@@ -351,7 +356,7 @@ export class DisplayComponent implements OnDestroy {
                                 } else {
                                     throw new Error('#cmp.dsp.pmd.004: ' + 'deactivation of info failed - affiliated node is undefined');
                                 };
-                            } else if (this.activeNode.isHoverActive) {
+                            } else if (this.activeNode.hoverActive) {
                                 this.activeNode.hoverCancelled = true;
                                 /* to be removed - start*/
                                 // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
@@ -388,7 +393,7 @@ export class DisplayComponent implements OnDestroy {
                             } else {
                                 throw new Error('#cmp.dsp.pmd.006: ' + 'deactivation of info failed - affiliated node is undefined');
                             };
-                        } else if (this.activeNode.isHoverActive) {
+                        } else if (this.activeNode.hoverActive) {
                             this.activeNode.hoverCancelled = true;
                             /* to be removed - start*/
                             // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
@@ -435,6 +440,29 @@ export class DisplayComponent implements OnDestroy {
             if (this.draggedNode !== undefined) {
                 this.draggedNode.x = inEvent.offsetX;
                 this.draggedNode.y = inEvent.offsetY;
+                // 
+                /* do not remove - alternative implementation */
+                // 
+                // const nodeX : number = this.draggedNode.x;
+                // const nodeY : number = this.draggedNode.y;
+                // const mouseX : number = inEvent.offsetX;
+                // const mouseY : number = inEvent.offsetY;
+                // const radiusH : number = (this._svgService.nodeRadius / 2);
+                // if (mouseX < (nodeX - radiusH)) {
+                //     this.draggedNode.x = inEvent.offsetX;
+                //     this.draggedNode.y = inEvent.offsetY;
+                // } else if (mouseX > (nodeX + radiusH)) {
+                //     this.draggedNode.x = inEvent.offsetX;
+                //     this.draggedNode.y = inEvent.offsetY;
+                // } else if (mouseY < (nodeY - radiusH)) {
+                //     this.draggedNode.x = inEvent.offsetX;
+                //     this.draggedNode.y = inEvent.offsetY;
+                // } else if (mouseY > (nodeY + radiusH)) {
+                //     this.draggedNode.x = inEvent.offsetX;
+                //     this.draggedNode.y = inEvent.offsetY;
+                // } else {
+                //     /* node is only dragged a minimal amount --> "drag" is probably a "click" --> ignore "drag" */
+                // };
             } else {
                 throw new Error('#cmp.dsp.pmm.000: ' + 'drag of node failed - node is undefined');
             };
@@ -460,7 +488,7 @@ export class DisplayComponent implements OnDestroy {
                                         } else {
                                             throw new Error('#cmp.dsp.pmm.001: ' + 'deactivation of info failed - affiliated node is undefined');
                                         };
-                                    } else if (this.activeNode.isHoverActive) {
+                                    } else if (this.activeNode.hoverActive) {
                                         this.activeNode.hoverCancelled = true;
                                         /* to be removed - start*/
                                         // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
@@ -538,7 +566,7 @@ export class DisplayComponent implements OnDestroy {
                                         } else {
                                             throw new Error('#cmp.dsp.pmm.005: ' + 'deactivation of info failed - affiliated node is undefined');
                                         };
-                                    } else if (this.activeNode.isHoverActive) {
+                                    } else if (this.activeNode.hoverActive) {
                                         this.activeNode.hoverCancelled = true;
                                         /* to be removed - start*/
                                         // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
@@ -573,7 +601,7 @@ export class DisplayComponent implements OnDestroy {
                                     } else {
                                         throw new Error('#cmp.dsp.pmm.008: ' + 'deactivation of info failed - affiliated node is undefined');
                                     };
-                                } else if (this.activeNode.isHoverActive) {
+                                } else if (this.activeNode.hoverActive) {
                                     this.activeNode.hoverCancelled = true;
                                     /* to be removed - start*/
                                     // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
@@ -621,7 +649,7 @@ export class DisplayComponent implements OnDestroy {
                 this.draggedNode = undefined;
             } else {
                 if (this.heldNode !== undefined) {
-                    this.setElementMarking(this.heldNode, (!(this.heldNode.isMarked)))
+                    this.setElementMarking(this.heldNode, (!(this.heldNode.marked)))
                 } else {
                     throw new Error('#cmp.dsp.pmu.000: ' + 'click of node failed - clicked node is undefined');
                 };
@@ -631,7 +659,7 @@ export class DisplayComponent implements OnDestroy {
             this.redraw();
         } else if (this.arcHeld) {
             if (this.heldArc !== undefined) {
-                this.setElementMarking(this.heldArc, (!(this.heldArc.isMarked)))
+                this.setElementMarking(this.heldArc, (!(this.heldArc.marked)))
             } else {
                 throw new Error('#cmp.dsp.pmu.001: ' + 'click of arc failed - clicked arc is undefined');
             };
@@ -676,7 +704,7 @@ export class DisplayComponent implements OnDestroy {
                     } else {
                         throw new Error('#cmp.dsp.pml.000: ' + 'deactivation of info failed - affiliated node is undefined');
                     };
-                } else if (this.activeNode.isHoverActive) {
+                } else if (this.activeNode.hoverActive) {
                     this.activeNode.hoverCancelled = true;
                     /* to be removed - start*/
                     // console.log(' >> leave action set cancel to "true" for Node ' + this.activeNode.id);
@@ -693,6 +721,25 @@ export class DisplayComponent implements OnDestroy {
         if (this.cutActive) {
             this.endCut(inEvent);
             this.cutActive = false;
+        };
+    };
+
+    public processKeyPress(inEvent : KeyboardEvent) {
+        inEvent.preventDefault();
+        /* to be removed - start */
+        console.log('display-component processes KeyPress');
+        /* to be removed - end */
+        if ((inEvent.key === 'i') || (inEvent.key === 'I')) {
+            if (this.nodeActive) {
+                if (this.activeNode !== undefined) {
+                    this.activeNode.infoOverride = (!(this.activeNode.infoOverride))
+                    /* to be removed - start */
+                    console.log('info override set to "' + this.activeNode.infoOverride + '"" for node with id "' + this.activeNode.id + '"');
+                    /* to be removed - end */
+                } else {
+                    throw new Error('#cmp.dsp.pkp.000: ' + 'inversion of node info override failed - active node is undefined');
+                };
+            } else if (this.arcActive) {};
         };
     };
 
@@ -729,12 +776,16 @@ export class DisplayComponent implements OnDestroy {
                     };
                 };
             };
-            // TODO - call inductive miner here
+            // TODO - call inductive miner here - No.
             if (this.activeCut.cutArcs.length > 0) {
                 console.log('Folgende Kanten wurden geschnitten: ')
                 this.activeCut.cutArcs.forEach(
                     cutArc => {
-                        this.setElementMarking(cutArc, true);
+                        if (cutArc.marked) {
+                            this.setElementMarking(cutArc, false);
+                        } else {
+                            this.setElementMarking(cutArc, true);
+                        };
                         console.log(cutArc);
                     }
                 );

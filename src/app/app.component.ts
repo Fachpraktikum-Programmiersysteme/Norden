@@ -9,6 +9,7 @@ import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
 
 import {Graph} from './classes/graph-representation/graph';
+import { SvgService } from './services/svg.service';
 
 @Component({
     selector: 'app-root',
@@ -19,29 +20,33 @@ export class AppComponent implements OnDestroy {
 
     /* attributes */
 
-    private _sub: Subscription;
+    private _sub : Subscription;
 
-    public fileAreaFc: FormControl;
-    public logAreaFc: FormControl;
+    public fileAreaFc : FormControl;
+    public logAreaFc : FormControl;
+
+    public logArray : [string, string][][];
 
     /* methods - constructor */
 
     constructor(
-        private _txtParserService: TextParserService,
-        private _xesParserService: XesParserService,
-        private _jsonParserService: JsonParserService,
-        private _displayService: DisplayService
+        private _jsonParserService : JsonParserService,
+        private _xesParserService : XesParserService,
+        private _txtParserService : TextParserService,
+        private _displayService : DisplayService
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
         this.logAreaFc = new FormControl();
         this.logAreaFc.disable();
+        this.logArray = [];
         this._sub = this._displayService.graph$.subscribe(
             graph => {
                 /* to be removed - start*/
                 console.log('app_component noticed new graph through subscription');
                 /* to be removed - end*/
-                this.logAreaFc.setValue(this._displayService.graph.logArray);
+                this.logAreaFc.setValue(this._displayService.generateOutputLogString());
+                this.logArray = SvgService.generateOutputLogArray(graph);
             }
         );
     };

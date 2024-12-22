@@ -19,7 +19,7 @@
     >
     </app-display>
     <div 
-        class="gap_30px"
+    class="gap_30px"
     >
     </div>
     <div 
@@ -27,16 +27,35 @@
     >
         <mat-form-field 
             appearance="outline" 
-            class="outputContainer"> 
+            class="outputContainer"
+        > 
             <mat-label> 
-                Event Log
+                File Content
             </mat-label>
             <textarea 
                 matInput 
                 cdkTextareaAutosize 
                 cdkAutosizeMinRows="3" 
                 cdkAutosizeMaxRows="7" 
-                [formControl]="logAreaFc">
+                [formControl]="fileAreaFc"
+            >
+            </textarea>
+        </mat-form-field>
+        <mat-form-field 
+            appearance="outline" 
+            class="outputContainer"
+        > 
+            <mat-label> 
+                Event Log
+            </mat-label>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize 
+                contenteditable="true"
+                cdkAutosizeMinRows="3" 
+                cdkAutosizeMaxRows="7" 
+                [formControl]="logAreaFc"
+            >
             </textarea>
         </mat-form-field>    
         <text-input 
@@ -47,53 +66,27 @@
         <div 
             class="flexColumnAlignStartStretch"
         >
-            <save-button>
-            </save-button>
+            <div 
+                class="flexRowAlignSpaceEvenlyStart"
+            >
+                <save-button>
+                </save-button>
+                <delete-button>
+                </delete-button>
+                <info-button>
+                </info-button>
+                <traces-button>
+                </traces-button>
+                <submit-button>
+                </submit-button>
+            </div>
             <div 
             class="gap_40px"
             >
             </div>
-            <delete-button>
-            </delete-button>
-        </div>
-        <div 
-            class="flexColumnAlignStartStretch"
-        >
-            <info-button>
-            </info-button>
-            <div 
-            class="gap_40px"
-            >
-            </div>
-            <traces-button>
-            </traces-button>
-        </div>
-        <div 
-            class="flexColumnAlignStartStretch"
-        >
             <mode-button>
             </mode-button>
         </div>
-        <div 
-            class="flexColumnAlignStartStretch"
-        >
-            <submit-button>
-            </submit-button>
-        </div>
-        <mat-form-field 
-            appearance="outline" 
-            class="outputContainer"> 
-            <mat-label> 
-                File Content
-            </mat-label>
-            <textarea 
-                matInput 
-                cdkTextareaAutosize 
-                cdkAutosizeMinRows="3" 
-                cdkAutosizeMaxRows="7" 
-                [formControl]="fileAreaFc">
-            </textarea>
-        </mat-form-field>
     </div>
     <div 
         class="gap_30px"
@@ -103,39 +96,85 @@
         class="flexRowAlignSpaceEvenlyStart"
     >
         <app-example-file 
-            title=".xes File I" 
-            link="assets/files-in/teleclaimsExample.xes" 
-            description="A large example Event Log in .xes format.">
+            title="An empty .xes file." 
+            label=".xes File I (empty)" 
+            link="assets/files-in/empty.xes"
+        >
         </app-example-file>
         <app-example-file 
-            title=".xes File II" 
-            link="assets/files-in/teleclaimsShortest.xes" 
-            description="A very short Event Log in .xes format.">
+            title="A very short Event Log in .xes format." 
+            label=".xes File II (small)" 
+            link="assets/files-in/teleclaimsShortest.xes"
+        >
         </app-example-file>
         <app-example-file 
-            title=".xes File III" 
-            link="assets/files-in/empty.xes" 
-            description="An empty .xes file.">
+            title="A large example Event Log in .xes format." 
+            label=".xes File III (large)" 
+            link="assets/files-in/teleclaimsExample.xes"
+        >
+        </app-example-file>
+        <app-example-file 
+            title="An empty .json file." 
+            label=".json File I (empty)" 
+            link="assets/files-in/empty.json"
+        >
+        </app-example-file>
+        <app-example-file 
+            title="A Petri Net in .json format." 
+            label=".json File II (default)" 
+            link="assets/files-in/example.json"
+        >
+        </app-example-file>
+        <app-example-file 
+            title="A previously exported Graph in .json format." 
+            label=".json File III (test)" 
+            link="assets/files-in/exclusive-cut.json"
+        >
         </app-example-file>
     </div>
     <div 
-        class="flexRowAlignSpaceEvenlyStart"
+        class="gap_30px"
     >
-        <app-example-file 
-            title=".json File I" 
-            link="assets/files-in/example.json" 
-            description="The given Petri Net in .json format.">
-        </app-example-file>
-        <app-example-file 
-            title=".json File II" 
-            link="assets/files-in/pn-test.json" 
-            description="Another small Petri Net in .json format.">
-        </app-example-file>
-        <app-example-file 
-            title=".json File III" 
-            link="assets/files-in/empty.json" 
-            description="An empty .json file.">
-        </app-example-file>
+    </div>
+    <div 
+    class="flexRowAlignSpaceEvenlyStart"
+    >
+        <mat-form-field 
+            appearance="outline" 
+            class="logContainer"
+        > 
+            <mat-label> 
+                Event Log (detailed)
+            </mat-label>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize
+            >
+            </textarea>
+            <div 
+                appearance="outline" 
+                class="logContainer"
+            >
+                @for (trace of logArray; track trace) {
+                    <li>
+                    @for (event of trace; track event) {
+                        @if ($first) {
+                            "<font color={{event[1]}}>{{event[0]}}</font>"
+                        } @else {
+                            <font> + </font>"<font color={{event[1]}}>{{event[0]}}</font>"
+                        }
+                    }
+                    </li>
+                } @empty {
+                    (no log available)
+                }
+            </div>
+            <textarea 
+                matInput 
+                cdkTextareaAutosize
+            >
+            </textarea>
+        </mat-form-field>
     </div>
 
     <!--  Footer  -->

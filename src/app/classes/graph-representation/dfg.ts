@@ -69,17 +69,16 @@ export class DFG {
 
     /* methods : other */
 
-    /* TODO - if the feature is not needed by the IM, remove the following comments */
-    // public update(
-    //     inStartNode: Node, 
-    //     inEndNode: Node, 
-    //     inNodes: Node[], 
-    //     inArcs: Arc[]
-    // ) : void {
-    //     this._startNode = inStartNode;
-    //     this._endNode = inEndNode;
-    //     this._nodes = inNodes;
-    //     this._arcs = inArcs;
-    // };
+    public update(
+        inStartNode: Node, 
+        inEndNode: Node, 
+        inNodes: Node[], 
+        inArcs: Arc[]
+    ) : void {
+        this._startNode = inStartNode;
+        this._endNode = inEndNode;
+        this._nodes = inNodes;
+        this._arcs = inArcs;
+    };
 
 };

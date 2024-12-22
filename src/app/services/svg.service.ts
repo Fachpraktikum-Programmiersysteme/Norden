@@ -52,33 +52,61 @@ export class SvgService {
     private readonly defaultTextBoxFill : CssColorName = 'White';
     private readonly defaultTextFill : CssColorName = 'Black';
 
-    private readonly dfgFillColors : CssColorName[] = [
-        'Aqua',
-        'Blue',
-        'CadetBlue',
-        'CornflowerBlue',
-        // 'Cyan',
-        'DarkBlue',
-        'DarkCyan',
-        'DarkSlateBlue',
-        'DarkTurquoise',
-        'DeepSkyBlue',
-        'DodgerBlue',
-        'LightBlue',
-	    'LightCyan',
-        'LightSkyBlue',
-	    'LightSteelBlue',
-	    'MediumBlue',
-	    'MediumSlateBlue',
-        'MidnightBlue',
-	    'Navy',
-	    'PaleTurquoise',
-        'PowderBlue',
-        'RoyalBlue',
-        'SkyBlue',
-	    'SlateBlue',
-        'SteelBlue',
-        'Turquoise'
+    private static readonly dfgFillColors : CssColorName[] = [
+        'Aqua',               // ( #00FFFF)
+        'Green',              // ( #008000)
+        'SteelBlue',          // ( #4682B4)
+        'Lime',               // ( #00FF00)
+        'SlateBlue',          // ( #6A5ACD)
+        'DarkGoldenRod',      // ( #B8860B)
+        'LightSteelBlue',     // ( #B0C4DE)
+        'DarkOliveGreen',     // ( #556B2F)
+        'RoyalBlue',          // ( #4169E1)
+        'MediumAquaMarine',   // ( #66CDAA)
+        'SeaGreen',           // ( #2E8B57)
+        'Yellow',             // ( #FFFF00)
+        'DarkTurquoise',      // ( #00CED1)
+        'PowderBlue',         // ( #B0E0E6)
+        'Chartreuse',         // ( #7FFF00)
+        'Navy',               // ( #000080)
+        'MediumSpringGreen',  // ( #00FA9A)
+        'Teal',               // ( #008080)
+        'SkyBlue',            // ( #87CEEB)
+        'LemonChiffon',       // ( #FFFACD)
+        'MediumBlue',         // ( #0000CD)
+        'PaleGreen',          // ( #98FB98)
+        'CornflowerBlue',     // ( #6495ED)
+        'DarkSlateBlue',      // ( #483D8B)
+        'PaleTurquoise',      // ( #AFEEEE)
+        'GreenYellow',        // ( #ADFF2F)
+        'Aquamarine',         // ( #7FFFD4)
+        'OliveDrab',          // ( #6B8E23)
+        'DodgerBlue',         // ( #1E90FF)
+        'MediumSeaGreen',     // ( #3CB371)
+        'Khaki',              // ( #F0E68C)
+        'CadetBlue',          // ( #5F9EA0)
+        'Blue',               // ( #0000FF)
+        'LimeGreen',          // ( #32CD32)
+        'MidnightBlue',       // ( #191970)
+        'PaleGoldenRod',      // ( #EEE8AA)
+        'ForestGreen',        // ( #228B22)
+        'Turquoise',          // ( #40E0D0)
+        'DarkSeaGreen',       // ( #8FBC8F)
+        'Gold',               // ( #FFD700)
+        'LightBlue',          // ( #ADD8E6)
+        'DarkCyan',           // ( #008B8B)
+        'SpringGreen',        // ( #00FF7F)
+        'MediumSlateBlue',    // ( #7B68EE)
+        'Olive',              // ( #808000)
+        'LightSkyBlue',       // ( #87CEFA)
+        'GoldenRod',          // ( #DAA520)
+        'LightGreen',         // ( #90EE90)
+        'DeepSkyBlue',        // ( #00BFFF)
+        'LightSeaGreen',      // ( #20B2AA)
+        'DarkGreen',          // ( #006400)
+        'DarkKhaki',          // ( #BDB76B)
+        'MediumTurquoise',    // ( #48D1CC)
+        'YellowGreen'         // ( #9ACD32)
     ];
 
     private readonly arrowSVG : SVGElement = this.createSvgElement('svg');
@@ -95,6 +123,12 @@ export class SvgService {
         this.initInfos();
     };
 
+    /* methods - getters */
+
+    public get nodeRadius() : number {
+        return this.defaultNodeRadius;
+    };
+    
     /* methods - setters */
 
     public set infoOverride(inValue : boolean) {
@@ -110,6 +144,28 @@ export class SvgService {
     };
 
     /* methods : other */
+
+    public static generateOutputLogArray(inGraph : Graph) : [string, string][][] {
+        const outLogArray : [string, string][][] = [];
+        for (const trace of inGraph.logArray) {
+            const eventsArray : [string, string][] = [];;
+            for (const event of trace) {
+                eventsArray.push([event.label, this.getDfgColor(event.dfg)]);
+            };
+            if (eventsArray.length !== 0) {
+                outLogArray.push(eventsArray);
+            };
+        };
+        return outLogArray;
+    };
+
+    private static getDfgColor(inDfgId : number | undefined) : string {
+        if (inDfgId !== undefined) {
+            return this.dfgFillColors[((inDfgId) % (this.dfgFillColors.length))];
+        } else {
+            return 'Black'
+        };
+    };
 
     public createSvgNodes(inGraph : Graph) : Array<SVGElement> {
         const nodeSvgArray: Array<SVGElement> = [];
@@ -235,21 +291,21 @@ export class SvgService {
         };
         svg.setAttribute('stroke-width', `${this.defaultStrokeWidth}`);
         if (this._displayMode === 'default') {
-            if (inNode.isMarked) {
+            if (inNode.marked) {
                 svg.setAttribute('stroke', this.markedNodeStroke);
-                if (inNode.isActive) {
+                if (inNode.active) {
                     svg.setAttribute('fill', this.activeNodeFill);
-                } else if (inNode.wasVisited) {
+                } else if (inNode.visited) {
                     svg.setAttribute('fill', this.visitedNodeFill);
                 } else {
                     /* impossible case */
                     svg.setAttribute('fill', this.defaultNodeFill);
                 };
             } else {
-                if (inNode.isActive) {
+                if (inNode.active) {
                     svg.setAttribute('stroke', this.activeNodeStroke);
                     svg.setAttribute('fill', this.activeNodeFill);
-                } else if (inNode.wasVisited) {
+                } else if (inNode.visited) {
                     svg.setAttribute('stroke', this.visitedNodeStroke);
                     svg.setAttribute('fill', this.visitedNodeFill);
                 } else {
@@ -258,16 +314,16 @@ export class SvgService {
                 };
             };
         } else {
-            if (inNode.isMarked) {
+            if (inNode.marked) {
                 svg.setAttribute('stroke', this.markedNodeStroke);
             } else {
                 svg.setAttribute('stroke', this.defaultNodeStroke);
             };
-            if (inNode.isActive) {
+            if (inNode.active) {
                 svg.setAttribute('fill', this.activeNodeFill);
             } else {
                 if (inNode.dfg !== undefined) {
-                    svg.setAttribute('fill', this.dfgFillColors[((inNode.dfg) % (this.dfgFillColors.length))])
+                    svg.setAttribute('fill', SvgService.getDfgColor(inNode.dfg))
                 } else {
                     svg.setAttribute('fill', this.defaultNodeFill);
                 };
@@ -302,13 +358,13 @@ export class SvgService {
         };
 
         if (this._displayMode === 'default') {
-            if (inArc.isActive && !(inArc.overrideActive)) {
+            if (inArc.active && !(inArc.overrideMarking)) {
                 svg.setAttribute('stroke', this.activeArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_active)');
-            } else if (inArc.isMarked) {
+            } else if (inArc.marked) {
                 svg.setAttribute('stroke', this.markedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
-            } else if (inArc.wasVisited) {
+            } else if (inArc.visited) {
                 svg.setAttribute('stroke', this.visitedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_visited)');
             } else {
@@ -316,14 +372,14 @@ export class SvgService {
                 svg.setAttribute('marker-end', 'url(#arrow_head_default)');
             };
         } else {
-            if (inArc.isActive  && !(inArc.overrideActive)) {
+            if (inArc.active  && !(inArc.overrideMarking)) {
                 svg.setAttribute('stroke', this.activeArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_active)');
-            } else if (inArc.isMarked) {
+            } else if (inArc.marked) {
                 svg.setAttribute('stroke', this.markedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
             } else if (inArc.dfg !== undefined) {
-                svg.setAttribute('stroke', this.dfgFillColors[((inArc.dfg) % (this.dfgFillColors.length))]);
+                svg.setAttribute('stroke', SvgService.getDfgColor(inArc.dfg));
                 svg.setAttribute('marker-end', 'url(#arrow_head_dfg)');
             } else {
                 svg.setAttribute('stroke', this.defaultArcStroke);
@@ -402,9 +458,7 @@ export class SvgService {
         const text4 = this.createSvgElement('text');
         const text5 = this.createSvgElement('text');
         svg.setAttribute('customType', 'node-info-panel');
-        if (this._infoOverride) {
-            svg.setAttribute('visibility', 'visible');
-        } else  if (inNode.isInfoActive) {
+        if (this._infoOverride || inNode.infoOverride || inNode.infoActive) {
             svg.setAttribute('visibility', 'visible');
         } else {
             svg.setAttribute('visibility', 'hidden');
@@ -610,6 +664,8 @@ export class SvgService {
         arrowMarkDFG.appendChild(arrowPathDFG);
         arrowDefs.appendChild(arrowMarkDFG);
         this.arrowSVG.appendChild(arrowDefs);
+        this.arrowSVG.setAttribute('width', `0`);
+        this.arrowSVG.setAttribute('height', `0`);
         const div = document.getElementById('canvas');
         if (div !== null) {
             div.appendChild(this.arrowSVG);
@@ -619,6 +675,8 @@ export class SvgService {
     };
 
     private initInfos() : void {
+        this.infosSVG.setAttribute('width', `0`);
+        this.infosSVG.setAttribute('height', `0`);
         const div = document.getElementById('canvas');
         if (div !== null) {
             div.appendChild(this.infosSVG);
