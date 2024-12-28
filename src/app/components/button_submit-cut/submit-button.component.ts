@@ -4,7 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
-
+import { ToastService } from '../../services/toast/toast.service';
 import {DisplayService} from '../../services/display.service';
 import {InductiveMinerService} from '../../services/inductive-miner.service';
 
@@ -30,8 +30,9 @@ export class SubmitButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService, 
-        private _minerService : InductiveMinerService
+        private _displayService : DisplayService,
+        private _minerService : InductiveMinerService,
+        private toastService: ToastService
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
@@ -39,6 +40,7 @@ export class SubmitButtonComponent implements OnDestroy {
                 console.log('submit-button_component noticed new graph');
                 if (this._minerService.checkTermination(graph)) {
                     this._disabled = true;
+                    this.toastService.showToast('', 'info');
                 } else if ((this._displayService.graph.markedNodes.length < 1) && (this._displayService.graph.markedArcs.length < 1)) {
                     this._disabled = true;
                 } else {
@@ -67,7 +69,7 @@ export class SubmitButtonComponent implements OnDestroy {
             return 'check currently selected cut';
         };
     };
-    
+
     /* methods - other */
 
     private prevent(inEvent: Event) {

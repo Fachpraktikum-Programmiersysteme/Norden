@@ -7,9 +7,9 @@ import {TextParserService} from './services/text-parser.service';
 import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
-
 import {Graph} from './classes/graph-representation/graph';
 import { SvgService } from './services/svg.service';
+import { ToastService } from './services/toast/toast.service';
 
 @Component({
     selector: 'app-root',
@@ -26,6 +26,10 @@ export class AppComponent implements OnDestroy {
     public logAreaFc : FormControl;
 
     public logArray : [string, string][][];
+    toastMessages: Array<{
+        message: string,
+        type: "success" | "error" | "warning" | "info",
+        duration: number }> = [];
 
     /* methods - constructor */
 
@@ -33,7 +37,8 @@ export class AppComponent implements OnDestroy {
         private _jsonParserService : JsonParserService,
         private _xesParserService : XesParserService,
         private _txtParserService : TextParserService,
-        private _displayService : DisplayService
+        private _displayService : DisplayService,
+        private toastService: ToastService
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
@@ -49,6 +54,12 @@ export class AppComponent implements OnDestroy {
                 this.logArray = SvgService.generateOutputLogArray(graph);
             }
         );
+        this.toastService.toast$.subscribe(toast => {
+            this.toastMessages.push(toast);
+            setTimeout(() => {
+                this.toastMessages.shift(); //removes oldest toast
+            }, toast.duration);
+        });
     };
 
     /* methods - on destroy */
@@ -56,7 +67,7 @@ export class AppComponent implements OnDestroy {
     ngOnDestroy(): void {
         this._sub.unsubscribe();
     };
-    
+
     /* methods - other */
 
     public processSourceChange(inSourceData : [string, string]) : void {
@@ -81,5 +92,5 @@ export class AppComponent implements OnDestroy {
         };
         this._displayService.updateData(parsedContent);
     };
-    
-};
+
+}

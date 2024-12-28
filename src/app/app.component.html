@@ -12,61 +12,65 @@
     </h2>
 
     <!--    Main content    -->
-    <app-display 
-        id="canvas" 
-        class="padding full-size" 
+    <!-- Toast -->
+    <div *ngFor="let toast of toastMessages">
+        <app-toast [message]="toast.message" [type]="toast.type" [duration]="toast.duration"></app-toast>
+    </div>
+    <app-display
+        id="canvas"
+        class="padding full-size"
         (fileData)="processSourceChange($event)"
     >
     </app-display>
-    <div 
+    <div
     class="gap_30px"
     >
     </div>
-    <div 
+    <div
         class="flexRowAlignSpaceEvenlyStart"
     >
-        <mat-form-field 
-            appearance="outline" 
+        <mat-form-field
+            appearance="outline"
             class="outputContainer"
-        > 
-            <mat-label> 
+        >
+            <mat-label>
                 File Content
             </mat-label>
-            <textarea 
-                matInput 
-                cdkTextareaAutosize 
-                cdkAutosizeMinRows="3" 
-                cdkAutosizeMaxRows="7" 
+            <textarea
+                matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="3"
+                cdkAutosizeMaxRows="7"
                 [formControl]="fileAreaFc"
             >
             </textarea>
         </mat-form-field>
-        <mat-form-field 
-            appearance="outline" 
+        <mat-form-field
+            appearance="outline"
             class="outputContainer"
-        > 
-            <mat-label> 
+        >
+            <mat-label>
                 Event Log
             </mat-label>
-            <textarea 
-                matInput 
-                cdkTextareaAutosize 
+            <textarea
+                matInput
+                cdkTextareaAutosize
                 contenteditable="true"
-                cdkAutosizeMinRows="3" 
-                cdkAutosizeMaxRows="7" 
+                cdkAutosizeMinRows="3"
+                cdkAutosizeMaxRows="7"
                 [formControl]="logAreaFc"
             >
             </textarea>
-        </mat-form-field>    
-        <text-input 
-            class="inputConatiner" 
+        </mat-form-field>
+        <text-input
+            class="inputConatiner"
             (textData)="processSourceChange($event)"
         >
         </text-input>
-        <div 
+        <div
             class="flexColumnAlignStartStretch"
         >
-            <div 
+            <div
                 class="flexRowAlignSpaceEvenlyStart"
             >
                 <save-button>
@@ -80,7 +84,7 @@
                 <submit-button>
                 </submit-button>
             </div>
-            <div 
+            <div
             class="gap_40px"
             >
             </div>
@@ -88,71 +92,71 @@
             </mode-button>
         </div>
     </div>
-    <div 
+    <div
         class="gap_30px"
     >
     </div>
-    <div 
+    <div
         class="flexRowAlignSpaceEvenlyStart"
     >
-        <app-example-file 
-            title="An empty .xes file." 
-            label=".xes File I (empty)" 
+        <app-example-file
+            title="An empty .xes file."
+            label=".xes File I (empty)"
             link="assets/files-in/empty.xes"
         >
         </app-example-file>
-        <app-example-file 
-            title="A very short Event Log in .xes format." 
-            label=".xes File II (small)" 
+        <app-example-file
+            title="A very short Event Log in .xes format."
+            label=".xes File II (small)"
             link="assets/files-in/teleclaimsShortest.xes"
         >
         </app-example-file>
-        <app-example-file 
-            title="A large example Event Log in .xes format." 
-            label=".xes File III (large)" 
+        <app-example-file
+            title="A large example Event Log in .xes format."
+            label=".xes File III (large)"
             link="assets/files-in/teleclaimsExample.xes"
         >
         </app-example-file>
-        <app-example-file 
-            title="An empty .json file." 
-            label=".json File I (empty)" 
+        <app-example-file
+            title="An empty .json file."
+            label=".json File I (empty)"
             link="assets/files-in/empty.json"
         >
         </app-example-file>
-        <app-example-file 
-            title="A Petri Net in .json format." 
-            label=".json File II (default)" 
+        <app-example-file
+            title="A Petri Net in .json format."
+            label=".json File II (default)"
             link="assets/files-in/example.json"
         >
         </app-example-file>
-        <app-example-file 
-            title="A previously exported Graph in .json format." 
-            label=".json File III (test)" 
+        <app-example-file
+            title="A previously exported Graph in .json format."
+            label=".json File III (test)"
             link="assets/files-in/exclusive-cut.json"
         >
         </app-example-file>
     </div>
-    <div 
+    <div
         class="gap_30px"
     >
     </div>
-    <div 
+    <div
     class="flexRowAlignSpaceEvenlyStart"
     >
-        <mat-form-field 
-            appearance="outline" 
+        <mat-form-field
+            appearance="outline"
             class="logContainer"
-        > 
-            <mat-label> 
+        >
+            <mat-label>
                 Event Log (detailed)
             </mat-label>
-            <textarea 
-                matInput 
+            <textarea
+                matInput
                 cdkTextareaAutosize
             >
             </textarea>
-            <div 
-                appearance="outline" 
+            <div
+                appearance="outline"
                 class="logContainer"
             >
                 @for (trace of logArray; track trace) {
@@ -169,8 +173,8 @@
                     (no log available)
                 }
             </div>
-            <textarea 
-                matInput 
+            <textarea
+                matInput
                 cdkTextareaAutosize
             >
             </textarea>

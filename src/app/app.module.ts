@@ -21,12 +21,14 @@ import {SubmitButtonComponent} from './components/button_submit-cut/submit-butto
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
 import { SvgService } from './services/svg.service';
+import {ToastComponent} from "./components/toast/toast.component";
 
 @NgModule({
     declarations: [
         AppComponent,
         DisplayComponent,
-        FooterComponent
+        FooterComponent,
+        ToastComponent
     ],bootstrap: [
         AppComponent
     ], imports: [
@@ -42,7 +44,7 @@ import { SvgService } from './services/svg.service';
     ModeButtonComponent,
     ReactiveFormsModule,
     SaveButtonComponent,
-    SubmitButtonComponent, 
+    SubmitButtonComponent,
     TextInputComponent,
     TracesButtonComponent
 ], providers: [
