@@ -27,7 +27,7 @@ export class InfoButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
 
-    private _overwriteActive : boolean = false;
+    private _overrideActive : boolean;
 
     /* methods - constructor */
 
@@ -36,6 +36,7 @@ export class InfoButtonComponent implements OnDestroy {
         private _svgService : SvgService
     ) {
         this._disabled = true;
+        this._overrideActive = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 console.log('info-button_component noticed new graph');
@@ -43,7 +44,7 @@ export class InfoButtonComponent implements OnDestroy {
                     this._disabled = true;
                 } else {
                     this._disabled = false;
-                };
+                }
             }
         );
     };
@@ -58,11 +59,11 @@ export class InfoButtonComponent implements OnDestroy {
 
     public get disabled() : boolean {
         return this._disabled;
-    }
+    };
 
-    public get overwriteActive() : boolean {
-        return this._overwriteActive;
-    }
+    public get overrideActive() : boolean {
+        return this._overrideActive;
+    };
 
     public get tooltip() : string {
         if (this._disabled) {
@@ -83,8 +84,8 @@ export class InfoButtonComponent implements OnDestroy {
         /* to be removed - start */
         console.log('info button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._overwriteActive = !(this._overwriteActive);
-        this._svgService.infoOverwrite = this._overwriteActive;
+        this._overrideActive = !(this._overrideActive);
+        this._svgService.infoOverride = this._overrideActive;
         this._displayService.refreshData();
     };
 

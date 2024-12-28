@@ -1,11 +1,14 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {FormControl} from '@angular/forms';
+
+import {Subscription} from 'rxjs';
 
 import {TextParserService} from './services/text-parser.service';
 import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
 import {Graph} from './classes/graph-representation/graph';
+import { SvgService } from './services/svg.service';
 import { ToastService } from './services/toast/toast.service';
 
 @Component({
@@ -13,12 +16,16 @@ import { ToastService } from './services/toast/toast.service';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
 
     /* attributes */
 
-    public fileAreaFc: FormControl;
-    public logAreaFc: FormControl;
+    private _sub : Subscription;
+
+    public fileAreaFc : FormControl;
+    public logAreaFc : FormControl;
+
+    public logArray : [string, string][][];
     toastMessages: Array<{
         message: string,
         type: "success" | "error" | "warning" | "info",
@@ -27,22 +34,38 @@ export class AppComponent {
     /* methods - constructor */
 
     constructor(
-        private _txtParserService: TextParserService,
-        private _xesParserService: XesParserService,
-        private _jsonParserService: JsonParserService,
-        private _displayService: DisplayService,
+        private _jsonParserService : JsonParserService,
+        private _xesParserService : XesParserService,
+        private _txtParserService : TextParserService,
+        private _displayService : DisplayService,
         private toastService: ToastService
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
         this.logAreaFc = new FormControl();
         this.logAreaFc.disable();
+        this.logArray = [];
+        this._sub = this._displayService.graph$.subscribe(
+            graph => {
+                /* to be removed - start*/
+                console.log('app_component noticed new graph through subscription');
+                /* to be removed - end*/
+                this.logAreaFc.setValue(this._displayService.generateOutputLogString());
+                this.logArray = SvgService.generateOutputLogArray(graph);
+            }
+        );
         this.toastService.toast$.subscribe(toast => {
             this.toastMessages.push(toast);
             setTimeout(() => {
-                this.toastMessages.shift(); // Entfernt den ältesten Toast
+                this.toastMessages.shift(); //removes oldest toast
             }, toast.duration);
         });
+    };
+
+    /* methods - on destroy */
+
+    ngOnDestroy(): void {
+        this._sub.unsubscribe();
     };
 
     /* methods - other */
@@ -52,7 +75,7 @@ export class AppComponent {
         console.log('processing SourceChange-event - type: "' + inSourceData[0] + '", content: "' + inSourceData[1] + '"');
         /* to be removed - end*/
         this.fileAreaFc.setValue(inSourceData[1]);
-        let parsedContent : [Graph, number[][]] | undefined;
+        let parsedContent : Graph = new Graph;
         switch (inSourceData[0]) {
             case 'txt' : {
                 parsedContent = this._txtParserService.parse(inSourceData[1]);
@@ -65,12 +88,9 @@ export class AppComponent {
             case 'json' : {
                 parsedContent = this._jsonParserService.parse(inSourceData[1]);
                 break;
-            }
-        }
-        if (parsedContent !== undefined) {
-            this._displayService.updateData(parsedContent[0], parsedContent[1]);
-            this.logAreaFc.setValue(parsedContent[1]);
-        }
+            };
+        };
+        this._displayService.updateData(parsedContent);
     };
 
 }

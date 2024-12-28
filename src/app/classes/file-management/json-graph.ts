@@ -12,16 +12,33 @@ export interface JsonGraph {
 
     transitions?: Array<string>,
 
+    start?: string,
+
+    end?: string,
+
     arcs?: {
-        [idPair: string]: number
+        [arcID: string]: number
     },
 
     labels?: {
-        [sId_eId_tId: string]: string
+        [id: string]: string
     },
 
     layout?: {
-        [id_idPair: string]: Coords | Array<Coords>
+        [nodeID_or_arcID: string]: Coords | Array<Coords>
     },
+
+    dfgs?: {
+        [dfgID: string]: [string, string, Array<string>, Array<string>]
+    },
+
+    marked?: [
+        {
+            [nodeID: string]: boolean
+        },
+        {
+            [arcID: string]: boolean
+        }
+    ],
 
 };

@@ -51,13 +51,13 @@ export class TextInputComponent implements OnDestroy {
 
     public get inputText() : string {
         return this._inputText;
-    }
+    };
 
     /* methods - setters */
 
     public set inputText(inString : string) {
         this._inputText = inString;
-    }
+    };
 
 
     /* methods - other */
@@ -68,7 +68,7 @@ export class TextInputComponent implements OnDestroy {
         /* to be removed - start */
         console.log('submit action triggered - text : "' + this._inputText + '"');
         /* to be removed - end */
-    }
+    };
 
     private emitTextData(inString : string | undefined) : void {
         if (inString === undefined) {

@@ -1,6 +1,3 @@
-// import fs from 'fs';
-// import readline from 'readline';
-
 import {Injectable} from '@angular/core';
 
 import {Graph} from '../classes/graph-representation/graph';
@@ -17,7 +14,7 @@ export class XesParserService {
 
     /* methods : other */
 
-    public parse(inXesString : string): [Graph, number[][]] {
+    public parse(inXesString : string): Graph {
 
         let currentLine : number = 0;
     
@@ -31,23 +28,47 @@ export class XesParserService {
         let openedEventFlag : boolean = false;
         let closedLogFlag : boolean = false;
 
-        let unnamedEvents : number = 0;
+        // let unnamedEvents : number = 0;
     
         let eventName : string | undefined = undefined;
         let eventLifecycle : string | undefined = undefined;
 
-        let eventsArray : number[] = [];
-        let tracesArray : number[][] = [];
+        let incompleteEvents : {
+            [eventName : string] : number
+        } = {};
 
         let noEvent : boolean = true;
-    
+
         let currentNode : Node | undefined = undefined;
         let lastNode : Node | undefined = undefined;
 
-        const startNode : Node = new Node(0, 'support', 'play', 850, 50);
-        const endNode : Node = new Node(0, 'support', 'stop', 850, 550);
+        let traceArray : Node[] = [];
+        const logArray : Node[][] = [];
+        const dfgArray : Node[] = [];
 
-        const graph : Graph = new Graph([startNode, endNode]);
+        const graph : Graph = new Graph();
+
+        const startNodeAdded : [boolean, number, Node] = graph.addNode('support', 'play', 850, 50);
+        const endNodeAdded : [boolean, number, Node] = graph.addNode('support', 'stop', 850, 550);
+
+        let startNode : Node;
+        let endNode : Node;
+
+        if (startNodeAdded[0]) {
+            startNode = startNodeAdded[2];
+            graph.startNode = startNode;
+        } else {
+            throw new Error('#srv.xps.isn.000: ' + 'reading from text file failed - addition of start node failed');
+        };
+        if (endNodeAdded[0]) {
+            endNode = endNodeAdded[2];
+            graph.endNode = endNode;
+        } else {
+            throw new Error('#srv.xps.ien.001: ' + 'reading from text file failed - addition of end node failed');
+        };
+
+        dfgArray.push(startNode);
+        dfgArray.push(endNode);
 
         try {
 
@@ -67,8 +88,9 @@ export class XesParserService {
                         } else {
                             openedTraceFlag = true;
                             openedTraceLine = currentLine;
-                            eventsArray = [];
-                            eventsArray.push(0);
+                            traceArray = [];
+                            traceArray.push(startNode);
+                            incompleteEvents = {};
                         };
                         break;
                     }
@@ -98,33 +120,52 @@ export class XesParserService {
                             openedEventFlag = false;
                             closedEventLine = currentLine;
                             if (eventName === undefined) {
-                                unnamedEvents++;
-                                eventName = ('undefined_event_name__' + unnamedEvents.toString());
+                                throw new Error('#srv.xps.cle.003: ' + 'reading from .xes-file failed - found an event without a defined identifier (opened: line ' + openedEventLine + ', closed: line ' + closedEventLine + ')');
+                                // unnamedEvents++;
+                                // eventName = ('undefined_event_name__' + unnamedEvents.toString());
                             };
-                            let eventLabel : string;
                             if (eventLifecycle !== undefined) {
-                                eventLabel = (eventName + '_' + eventLifecycle);
+                                if (eventLifecycle !== 'complete') {
+                                    if (incompleteEvents[eventName] !== undefined) {
+                                        incompleteEvents[eventName]++;
+                                    } else {
+                                        incompleteEvents[eventName] = 1;
+                                    };
+                                    break;
+                                } else {
+                                    if (incompleteEvents[eventName] !== undefined) {
+                                        incompleteEvents[eventName] = 0;
+                                    };
+                                };
                             } else {
-                                eventLabel = (eventName);
+                                if (incompleteEvents[eventName] !== undefined) {
+                                    if (incompleteEvents[eventName] !== 0) {
+                                        throw new Error('#srv.xps.cle.004: ' + 'reading from .xes-file failed - found event without lifecycle attribute, occurred ' + incompleteEvents[eventName] + ' in trace containing lifecycle attribute !== \'complete\' (event was opened in line ' + openedEventLine + ', and closed in line ' + closedEventLine + ')');
+                                    };
+                                };
                             };
-                            let nodeAdded : [boolean, number] = graph.addNode('event', eventLabel);
-                            currentNode = graph.nodes[nodeAdded[1]];
-                            eventsArray.push(nodeAdded[1]);
+                            let nodeAdded : [boolean, number, Node] = graph.addNode('event', eventName);
+                            currentNode = nodeAdded[2];
                             noEvent = false;
                             if (currentNode !== undefined) {
+                                traceArray.push(currentNode);
+                                if (nodeAdded[0]) {
+                                    dfgArray.push(currentNode);
+                                };
                                 if (lastNode !== undefined) {
                                     graph.addArc(lastNode, currentNode);
                                 } else {
-                                    if (graph.nodes[0] !== undefined) {
-                                        graph.addArc(graph.nodes[0], currentNode)
-                                    } else {
-                                        throw new Error('#srv.xps.cle.004: ' + 'reading from .xes-file failed - impossible error');
-                                    };
+                                    /* TODO - if the service works as intended, remove the following comments */
+                                    // if (graph.nodes[0] !== undefined) {
+                                        graph.addArc(startNode, currentNode)
+                                    // } else {
+                                    //     throw new Error('#srv.xps.cle.005: ' + 'reading from .xes-file failed - impossible error');
+                                    // };
                                 };
                                 lastNode = currentNode;
                                 currentNode = undefined;
                             } else {
-                                throw new Error('#srv.xps.cle.005: ' + 'reading from .xes-file failed - impossible error');
+                                throw new Error('#srv.xps.cle.006: ' + 'reading from .xes-file failed - impossible error');
                             };
                         };
                         break;
@@ -139,15 +180,26 @@ export class XesParserService {
                         } else {
                             openedTraceFlag = false;
                             closedTraceLine = currentLine;
-                            eventsArray.push(1);
-                            tracesArray.push(eventsArray);
+                            traceArray.push(endNode);
+                            logArray.push(traceArray);
                             if (lastNode !== undefined) {
-                                if (graph.nodes[1] !== undefined) {
-                                    graph.addArc(lastNode, graph.nodes[1])
-                                } else {
-                                    throw new Error('#srv.xps.clt.003: ' + 'reading from .xes-file failed - impossible error');
-                                };
+                                /* TODO - if the service works as intended, remove the following comments */
+                                // if (graph.nodes[1] !== undefined) {
+                                    graph.addArc(lastNode, endNode)
+                                // } else {
+                                //     throw new Error('#srv.xps.clt.003: ' + 'reading from .xes-file failed - impossible error');
+                                // };
                                 lastNode = undefined;
+                            };
+                            let incomplete : number = 0;
+                            for (const event in incompleteEvents) {
+                                if (incompleteEvents[event] !== 0) {
+                                    incomplete++;
+                                    console.error('error @ event with name "' + event + '", the event occurred ' + incompleteEvents[event] + ' times in trace without reaching completion');
+                                };
+                            };
+                            if (incomplete !== 0) {
+                                throw new Error('#srv.xps.clt.004: ' + 'reading from .xes-file failed - found ' + incomplete + ' events in current trace that contain a lifecycle attribute, but were never logged as complete (trace was opened in line ' + openedTraceLine + ', see event details above)');
                             };
                         };
                         break;
@@ -168,12 +220,12 @@ export class XesParserService {
                     default : {
                         if  (!closedLogFlag && openedTraceFlag && openedEventFlag) {
                             if (line.includes('<string key="concept:name" value="') && line.includes('"/>')) {
-                                let foo : string[] = line.split('<string key="concept:name" value="')
-                                let bar : string[] = foo[1].split('"/>')
+                                let foo : string[] = line.split('<string key="concept:name" value="');
+                                let bar : string[] = foo[1].split('"/>');
                                 eventName = bar[0];
                             } else if (line.includes('string key="lifecycle:transition" value="') && line.includes('"/>')) {
-                                let foo : string[] = line.split('<string key="lifecycle:transition" value="')
-                                let bar : string[] = foo[1].split('"/>')
+                                let foo : string[] = line.split('<string key="lifecycle:transition" value="');
+                                let bar : string[] = foo[1].split('"/>');
                                 eventLifecycle = bar[0];
                             } else {
                                 /* line does not include name or lifecycle of currently opened event --> skip line */
@@ -189,10 +241,12 @@ export class XesParserService {
             };
 
             /* to be removed - start*/
-            console.log(' >> parsing finished - found ' + graph.nodeCount + ' nodes (' + graph.nodes.length + ' in array) {{' + graph.supportCount + ' supports, ' + graph.eventCount + ' events, ' + graph.placeCount + ' places, ' + graph.transitionCount + ' transitions}} and ' + graph.arcCount + ' arcs (' + graph.arcs.length + ' in array)');
-            console.log(' >> length of tracesArray : ' + tracesArray.length);
+            console.log(' >> parsing of input xes finished - found ' + graph.nodeCount + ' nodes (' + graph.nodes.length + ' in array) {{' + graph.supportCount + ' supports, ' + graph.eventCount + ' events, ' + graph.placeCount + ' places, ' + graph.transitionCount + ' transitions}} and ' + graph.arcCount + ' arcs (' + graph.arcs.length + ' in array)');
+            console.log(' >> dfgArray : ' + dfgArray);
+            console.log(' >> graph.nodes : ' + graph.nodes);
+            console.log(' >> length of logArray : ' + logArray.length);
             let maxLength = 0;
-            for (const trace of tracesArray) {
+            for (const trace of logArray) {
                 if (trace.length > maxLength) {
                     maxLength = trace.length;
                 };
@@ -201,24 +255,38 @@ export class XesParserService {
             /* to be removed - end*/
 
             if (noEvent) {
-                if (graph.nodes[0] !== undefined) {
-                    if (graph.nodes[1] !== undefined) {
-                        graph.addArc(graph.nodes[0], graph.nodes[1])
-                    } else {
-                        throw new Error('#srv.xps.fle.000: ' + 'reading from .xes-file failed - impossible error');
-                    };
-                } else {
-                    throw new Error('#srv.xps.fle.001: ' + 'reading from .xes-file failed - impossible error');
-                };
+                /* TODO - if the service works as intended, remove the following comments */
+                // if (graph.nodes[0] !== undefined) {
+                //     if (graph.nodes[1] !== undefined) {
+                        graph.addArc(startNode, endNode);
+                //     } else {
+                //         throw new Error('#srv.xps.afa.000: ' + 'reading from .xes-file failed - impossible error');
+                //     };
+                // } else {
+                //     throw new Error('#srv.xps.afa.001: ' + 'reading from .xes-file failed - impossible error');
+                // };
             };
+
+            /* TODO - if the service works as intended, remove the following comments */
+            // if (graph.nodes[0] !== undefined) {
+            //     if (graph.nodes[1] !== undefined) {
+                    graph.appendDFG(startNode, endNode, dfgArray, graph.arcs);
+            //     } else {
+            //         throw new Error('#srv.xps.aod.000: ' + 'reading from .xes-file failed - impossible error');
+            //     };
+            // } else {
+            //     throw new Error('#srv.xps.aod.001: ' + 'reading from .xes-file failed - impossible error');
+            // };
+
+            graph.logArray = logArray;
             
-            return [graph, tracesArray];
+            return graph;
 
         } catch (error) {
 
             console.error('parsing of .xes file failed - ', error);
 
-            return [new Graph(), tracesArray];
+            return new Graph;
 
         };
 

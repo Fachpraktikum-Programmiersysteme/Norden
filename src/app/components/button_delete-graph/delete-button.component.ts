@@ -1,5 +1,4 @@
 import {Component, OnDestroy} from '@angular/core';
-// import {MatFabButton} from "@angular/material/button";
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
@@ -40,7 +39,7 @@ export class DeleteButtonComponent implements OnDestroy {
                     this._disabled = true;
                 } else {
                     this._disabled = false;
-                };
+                }
             }
         );
     };
@@ -55,7 +54,7 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public get disabled() : boolean {
         return this._disabled;
-    }
+    };
 
     public get tooltip() : string {
         if (this._disabled) {

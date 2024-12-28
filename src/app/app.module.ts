@@ -15,9 +15,12 @@ import {DeleteButtonComponent} from './components/button_delete-graph/delete-but
 import {ExampleFileComponent} from './components/example-file/example-file.component';
 import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
 import {FooterComponent} from './components/footer/footer.component';
+import {ModeButtonComponent} from './components/button_switch-display-mode/mode-button.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
+import {SubmitButtonComponent} from './components/button_submit-cut/submit-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
+import { SvgService } from './services/svg.service';
 import {ToastComponent} from "./components/toast/toast.component";
 
 @NgModule({
@@ -38,8 +41,10 @@ import {ToastComponent} from "./components/toast/toast.component";
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    ModeButtonComponent,
     ReactiveFormsModule,
     SaveButtonComponent,
+    SubmitButtonComponent,
     TextInputComponent,
     TracesButtonComponent
 ], providers: [

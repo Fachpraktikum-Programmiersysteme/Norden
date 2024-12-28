@@ -36,14 +36,14 @@ export class TracesButtonComponent implements OnDestroy {
         private _svgService : SvgService
     ) {
         this._disabled = true;
-        this._sub  = this._displayService.log$.subscribe(
-            log => {
+        this._sub  = this._displayService.graph$.subscribe(
+            graph => {
                 console.log('traces-button_component noticed new log');
-                if (this._displayService.logEmpty) {
-                    this._disabled = true;
-                } else {
+                if (this._displayService.graph.logArray.length > 0) {
                     this._disabled = false;
-                };
+                } else {
+                    this._disabled = true;
+                }
             }
         );
     };
@@ -58,11 +58,11 @@ export class TracesButtonComponent implements OnDestroy {
 
     public get disabled() : boolean {
         return this._disabled;
-    }
+    };
 
     public get animationsDiabled() : boolean {
         return this._animationsDiabled;
-    }
+    };
 
     public get tooltip() : string {
         if (this._disabled) {
