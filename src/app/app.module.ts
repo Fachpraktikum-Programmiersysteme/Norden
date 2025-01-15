@@ -20,7 +20,6 @@ import {SaveButtonComponent} from './components/button_save-graph/save-button.co
 import {SubmitButtonComponent} from './components/button_submit-cut/submit-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
-import { SvgService } from './services/svg.service';
 import {ToastComponent} from "./components/toast/toast.component";
 
 @NgModule({

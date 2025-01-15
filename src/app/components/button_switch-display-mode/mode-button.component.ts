@@ -5,7 +5,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 import {DisplayService} from '../../services/display.service';
-import {SvgService} from '../../services/svg.service';
+import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
 
 @Component({
     selector: 'mode-button',
@@ -30,7 +30,7 @@ export class ModeButtonComponent {
 
     constructor(
         private _displayService : DisplayService,
-        private _svgService : SvgService
+        private globalState: GlobalStateSingleton,
     ) {
         this._mode = 'default';
     };
@@ -48,7 +48,7 @@ export class ModeButtonComponent {
             return 'switch display mode' + '\,\n' + '(currently displaying DFG\'s)';
         }
     };
-    
+
     /* methods - other */
 
     private prevent(inEvent: Event) {
@@ -62,7 +62,7 @@ export class ModeButtonComponent {
         /* to be removed - end */
         if (this._mode === 'dfg') {
             this._mode = 'default';
-            this._svgService.displayMode = this._mode;
+            this.globalState.updateState({ mode: this._mode });
             this._displayService.refreshData();
         };
     };
@@ -73,7 +73,7 @@ export class ModeButtonComponent {
         /* to be removed - end */
         if (this._mode === 'default') {
             this._mode = 'dfg';
-            this._svgService.displayMode = this._mode;
+            this.globalState.updateState({ mode: this._mode });
             this._displayService.refreshData();
         };
     };

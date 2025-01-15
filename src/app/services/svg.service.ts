@@ -1,113 +1,17 @@
 import {Injectable} from '@angular/core';
 
-import {CssColorName} from '../classes/display/css-color-names';
 import {Graph} from '../classes/graph-representation/graph';
 import {Node} from '../classes/graph-representation/node';
 import {Arc} from '../classes/graph-representation/arc';
+import {GlobalStateSingleton} from "../classes/global-state/global-state.singleton";
+import {GraphUiConfig} from "../classes/graph-ui/graph-ui.config";
 
 @Injectable({
     providedIn: 'root'
 })
 export class SvgService {
 
-    /* attributes */
-
-    private readonly canvasWidth : number = 1800;
-    private readonly canvasHeight : number = 600;
-
-    private readonly defaultTextBoxWidth : number = 400;
-    private readonly defaultTextBoxHeight : number = 90;
-
-    private readonly defaultMaxTextWidth : number = Math.floor(Math.ceil(this.defaultTextBoxWidth - (this.defaultTextBoxWidth / 10)) / 10)
-
     // private readonly defaultAnimationDelay : number = 2;
-
-    private readonly defaultNodeRadius : number = 20;
-    private readonly defaultArrowRadius : number = 2;
-    private readonly defaultTraceRadius : number = 7;
-
-    private readonly defaultStrokeWidth : number = 5;
-
-    private readonly defaultNodeStroke : CssColorName = 'Black';
-    private readonly activeNodeStroke : CssColorName = 'OrangeRed';
-    private readonly visitedNodeStroke : CssColorName = 'Green';
-    private readonly markedNodeStroke : CssColorName = 'Crimson';
-    private readonly defaultNodeFill : CssColorName = 'Silver';
-    private readonly activeNodeFill : CssColorName = 'Orange';
-    private readonly visitedNodeFill : CssColorName = 'Lime';
-
-    private readonly defaultArcStroke : CssColorName = 'Gray';
-    private readonly markedArcStroke : CssColorName = 'Crimson';
-    private readonly activeArcStroke : CssColorName = 'Orange';
-    private readonly visitedArcStroke : CssColorName = 'Lime';
-
-    private readonly defaultCutStroke : CssColorName = 'Red';
-
-    private readonly defaultTraceStroke : CssColorName = 'Blue';
-    private readonly dfgTraceStroke : CssColorName = 'Indigo';
-    private readonly defaultTraceFill : CssColorName = 'Aqua';
-    private readonly dfgTraceFill : CssColorName = 'Magenta';
-
-    private readonly defaultTextBoxStroke : CssColorName = 'Black';
-    private readonly defaultTextBoxFill : CssColorName = 'White';
-    private readonly defaultTextFill : CssColorName = 'Black';
-
-    private static readonly dfgFillColors : CssColorName[] = [
-        'Aqua',               // ( #00FFFF)
-        'Green',              // ( #008000)
-        'SteelBlue',          // ( #4682B4)
-        'Lime',               // ( #00FF00)
-        'SlateBlue',          // ( #6A5ACD)
-        'DarkGoldenRod',      // ( #B8860B)
-        'LightSteelBlue',     // ( #B0C4DE)
-        'DarkOliveGreen',     // ( #556B2F)
-        'RoyalBlue',          // ( #4169E1)
-        'MediumAquaMarine',   // ( #66CDAA)
-        'SeaGreen',           // ( #2E8B57)
-        'Yellow',             // ( #FFFF00)
-        'DarkTurquoise',      // ( #00CED1)
-        'PowderBlue',         // ( #B0E0E6)
-        'Chartreuse',         // ( #7FFF00)
-        'Navy',               // ( #000080)
-        'MediumSpringGreen',  // ( #00FA9A)
-        'Teal',               // ( #008080)
-        'SkyBlue',            // ( #87CEEB)
-        'LemonChiffon',       // ( #FFFACD)
-        'MediumBlue',         // ( #0000CD)
-        'PaleGreen',          // ( #98FB98)
-        'CornflowerBlue',     // ( #6495ED)
-        'DarkSlateBlue',      // ( #483D8B)
-        'PaleTurquoise',      // ( #AFEEEE)
-        'GreenYellow',        // ( #ADFF2F)
-        'Aquamarine',         // ( #7FFFD4)
-        'OliveDrab',          // ( #6B8E23)
-        'DodgerBlue',         // ( #1E90FF)
-        'MediumSeaGreen',     // ( #3CB371)
-        'Khaki',              // ( #F0E68C)
-        'CadetBlue',          // ( #5F9EA0)
-        'Blue',               // ( #0000FF)
-        'LimeGreen',          // ( #32CD32)
-        'MidnightBlue',       // ( #191970)
-        'PaleGoldenRod',      // ( #EEE8AA)
-        'ForestGreen',        // ( #228B22)
-        'Turquoise',          // ( #40E0D0)
-        'DarkSeaGreen',       // ( #8FBC8F)
-        'Gold',               // ( #FFD700)
-        'LightBlue',          // ( #ADD8E6)
-        'DarkCyan',           // ( #008B8B)
-        'SpringGreen',        // ( #00FF7F)
-        'MediumSlateBlue',    // ( #7B68EE)
-        'Olive',              // ( #808000)
-        'LightSkyBlue',       // ( #87CEFA)
-        'GoldenRod',          // ( #DAA520)
-        'LightGreen',         // ( #90EE90)
-        'DeepSkyBlue',        // ( #00BFFF)
-        'LightSeaGreen',      // ( #20B2AA)
-        'DarkGreen',          // ( #006400)
-        'DarkKhaki',          // ( #BDB76B)
-        'MediumTurquoise',    // ( #48D1CC)
-        'YellowGreen'         // ( #9ACD32)
-    ];
 
     private readonly arrowSVG : SVGElement = this.createSvgElement('svg');
     private readonly infosSVG : SVGElement = this.createSvgElement('svg');
@@ -118,17 +22,25 @@ export class SvgService {
 
     /* methods - constructor */
 
-    public constructor() {
+    public constructor(
+        private globalState: GlobalStateSingleton,
+        private graphUiConfig: GraphUiConfig
+    ) {
         this.initArrow();
         this.initInfos();
+        this.globalState.state$.subscribe((state) => {
+            this._infoOverride = state.overrideActive;
+            this._noAnimations = state.animationsDisabled;
+            this._displayMode = state.mode;
+        });
     };
 
     /* methods - getters */
 
     public get nodeRadius() : number {
-        return this.defaultNodeRadius;
+        return this.graphUiConfig.defaultNodeRadius;
     };
-    
+
     /* methods - setters */
 
     public set infoOverride(inValue : boolean) {
@@ -141,30 +53,6 @@ export class SvgService {
 
     public set displayMode(inValue : 'default' | 'dfg') {
         this._displayMode = inValue;
-    };
-
-    /* methods : other */
-
-    public static generateOutputLogArray(inGraph : Graph) : [string, string][][] {
-        const outLogArray : [string, string][][] = [];
-        for (const trace of inGraph.logArray) {
-            const eventsArray : [string, string][] = [];;
-            for (const event of trace) {
-                eventsArray.push([event.label, this.getDfgColor(event.dfg)]);
-            };
-            if (eventsArray.length !== 0) {
-                outLogArray.push(eventsArray);
-            };
-        };
-        return outLogArray;
-    };
-
-    private static getDfgColor(inDfgId : number | undefined) : string {
-        if (inDfgId !== undefined) {
-            return this.dfgFillColors[((inDfgId) % (this.dfgFillColors.length))];
-        } else {
-            return 'Black'
-        };
     };
 
     public createSvgNodes(inGraph : Graph) : Array<SVGElement> {
@@ -239,7 +127,7 @@ export class SvgService {
         svg.setAttribute('x2', `${endX}`);
         svg.setAttribute('y2', `${endY}`);
         svg.setAttribute('stroke-width', '2');
-        svg.setAttribute('stroke', this.defaultCutStroke);
+        svg.setAttribute('stroke', this.graphUiConfig.defaultCutStroke);
         return svg;
     };
 
@@ -250,22 +138,22 @@ export class SvgService {
                 svg = this.createSvgElement('rect');
                 svg.setAttribute('customType', 'support-node');
                 svg.setAttribute('id', ('support_' + inNodeId));
-                svg.setAttribute('x', `${inNode.x - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('y', `${inNode.y - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('width', `${(this.defaultNodeRadius * 2) - 1}`);
-                svg.setAttribute('height', `${(this.defaultNodeRadius * 2) - 1}`);
-                svg.setAttribute('rx', `${Math.floor(this.defaultNodeRadius / 2)}`);
+                svg.setAttribute('x', `${inNode.x - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('y', `${inNode.y - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('width', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('height', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('rx', `${Math.floor(this.graphUiConfig.defaultNodeRadius / 2)}`);
                 break;
             }
             case 'event' : {
                 svg = this.createSvgElement('rect');
                 svg.setAttribute('customType', 'event-node');
                 svg.setAttribute('id', ('event_' + inNodeId));
-                svg.setAttribute('x', `${inNode.x - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('y', `${inNode.y - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('width', `${(this.defaultNodeRadius * 2) - 1}`);
-                svg.setAttribute('height', `${(this.defaultNodeRadius * 2) - 1}`);
-                svg.setAttribute('rx', `${Math.floor(this.defaultNodeRadius / 2)}`);
+                svg.setAttribute('x', `${inNode.x - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('y', `${inNode.y - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('width', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('height', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('rx', `${Math.floor(this.graphUiConfig.defaultNodeRadius / 2)}`);
                 break;
             }
             case 'place' : {
@@ -274,58 +162,58 @@ export class SvgService {
                 svg.setAttribute('id', ('place_' + inNodeId));
                 svg.setAttribute('cx', `${inNode.x}`);
                 svg.setAttribute('cy', `${inNode.y}`);
-                svg.setAttribute('r', `${this.defaultNodeRadius}`);
+                svg.setAttribute('r', `${this.graphUiConfig.defaultNodeRadius}`);
                 break;
             }
             case 'transition' : {
                 svg = this.createSvgElement('rect');
                 svg.setAttribute('customType', 'transition-node');
                 svg.setAttribute('id', ('transition_' + inNodeId));
-                svg.setAttribute('x', `${inNode.x - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('y', `${inNode.y - this.defaultNodeRadius + 1}`);
-                svg.setAttribute('width', `${(this.defaultNodeRadius * 2) - 1}`);
-                svg.setAttribute('height', `${(this.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('x', `${inNode.x - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('y', `${inNode.y - this.graphUiConfig.defaultNodeRadius + 1}`);
+                svg.setAttribute('width', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
+                svg.setAttribute('height', `${(this.graphUiConfig.defaultNodeRadius * 2) - 1}`);
                 svg.setAttribute('rx', `${0}`);
                 break;
             }
         };
-        svg.setAttribute('stroke-width', `${this.defaultStrokeWidth}`);
+        svg.setAttribute('stroke-width', `${this.graphUiConfig.defaultStrokeWidth}`);
         if (this._displayMode === 'default') {
             if (inNode.marked) {
-                svg.setAttribute('stroke', this.markedNodeStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.markedNodeStroke);
                 if (inNode.active) {
-                    svg.setAttribute('fill', this.activeNodeFill);
+                    svg.setAttribute('fill', this.graphUiConfig.activeNodeFill);
                 } else if (inNode.visited) {
-                    svg.setAttribute('fill', this.visitedNodeFill);
+                    svg.setAttribute('fill', this.graphUiConfig.visitedNodeFill);
                 } else {
                     /* impossible case */
-                    svg.setAttribute('fill', this.defaultNodeFill);
+                    svg.setAttribute('fill', this.graphUiConfig.defaultNodeFill);
                 };
             } else {
                 if (inNode.active) {
-                    svg.setAttribute('stroke', this.activeNodeStroke);
-                    svg.setAttribute('fill', this.activeNodeFill);
+                    svg.setAttribute('stroke', this.graphUiConfig.activeNodeStroke);
+                    svg.setAttribute('fill', this.graphUiConfig.activeNodeFill);
                 } else if (inNode.visited) {
-                    svg.setAttribute('stroke', this.visitedNodeStroke);
-                    svg.setAttribute('fill', this.visitedNodeFill);
+                    svg.setAttribute('stroke', this.graphUiConfig.visitedNodeStroke);
+                    svg.setAttribute('fill', this.graphUiConfig.visitedNodeFill);
                 } else {
-                    svg.setAttribute('stroke', this.defaultNodeStroke);
-                    svg.setAttribute('fill', this.defaultNodeFill);
+                    svg.setAttribute('stroke', this.graphUiConfig.defaultNodeStroke);
+                    svg.setAttribute('fill', this.graphUiConfig.defaultNodeFill);
                 };
             };
         } else {
             if (inNode.marked) {
-                svg.setAttribute('stroke', this.markedNodeStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.markedNodeStroke);
             } else {
-                svg.setAttribute('stroke', this.defaultNodeStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.defaultNodeStroke);
             };
             if (inNode.active) {
-                svg.setAttribute('fill', this.activeNodeFill);
+                svg.setAttribute('fill', this.graphUiConfig.activeNodeFill);
             } else {
                 if (inNode.dfg !== undefined) {
-                    svg.setAttribute('fill', SvgService.getDfgColor(inNode.dfg))
+                    svg.setAttribute('fill', GraphUiConfig.getDfgColor(inNode.dfg))
                 } else {
-                    svg.setAttribute('fill', this.defaultNodeFill);
+                    svg.setAttribute('fill', this.graphUiConfig.defaultNodeFill);
                 };
             };
         };
@@ -337,11 +225,11 @@ export class SvgService {
         const svg: SVGElement = this.createSvgElement('line');
         svg.setAttribute('customType', 'arc');
         svg.setAttribute('id', ('arc_' + inArcId));
-        svg.setAttribute('stroke-width', `${this.defaultStrokeWidth}`);
+        svg.setAttribute('stroke-width', `${this.graphUiConfig.defaultStrokeWidth}`);
         let arcVectorX : number = ((inArc.target.x) - (inArc.source.x));
         let arcVectorY : number = ((inArc.target.y) - (inArc.source.y));
         let arcVectorLength : number = (Math.sqrt((arcVectorX * arcVectorX) + (arcVectorY * arcVectorY)));
-        let offVectorLength : number = ((this.defaultNodeRadius / 4) / arcVectorLength);
+        let offVectorLength : number = ((this.graphUiConfig.defaultNodeRadius / 4) / arcVectorLength);
         let offsetX : number = (Math.floor(offVectorLength * arcVectorY * (-1)));
         let offsetY : number = (Math.floor(offVectorLength * arcVectorX));
 
@@ -359,30 +247,30 @@ export class SvgService {
 
         if (this._displayMode === 'default') {
             if (inArc.active && !(inArc.overrideMarking)) {
-                svg.setAttribute('stroke', this.activeArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.activeArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_active)');
             } else if (inArc.marked) {
-                svg.setAttribute('stroke', this.markedArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.markedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
             } else if (inArc.visited) {
-                svg.setAttribute('stroke', this.visitedArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.visitedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_visited)');
             } else {
-                svg.setAttribute('stroke', this.defaultArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.defaultArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_default)');
             };
         } else {
             if (inArc.active  && !(inArc.overrideMarking)) {
-                svg.setAttribute('stroke', this.activeArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.activeArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_active)');
             } else if (inArc.marked) {
-                svg.setAttribute('stroke', this.markedArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.markedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
             } else if (inArc.dfg !== undefined) {
-                svg.setAttribute('stroke', SvgService.getDfgColor(inArc.dfg));
+                svg.setAttribute('stroke', GraphUiConfig.getDfgColor(inArc.dfg));
                 svg.setAttribute('marker-end', 'url(#arrow_head_dfg)');
             } else {
-                svg.setAttribute('stroke', this.defaultArcStroke);
+                svg.setAttribute('stroke', this.graphUiConfig.defaultArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_default)');
             };
         };
@@ -391,13 +279,13 @@ export class SvgService {
     };
 
     /* do not remove - alternative implementation */
-    // 
+    //
     // private createSvgArc(inNodes: [Node, Node], inBiDirectional: boolean, inMarking: boolean, inArcId: number): SVGElement {
     //     const svg: SVGElement = this.createSvgElement('path');
     //     svg.setAttribute('customType', 'arc');
     //     svg.setAttribute('id', ('arc_' + inArcId));
     //     svg.setAttribute('fill', 'Transparent');
-    //     svg.setAttribute('stroke-width', `${this.defaultStrokeWidth}`);
+    //     svg.setAttribute('stroke-width', `${this.graphUiConfig.defaultStrokeWidth}`);
     //     let arcVectorX : number = ((inNodes[1].x) - (inNodes[0].x));
     //     let arcVectorY : number = ((inNodes[1].y) - (inNodes[0].y));
     //     let halfX : number = ((arcVectorX) / (2));
@@ -423,29 +311,29 @@ export class SvgService {
     private createSvgInfo(inNode : Node, inNodeId : number) : SVGElement {
         let x : number;
         let y : number;
-        if (inNode.x < Math.ceil(this.canvasWidth / 2)) {
-            if (inNode.y < Math.ceil(this.canvasHeight / 2)) {
-                x = inNode.x + (this.defaultNodeRadius + 3);
-                y = inNode.y + (this.defaultNodeRadius + 3);
-                x = inNode.x + (this.defaultNodeRadius + 3);
-                y = inNode.y + (this.defaultNodeRadius + 3);
+        if (inNode.x < Math.ceil(this.graphUiConfig.canvasWidth / 2)) {
+            if (inNode.y < Math.ceil(this.graphUiConfig.canvasHeight / 2)) {
+                x = inNode.x + (this.graphUiConfig.defaultNodeRadius + 3);
+                y = inNode.y + (this.graphUiConfig.defaultNodeRadius + 3);
+                x = inNode.x + (this.graphUiConfig.defaultNodeRadius + 3);
+                y = inNode.y + (this.graphUiConfig.defaultNodeRadius + 3);
             } else {
-                x = inNode.x + (this.defaultNodeRadius + 3);
-                y = inNode.y - (this.defaultNodeRadius + 3 + this.defaultTextBoxHeight);
-                x = inNode.x + (this.defaultNodeRadius + 3);
-                y = inNode.y - (this.defaultNodeRadius + 3 + this.defaultTextBoxHeight);
+                x = inNode.x + (this.graphUiConfig.defaultNodeRadius + 3);
+                y = inNode.y - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxHeight);
+                x = inNode.x + (this.graphUiConfig.defaultNodeRadius + 3);
+                y = inNode.y - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxHeight);
             };
         } else {
-            if (inNode.y < Math.ceil(this.canvasHeight / 2)) {
-                x = inNode.x - (this.defaultNodeRadius + 3 + this.defaultTextBoxWidth);
-                y = inNode.y + (this.defaultNodeRadius + 3);
-                x = inNode.x - (this.defaultNodeRadius + 3 + this.defaultTextBoxWidth);
-                y = inNode.y + (this.defaultNodeRadius + 3);
+            if (inNode.y < Math.ceil(this.graphUiConfig.canvasHeight / 2)) {
+                x = inNode.x - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxWidth);
+                y = inNode.y + (this.graphUiConfig.defaultNodeRadius + 3);
+                x = inNode.x - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxWidth);
+                y = inNode.y + (this.graphUiConfig.defaultNodeRadius + 3);
             } else {
-                x = inNode.x - (this.defaultNodeRadius + 3 + this.defaultTextBoxWidth);
-                y = inNode.y - (this.defaultNodeRadius + 3 + this.defaultTextBoxHeight);
-                x = inNode.x - (this.defaultNodeRadius + 3 + this.defaultTextBoxWidth);
-                y = inNode.y - (this.defaultNodeRadius + 3 + this.defaultTextBoxHeight);
+                x = inNode.x - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxWidth);
+                y = inNode.y - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxHeight);
+                x = inNode.x - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxWidth);
+                y = inNode.y - (this.graphUiConfig.defaultNodeRadius + 3 + this.graphUiConfig.defaultTextBoxHeight);
             };
         };
         const svg = this.createSvgElement('svg');
@@ -465,28 +353,28 @@ export class SvgService {
         };
         rect.setAttribute('x', `${x}`);
         rect.setAttribute('y', `${y}`);
-        rect.setAttribute('width', `${this.defaultTextBoxWidth}`);
-        rect.setAttribute('height', `${this.defaultTextBoxHeight}`);
-        rect.setAttribute('fill', this.defaultTextBoxFill);
-        rect.setAttribute('stroke', this.defaultTextBoxStroke);
+        rect.setAttribute('width', `${this.graphUiConfig.defaultTextBoxWidth}`);
+        rect.setAttribute('height', `${this.graphUiConfig.defaultTextBoxHeight}`);
+        rect.setAttribute('fill', this.graphUiConfig.defaultTextBoxFill);
+        rect.setAttribute('stroke', this.graphUiConfig.defaultTextBoxStroke);
         rect.setAttribute('stroke-width', '2');
         rect.setAttribute('rx', '10');
         cont.setAttribute('x', `${x}`);
         cont.setAttribute('y', `${y}`);
-        cont.setAttribute('width', `${this.defaultTextBoxWidth}`);
-        cont.setAttribute('height', `${this.defaultTextBoxHeight}`);
+        cont.setAttribute('width', `${this.graphUiConfig.defaultTextBoxWidth}`);
+        cont.setAttribute('height', `${this.graphUiConfig.defaultTextBoxHeight}`);
         text0.setAttribute('x', `${x + 10}`);
         text0.setAttribute('y', `${y}`);
         text0.setAttribute('dy', '0.4em');
-        text0.setAttribute('fill', this.defaultTextBoxFill);
+        text0.setAttribute('fill', this.graphUiConfig.defaultTextBoxFill);
         text0.textContent = ('...');
         text1.setAttribute('x', `${x + 10}`);
         text1.setAttribute('y', `${y}`);
         text1.setAttribute('dy', '1.1em');
         text1.setAttribute('fill', 'Black');
         text1.textContent = (`label : ` + `'${inNode.label}'`);
-        if (text1.textContent.length > this.defaultMaxTextWidth) {
-            text1.setAttribute('textLength', `${this.defaultTextBoxWidth - 20}`);
+        if (text1.textContent.length > this.graphUiConfig.defaultMaxTextWidth) {
+            text1.setAttribute('textLength', `${this.graphUiConfig.defaultTextBoxWidth - 20}`);
             text1.setAttribute('lengthAdjust', 'spacingAndGlyphs');
             /* to be removed - start */
             console.log('node "' + inNodeId + '" found that info text line 1 is too long (' + text1.textContent.length + ')');
@@ -495,10 +383,10 @@ export class SvgService {
         text2.setAttribute('x', `${x + 10}`);
         text2.setAttribute('y', `${y}`);
         text2.setAttribute('dy', '2.1em');
-        text2.setAttribute('fill', this.defaultTextFill);
+        text2.setAttribute('fill', this.graphUiConfig.defaultTextFill);
         text2.textContent = (`type : ` + `'${inNode.type}'`);
-        if (text2.textContent.length > this.defaultMaxTextWidth) {
-            text2.setAttribute('textLength', `${this.defaultTextBoxWidth - 20}`);
+        if (text2.textContent.length > this.graphUiConfig.defaultMaxTextWidth) {
+            text2.setAttribute('textLength', `${this.graphUiConfig.defaultTextBoxWidth - 20}`);
             text2.setAttribute('lengthAdjust', 'spacingAndGlyphs');
             /* to be removed - start */
             console.log('node "' + inNodeId + '" found that info text line 2 is too long (' + text2.textContent.length + ')');
@@ -507,10 +395,10 @@ export class SvgService {
         text3.setAttribute('x', `${x + 10}`);
         text3.setAttribute('y', `${y}`);
         text3.setAttribute('dy', '3.1em');
-        text3.setAttribute('fill', this.defaultTextFill);
+        text3.setAttribute('fill', this.graphUiConfig.defaultTextFill);
         text3.textContent = (`id : ` + `'${inNode.id}' (attr.) ` + `'${inNodeId}' (array)`);
-        if (text3.textContent.length > this.defaultMaxTextWidth) {
-            text3.setAttribute('textLength', `${this.defaultTextBoxWidth - 20}`);
+        if (text3.textContent.length > this.graphUiConfig.defaultMaxTextWidth) {
+            text3.setAttribute('textLength', `${this.graphUiConfig.defaultTextBoxWidth - 20}`);
             text3.setAttribute('lengthAdjust', 'spacingAndGlyphs');
             /* to be removed - start */
             console.log('node "' + inNodeId + '" found that info text line 3 is too long (' + text3.textContent.length + ')');
@@ -519,10 +407,10 @@ export class SvgService {
         text4.setAttribute('x', `${x + 10}`);
         text4.setAttribute('y', `${y}`);
         text4.setAttribute('dy', '4.1em');
-        text4.setAttribute('fill', this.defaultTextFill);
+        text4.setAttribute('fill', this.graphUiConfig.defaultTextFill);
         text4.textContent = (`coords : ` + `(${inNode.x}`+ `|`+ `${inNode.y})`);
-        if (text4.textContent.length > this.defaultMaxTextWidth) {
-            text4.setAttribute('textLength', `${this.defaultTextBoxWidth - 20}`);
+        if (text4.textContent.length > this.graphUiConfig.defaultMaxTextWidth) {
+            text4.setAttribute('textLength', `${this.graphUiConfig.defaultTextBoxWidth - 20}`);
             text4.setAttribute('lengthAdjust', 'spacingAndGlyphs');
             /* to be removed - start */
             console.log('node "' + inNodeId + '" found that info text line 4 is too long (' + text4.textContent.length + ')');
@@ -531,14 +419,14 @@ export class SvgService {
         text5.setAttribute('x', `${x + 10}`);
         text5.setAttribute('y', `${y}`);
         text5.setAttribute('dy', '5.1em');
-        text5.setAttribute('fill', this.defaultTextFill);
+        text5.setAttribute('fill', this.graphUiConfig.defaultTextFill);
         if (inNode.dfg !== undefined) {
             text5.textContent = (`dfg : ` + `'${inNode.dfg}'`);
         } else {
             text5.textContent = (`dfg : ` + `'none'`);
         };
-        if (text5.textContent.length > this.defaultMaxTextWidth) {
-            text5.setAttribute('textLength', `${this.defaultTextBoxWidth - 20}`);
+        if (text5.textContent.length > this.graphUiConfig.defaultMaxTextWidth) {
+            text5.setAttribute('textLength', `${this.graphUiConfig.defaultTextBoxWidth - 20}`);
             text5.setAttribute('lengthAdjust', 'spacingAndGlyphs');
             /* to be removed - start */
             console.log('node "' + inNodeId + '" found that info text line 5 is too long (' + text5.textContent.length + ')');
@@ -562,14 +450,14 @@ export class SvgService {
         svg.setAttribute('customType', 'trace-animation');
         svg.setAttribute('cx', '0');
         svg.setAttribute('cy', '0');
-        svg.setAttribute('r', `${this.defaultTraceRadius}`);
+        svg.setAttribute('r', `${this.graphUiConfig.defaultTraceRadius}`);
         svg.setAttribute('stroke-width', '2');
         if (this._displayMode === 'default') {
-            svg.setAttribute('stroke', `${this.defaultTraceStroke}`);
-            svg.setAttribute('fill', `${this.defaultTraceFill}`);
+            svg.setAttribute('stroke', `${this.graphUiConfig.defaultTraceStroke}`);
+            svg.setAttribute('fill', `${this.graphUiConfig.defaultTraceFill}`);
         } else {
-            svg.setAttribute('stroke', `${this.dfgTraceStroke}`);
-            svg.setAttribute('fill', `${this.dfgTraceFill}`);
+            svg.setAttribute('stroke', `${this.graphUiConfig.dfgTraceStroke}`);
+            svg.setAttribute('fill', `${this.graphUiConfig.dfgTraceFill}`);
         };
         const animation : SVGElement = this.createSvgElement('animateMotion');
         animation.setAttribute('begin', (`${inAnimationDelay}` + `s`));
@@ -595,64 +483,64 @@ export class SvgService {
         const arrowDefs : SVGElement = this.createSvgElement('defs');
         const arrowMarkD : SVGElement = this.createSvgElement('marker');
         arrowMarkD.setAttribute('id', 'arrow_head_default');
-        arrowMarkD.setAttribute('viewBox', ('0 0 ' + `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius * 2}`));
-        arrowMarkD.setAttribute('refX', `${(this.defaultArrowRadius * 2) + Math.floor(this.defaultNodeRadius / 6)}`);
-        arrowMarkD.setAttribute('refY', `${this.defaultArrowRadius}`);
-        arrowMarkD.setAttribute('markerHeight', `${this.defaultArrowRadius * 2}`);
-        arrowMarkD.setAttribute('markerWidth', `${this.defaultArrowRadius * 2}`);
+        arrowMarkD.setAttribute('viewBox', ('0 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius * 2}`));
+        arrowMarkD.setAttribute('refX', `${(this.graphUiConfig.defaultArrowRadius * 2) + Math.floor(this.graphUiConfig.defaultNodeRadius / 6)}`);
+        arrowMarkD.setAttribute('refY', `${this.graphUiConfig.defaultArrowRadius}`);
+        arrowMarkD.setAttribute('markerHeight', `${this.graphUiConfig.defaultArrowRadius * 2}`);
+        arrowMarkD.setAttribute('markerWidth', `${this.graphUiConfig.defaultArrowRadius * 2}`);
         arrowMarkD.setAttribute('markerUnits', 'strokeWidth');
         arrowMarkD.setAttribute('orient', 'auto');
         const arrowPathD : SVGElement = this.createSvgElement('path');
-        arrowPathD.setAttribute('d', 'M 0 0 L '+ `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius}` + ' L 0 ' + `${this.defaultArrowRadius * 2}` + ' z');
-        arrowPathD.setAttribute('fill', this.defaultArcStroke);
+        arrowPathD.setAttribute('d', 'M 0 0 L '+ `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius}` + ' L 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' z');
+        arrowPathD.setAttribute('fill', this.graphUiConfig.defaultArcStroke);
         const arrowMarkM : SVGElement = this.createSvgElement('marker');
         arrowMarkM.setAttribute('id', 'arrow_head_marked');
-        arrowMarkM.setAttribute('viewBox', ('0 0 ' + `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius * 2}`));
-        arrowMarkM.setAttribute('refX', `${(this.defaultArrowRadius * 2) + Math.floor(this.defaultNodeRadius / 6)}`);
-        arrowMarkM.setAttribute('refY', `${this.defaultArrowRadius}`);
-        arrowMarkM.setAttribute('markerHeight', `${this.defaultArrowRadius * 2}`);
-        arrowMarkM.setAttribute('markerWidth', `${this.defaultArrowRadius * 2}`);
+        arrowMarkM.setAttribute('viewBox', ('0 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius * 2}`));
+        arrowMarkM.setAttribute('refX', `${(this.graphUiConfig.defaultArrowRadius * 2) + Math.floor(this.graphUiConfig.defaultNodeRadius / 6)}`);
+        arrowMarkM.setAttribute('refY', `${this.graphUiConfig.defaultArrowRadius}`);
+        arrowMarkM.setAttribute('markerHeight', `${this.graphUiConfig.defaultArrowRadius * 2}`);
+        arrowMarkM.setAttribute('markerWidth', `${this.graphUiConfig.defaultArrowRadius * 2}`);
         arrowMarkM.setAttribute('markerUnits', 'strokeWidth');
         arrowMarkM.setAttribute('orient', 'auto');
         const arrowPathM : SVGElement = this.createSvgElement('path');
-        arrowPathM.setAttribute('d', 'M 0 0 L '+ `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius}` + ' L 0 ' + `${this.defaultArrowRadius * 2}` + ' z');
-        arrowPathM.setAttribute('fill', this.markedArcStroke);
+        arrowPathM.setAttribute('d', 'M 0 0 L '+ `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius}` + ' L 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' z');
+        arrowPathM.setAttribute('fill', this.graphUiConfig.markedArcStroke);
         const arrowMarkA : SVGElement = this.createSvgElement('marker');
         arrowMarkA.setAttribute('id', 'arrow_head_active');
-        arrowMarkA.setAttribute('viewBox', ('0 0 ' + `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius * 2}`));
-        arrowMarkA.setAttribute('refX', `${(this.defaultArrowRadius * 2) + Math.floor(this.defaultNodeRadius / 6)}`);
-        arrowMarkA.setAttribute('refY', `${this.defaultArrowRadius}`);
-        arrowMarkA.setAttribute('markerHeight', `${this.defaultArrowRadius * 2}`);
-        arrowMarkA.setAttribute('markerWidth', `${this.defaultArrowRadius * 2}`);
+        arrowMarkA.setAttribute('viewBox', ('0 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius * 2}`));
+        arrowMarkA.setAttribute('refX', `${(this.graphUiConfig.defaultArrowRadius * 2) + Math.floor(this.graphUiConfig.defaultNodeRadius / 6)}`);
+        arrowMarkA.setAttribute('refY', `${this.graphUiConfig.defaultArrowRadius}`);
+        arrowMarkA.setAttribute('markerHeight', `${this.graphUiConfig.defaultArrowRadius * 2}`);
+        arrowMarkA.setAttribute('markerWidth', `${this.graphUiConfig.defaultArrowRadius * 2}`);
         arrowMarkA.setAttribute('markerUnits', 'strokeWidth');
         arrowMarkA.setAttribute('orient', 'auto');
         const arrowPathA : SVGElement = this.createSvgElement('path');
-        arrowPathA.setAttribute('d', 'M 0 0 L '+ `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius}` + ' L 0 ' + `${this.defaultArrowRadius * 2}` + ' z');
-        arrowPathA.setAttribute('fill', this.activeArcStroke);
+        arrowPathA.setAttribute('d', 'M 0 0 L '+ `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius}` + ' L 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' z');
+        arrowPathA.setAttribute('fill', this.graphUiConfig.activeArcStroke);
         const arrowMarkV : SVGElement = this.createSvgElement('marker');
         arrowMarkV.setAttribute('id', 'arrow_head_visited');
-        arrowMarkV.setAttribute('viewBox', ('0 0 ' + `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius * 2}`));
-        arrowMarkV.setAttribute('refX', `${(this.defaultArrowRadius * 2) + Math.floor(this.defaultNodeRadius / 6)}`);
-        arrowMarkV.setAttribute('refY', `${this.defaultArrowRadius}`);
-        arrowMarkV.setAttribute('markerHeight', `${this.defaultArrowRadius * 2}`);
-        arrowMarkV.setAttribute('markerWidth', `${this.defaultArrowRadius * 2}`);
+        arrowMarkV.setAttribute('viewBox', ('0 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius * 2}`));
+        arrowMarkV.setAttribute('refX', `${(this.graphUiConfig.defaultArrowRadius * 2) + Math.floor(this.graphUiConfig.defaultNodeRadius / 6)}`);
+        arrowMarkV.setAttribute('refY', `${this.graphUiConfig.defaultArrowRadius}`);
+        arrowMarkV.setAttribute('markerHeight', `${this.graphUiConfig.defaultArrowRadius * 2}`);
+        arrowMarkV.setAttribute('markerWidth', `${this.graphUiConfig.defaultArrowRadius * 2}`);
         arrowMarkV.setAttribute('markerUnits', 'strokeWidth');
         arrowMarkV.setAttribute('orient', 'auto');
         const arrowPathV : SVGElement = this.createSvgElement('path');
-        arrowPathV.setAttribute('d', 'M 0 0 L '+ `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius}` + ' L 0 ' + `${this.defaultArrowRadius * 2}` + ' z');
-        arrowPathV.setAttribute('fill', this.visitedArcStroke);
+        arrowPathV.setAttribute('d', 'M 0 0 L '+ `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius}` + ' L 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' z');
+        arrowPathV.setAttribute('fill', this.graphUiConfig.visitedArcStroke);
         const arrowMarkDFG : SVGElement = this.createSvgElement('marker');
         arrowMarkDFG.setAttribute('id', 'arrow_head_dfg');
-        arrowMarkDFG.setAttribute('viewBox', ('0 0 ' + `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius * 2}`));
-        arrowMarkDFG.setAttribute('refX', `${(this.defaultArrowRadius * 2) + Math.floor(this.defaultNodeRadius / 6)}`);
-        arrowMarkDFG.setAttribute('refY', `${this.defaultArrowRadius}`);
-        arrowMarkDFG.setAttribute('markerHeight', `${this.defaultArrowRadius * 2}`);
-        arrowMarkDFG.setAttribute('markerWidth', `${this.defaultArrowRadius * 2}`);
+        arrowMarkDFG.setAttribute('viewBox', ('0 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius * 2}`));
+        arrowMarkDFG.setAttribute('refX', `${(this.graphUiConfig.defaultArrowRadius * 2) + Math.floor(this.graphUiConfig.defaultNodeRadius / 6)}`);
+        arrowMarkDFG.setAttribute('refY', `${this.graphUiConfig.defaultArrowRadius}`);
+        arrowMarkDFG.setAttribute('markerHeight', `${this.graphUiConfig.defaultArrowRadius * 2}`);
+        arrowMarkDFG.setAttribute('markerWidth', `${this.graphUiConfig.defaultArrowRadius * 2}`);
         arrowMarkDFG.setAttribute('markerUnits', 'strokeWidth');
         arrowMarkDFG.setAttribute('orient', 'auto');
         const arrowPathDFG : SVGElement = this.createSvgElement('path');
-        arrowPathDFG.setAttribute('d', 'M 0 0 L '+ `${this.defaultArrowRadius * 2}` + ' ' + `${this.defaultArrowRadius}` + ' L 0 ' + `${this.defaultArrowRadius * 2}` + ' z');
-        arrowPathDFG.setAttribute('fill', this.defaultNodeStroke);
+        arrowPathDFG.setAttribute('d', 'M 0 0 L '+ `${this.graphUiConfig.defaultArrowRadius * 2}` + ' ' + `${this.graphUiConfig.defaultArrowRadius}` + ' L 0 ' + `${this.graphUiConfig.defaultArrowRadius * 2}` + ' z');
+        arrowPathDFG.setAttribute('fill', this.graphUiConfig.defaultNodeStroke);
         arrowMarkD.appendChild(arrowPathD);
         arrowDefs.appendChild(arrowMarkD);
         arrowMarkM.appendChild(arrowPathM);

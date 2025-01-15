@@ -6,7 +6,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
-import {SvgService} from '../../services/svg.service';
+import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
 
 @Component({
     selector: 'info-button',
@@ -33,7 +33,7 @@ export class InfoButtonComponent implements OnDestroy {
 
     constructor(
         private _displayService : DisplayService,
-        private _svgService : SvgService
+        private globalState: GlobalStateSingleton,
     ) {
         this._disabled = true;
         this._overrideActive = false;
@@ -72,7 +72,7 @@ export class InfoButtonComponent implements OnDestroy {
             return 'display all node information';
         };
     };
-    
+
     /* methods - other */
 
     private prevent(inEvent: Event) {
@@ -85,7 +85,7 @@ export class InfoButtonComponent implements OnDestroy {
         console.log('info button clicked - event : ' + inEvent);
         /* to be removed - end */
         this._overrideActive = !(this._overrideActive);
-        this._svgService.infoOverride = this._overrideActive;
+        this.globalState.updateState({ overrideActive: this._overrideActive });
         this._displayService.refreshData();
     };
 

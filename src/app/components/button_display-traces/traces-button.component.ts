@@ -6,10 +6,10 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 
 import {DisplayService} from '../../services/display.service';
-import {SvgService} from '../../services/svg.service';
+import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
 
 @Component({
-    selector: 'traces-button', 
+    selector: 'traces-button',
     templateUrl: './traces-button.component.html',
     styleUrls: ['./traces-button.component.css'],
     standalone: true,
@@ -33,7 +33,7 @@ export class TracesButtonComponent implements OnDestroy {
 
     constructor(
         private _displayService : DisplayService,
-        private _svgService : SvgService
+        private globalState: GlobalStateSingleton,
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
@@ -71,7 +71,7 @@ export class TracesButtonComponent implements OnDestroy {
             return 'display traces as animated objects';
         };
     };
-    
+
     /* methods - other */
 
     private prevent(inEvent: Event) {
@@ -84,7 +84,7 @@ export class TracesButtonComponent implements OnDestroy {
         console.log('traces button clicked - event : ' + inEvent);
         /* to be removed - end */
         this._animationsDiabled = !(this._animationsDiabled);
-        this._svgService.noAnimations = this._animationsDiabled;
+        this.globalState.updateState({ animationsDisabled: this._animationsDiabled });
         this._displayService.refreshData();
     };
 
