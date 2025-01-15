@@ -71,7 +71,7 @@ export class DeleteButtonComponent implements OnDestroy {
         inEvent.stopPropagation();
     };
     triggerToast() {
-        this.toastService.showToast('Delete button clicked', 'success');
+        this.toastService.showToast('Graph deleted successful', 'success');
     }
 
     public processMouseClick(inEvent: MouseEvent) {
