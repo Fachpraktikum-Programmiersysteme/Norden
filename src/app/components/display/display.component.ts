@@ -7,12 +7,13 @@ import {FileReaderService} from "../../services/file-reader.service";
 import {DisplayService} from '../../services/display.service';
 import {SvgService} from '../../services/svg.service';
 
-import {ExampleFileComponent} from "../../components/example-file/example-file.component";
+import {ExampleFileComponent} from "../example-file/example-file.component";
 
 import {Graph} from '../../classes/graph-representation/graph';
 import {Node} from 'src/app/classes/graph-representation/node';
 import {Arc} from 'src/app/classes/graph-representation/arc';
 import {Cut} from '../../classes/graph-representation/cut';
+import {SpringEmbedderAlgorithm} from "../../classes/spring-embedder/spring-embedder.algorithm";
 
 
 
@@ -67,7 +68,8 @@ export class DisplayComponent implements OnDestroy {
         private _svgService: SvgService,
         private _displayService: DisplayService,
         private _fileReaderService: FileReaderService,
-        private _http: HttpClient
+        private _http: HttpClient,
+        private _renderAlgorithm: SpringEmbedderAlgorithm,
     ) {
         this.fileData = new EventEmitter<[string, string]>();
         this._sub = this._displayService.graph$.subscribe(
@@ -440,9 +442,9 @@ export class DisplayComponent implements OnDestroy {
             if (this.draggedNode !== undefined) {
                 this.draggedNode.x = inEvent.offsetX;
                 this.draggedNode.y = inEvent.offsetY;
-                // 
+                //
                 /* do not remove - alternative implementation */
-                // 
+                //
                 // const nodeX : number = this.draggedNode.x;
                 // const nodeY : number = this.draggedNode.y;
                 // const mouseX : number = inEvent.offsetX;
@@ -867,33 +869,38 @@ export class DisplayComponent implements OnDestroy {
         this._displayService.updateData(this._graph);
     };
 
-    private draw() : void {
+    private draw(): void {
         if (this.drawingArea === undefined) {
-            console.debug('drawing area not ready yet')
+            console.debug('drawing area not ready yet');
             return;
-        };
+        }
+
+        this._graph = this._renderAlgorithm.applyLayout(this._graph);
+        const canvasWidth = this.drawingArea.nativeElement.clientWidth;
+        const canvasHeight = this.drawingArea.nativeElement.clientHeight;
+        this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
+
         this.clearDrawingArea();
         const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
         for (const arc of arcs) {
             this.drawingArea.nativeElement.appendChild(arc);
-        };
+        }
         const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
         for (const node of nodes) {
             this.drawingArea.nativeElement.appendChild(node);
-        };
-        const infos : SVGElement[] = this._svgService.createSvgInfos(this._graph);
+        }
+        const infos: SVGElement[] = this._svgService.createSvgInfos(this._graph);
         for (const info of infos) {
             this.drawingArea.nativeElement.appendChild(info);
-        };
-        if (!(this.dragInProgress)) {
-            /* for improving performance, trace-elements are not loaded while a node is being dragged around the canvas,
-                they are rendered again after the drag has ended */
-            const traces : SVGElement[] = this._svgService.createSvgTraces(this._graph);
+        }
+        if (!this.dragInProgress) {
+            const traces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
             for (const trace of traces) {
                 this.drawingArea.nativeElement.appendChild(trace);
-            };
-        };
-    };
+            }
+        }
+    }
+
 
     private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
@@ -904,5 +911,40 @@ export class DisplayComponent implements OnDestroy {
             drawingArea.removeChild(drawingArea.lastChild as ChildNode);
         }
     };
+
+    private resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
+        const margin = 20; // Margin around the graph
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        // Calculate bounding box of the graph
+        graph.nodes.forEach((node) => {
+            if (node) {
+                minX = Math.min(minX, node.x);
+                minY = Math.min(minY, node.y);
+                maxX = Math.max(maxX, node.x);
+                maxY = Math.max(maxY, node.y);
+            }
+        });
+
+        const graphWidth = maxX - minX;
+        const graphHeight = maxY - minY;
+
+        // Calculate scaling factors to fit graph within canvas
+        const scaleX = (canvasWidth - margin * 2) / graphWidth;
+        const scaleY = (canvasHeight - margin * 2) / graphHeight;
+        const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+
+        // Calculate offsets to center the graph in the canvas
+        const offsetX = (canvasWidth - graphWidth * scale) / 2 - minX * scale;
+        const offsetY = (canvasHeight - graphHeight * scale) / 2 - minY * scale;
+
+        // Apply scaling and centering
+        graph.nodes.forEach((node) => {
+            if (node) {
+                node.x = node.x * scale + offsetX;
+                node.y = node.y * scale + offsetY;
+            }
+        });
+    }
 
 }

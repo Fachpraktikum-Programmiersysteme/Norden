@@ -8,8 +8,8 @@ import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {DisplayService} from './services/display.service';
 import {Graph} from './classes/graph-representation/graph';
-import { SvgService } from './services/svg.service';
 import { ToastService } from './services/toast/toast.service';
+import {GraphLogService} from "./classes/graph-log/graph-log.service";
 
 @Component({
     selector: 'app-root',
@@ -51,7 +51,7 @@ export class AppComponent implements OnDestroy {
                 console.log('app_component noticed new graph through subscription');
                 /* to be removed - end*/
                 this.logAreaFc.setValue(this._displayService.generateOutputLogString());
-                this.logArray = SvgService.generateOutputLogArray(graph);
+                this.logArray = GraphLogService.generateOutputLogArray(graph);
             }
         );
         this.toastService.toast$.subscribe(toast => {

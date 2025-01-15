@@ -1,23 +1,23 @@
 import {Injectable} from "@angular/core";
 
 import {DisplayService} from "./display.service";
-import {SvgService} from "./svg.service";
 
 import {Graph} from '../classes/graph-representation/graph';
 import {Node} from "../classes/graph-representation/node";
 import {Arc} from "../classes/graph-representation/arc";
 import {DFG} from "../classes/graph-representation/dfg";
+import {GraphUiConfig} from "../classes/graph-ui/graph-ui.config";
 
 @Injectable({
     providedIn: 'root'
 })
 export class InductiveMinerService {
-    
+
     /* methods : constructor */
 
     public constructor(
-        private _displayService : DisplayService, 
-        private _svgService : SvgService
+        private _displayService : DisplayService,
+        private _graphUiConfig : GraphUiConfig,
     ) {};
 
     /* methods : other */
@@ -365,10 +365,10 @@ export class InductiveMinerService {
     };
 
     private executeExclusiveCut(
-        inOutGraph : Graph, 
-        inCutArcs : [Arc, Arc], 
-        inSplitDFG : DFG, 
-        inOldDFG : [Node, Node, Node[], Arc[]], 
+        inOutGraph : Graph,
+        inCutArcs : [Arc, Arc],
+        inSplitDFG : DFG,
+        inOldDFG : [Node, Node, Node[], Arc[]],
         inNewDFG : [Node, Node, Node[], Arc[]]
     ) : void {
         const playX : number = (inCutArcs[0].sourceX + Math.ceil((inCutArcs[0].targetX - inCutArcs[0].sourceX) * (2/3)));
@@ -489,8 +489,8 @@ export class InductiveMinerService {
     private executeLoopCut() : void {};
 
     private executeBaseCase(
-        inOutGraph : Graph, 
-        inDfg : DFG, 
+        inOutGraph : Graph,
+        inDfg : DFG,
         inMiddleNode? : Node
     ) : void {
         if (inDfg.nodes.length === 3) {
@@ -639,7 +639,7 @@ export class InductiveMinerService {
             };
             if (!(inOutGraph.deleteDFG(inDfg))) {
                 throw new Error('#srv.mnr.ebc.030: ' + 'base case conversion failed - deletion of the dfg failed');
-            };           
+            };
         } else {
             if (inMiddleNode !== undefined) {
                 throw new Error('#srv.mnr.ebc.031: ' + 'base case conversion failed - given dfg contains only two nodes but a middle node was given');
@@ -764,9 +764,9 @@ export class InductiveMinerService {
     };
 
     private replaceArc(
-        inOutGraph : Graph, 
-        inReplacedArc : Arc, 
-        inNewArcSourceNode : Node, 
+        inOutGraph : Graph,
+        inReplacedArc : Arc,
+        inNewArcSourceNode : Node,
         inNewArcTargetNode : Node
     ) : void {
         const arcAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcSourceNode, inNewArcTargetNode, inReplacedArc.weight);
@@ -784,11 +784,11 @@ export class InductiveMinerService {
     };
 
     private replaceArcInsertNode(
-        inOutGraph : Graph, 
-        inReplacedArc : Arc, 
-        inNewArcSourceNode : Node, 
-        inNewArcTargetNode : Node, 
-        inNewNodeType : 'place' | 'transition', 
+        inOutGraph : Graph,
+        inReplacedArc : Arc,
+        inNewArcSourceNode : Node,
+        inNewArcTargetNode : Node,
+        inNewNodeType : 'place' | 'transition',
         inNewNodeLabel : string
     ) : Node {
         const placeX : number = (inNewArcSourceNode.x + Math.ceil((inNewArcTargetNode.x - inNewArcSourceNode.x) / 2));
@@ -870,7 +870,7 @@ export class InductiveMinerService {
     };
 
     private checkGraphStart(
-        inGraph : Graph, 
+        inGraph : Graph,
         inNode : Node
     ) : boolean {
         if (inGraph.startNode !== undefined) {
@@ -885,7 +885,7 @@ export class InductiveMinerService {
     };
 
     private checkGraphEnd(
-        inGraph : Graph, 
+        inGraph : Graph,
         inNode : Node
     ) : boolean {
         if (inGraph.endNode !== undefined) {
@@ -919,7 +919,7 @@ export class InductiveMinerService {
     };
 
     private checkMarkedNodesDFG(
-        inGraph : Graph, 
+        inGraph : Graph,
         inDFG : number
     ) : boolean {
         for (const node of inGraph.markedNodes) {
@@ -931,7 +931,7 @@ export class InductiveMinerService {
     };
 
     private checkMarkedArcsDFG(
-        inGraph : Graph, 
+        inGraph : Graph,
         inDFG : number
     ) : boolean {
         for (const arc of inGraph.markedArcs) {
@@ -943,7 +943,7 @@ export class InductiveMinerService {
     };
 
     private checkDfgPosition(
-        inGraph : Graph, 
+        inGraph : Graph,
         inDfgId : number
     ) : number | undefined {
         let dfgPos : number = 0;
@@ -957,7 +957,7 @@ export class InductiveMinerService {
     };
 
     private checkCutArcsEC(
-        inGraph : Graph, 
+        inGraph : Graph,
         inDfg : DFG
     ) : [Arc, Arc] | undefined {
         const arcZero : Arc = inGraph.markedArcs[0];
@@ -982,7 +982,7 @@ export class InductiveMinerService {
     };
 
     private checkCutArcsSC(
-        inGraph : Graph, 
+        inGraph : Graph,
         inDfg : DFG
     ) : [Arc[], boolean] | undefined {
         const cutArcs : Arc[] = [];
@@ -1034,11 +1034,11 @@ export class InductiveMinerService {
     };
 
     private transformStart(
-        inOutGraph : Graph, 
-        inStartNode : Node, 
+        inOutGraph : Graph,
+        inStartNode : Node,
         inArcWeight : number
     ) : [Node, Node, Node] {
-        const startPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._svgService.nodeRadius / 2)));
+        const startPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
         if (!(startPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.tsn.000: ' + 'start node transformation failed - first start place could not be added due to conflict with existing node)');
         };
@@ -1048,7 +1048,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tsn.001: ' + 'start node transformation failed - start transition could not be added due to conflict with existing node)');
         };
         const startTransition : Node = startTransitionAdded[2];
-        const startPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._svgService.nodeRadius / 2)));
+        const startPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
         if (!(startPlaceTwoAdded[0])) {
             throw new Error('#srv.mnr.tsn.002: ' + 'start node transformation failed - second start place could not be added due to conflict with existing node)');
         };
@@ -1079,7 +1079,7 @@ export class InductiveMinerService {
     };
 
     private transformMid(
-        inOutGraph : Graph, 
+        inOutGraph : Graph,
         inMidNode : Node
     ) : Node {
         const midTransitionAdded : [boolean, number, Node] = inOutGraph.addNode('transition', inMidNode.label, inMidNode.x, inMidNode.y);
@@ -1095,11 +1095,11 @@ export class InductiveMinerService {
     };
 
     private transformEnd(
-        inOutGraph : Graph, 
-        inEndNode : Node, 
+        inOutGraph : Graph,
+        inEndNode : Node,
         inArcWeight : number
     ) : [Node, Node, Node] {
-        const endPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._svgService.nodeRadius / 2)));
+        const endPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
         if (!(endPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.ten.000: ' + 'end node transformation failed - first end place could not be added due to conflict with existing node)');
         };
@@ -1109,7 +1109,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.ten.001: ' + 'end node transformation failed - end transition could not be added due to conflict with existing node)');
         };
         const endTransition : Node = endTransitionAdded[2];
-        const endPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._svgService.nodeRadius / 2)));
+        const endPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
         if (!(endPlaceTwoAdded[0])) {
             throw new Error('#srv.mnr.ten.002: ' + 'end node transformation failed - second end place could not be added due to conflict with existing node)');
         };
@@ -1140,12 +1140,12 @@ export class InductiveMinerService {
     };
 
     private transformStartEnd(
-        inOutGraph : Graph, 
-        inStartNode : Node, 
-        inEndNode : Node, 
+        inOutGraph : Graph,
+        inStartNode : Node,
+        inEndNode : Node,
         inArc : Arc
     ) : [Node, Node, Node, Node, Node] {
-        const startY : number = (inStartNode.y - Math.ceil(this._svgService.nodeRadius / 2));
+        const startY : number = (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2));
         const startPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, startY);
         if (!(startPlaceAdded[0])) {
             throw new Error('#srv.mnr.tse.000: ' + 'start-end transformation failed - start place could not be added due to conflict with existing node)');
@@ -1168,7 +1168,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tse.003: ' + 'start-end transformation failed - end transition could not be added due to conflict with existing node)');
         };
         const endTransition : Node = endTransitionAdded[2];
-        const endY : number = (inEndNode.y + Math.ceil(this._svgService.nodeRadius / 2));
+        const endY : number = (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2));
         const endPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, endY);
         if (!(endPlaceAdded[0])) {
             throw new Error('#srv.mnr.tse.004: ' + 'start-end transformation failed - end place could not be added due to conflict with existing node)');
