@@ -9,9 +9,9 @@ import {DisplayService} from '../../services/display.service';
 import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
 
 @Component({
-    selector: 'traces-button',
-    templateUrl: './traces-button.component.html',
-    styleUrls: ['./traces-button.component.css'],
+    selector: 'embedder-button',
+    templateUrl: './embedder-button.component.html',
+    styleUrls: ['./embedder-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -19,7 +19,7 @@ import {GlobalStateSingleton} from "../../classes/global-state/global-state.sing
         MatTooltipModule
     ]
 })
-export class TracesButtonComponent implements OnDestroy {
+export class EmbedderButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -27,13 +27,13 @@ export class TracesButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
 
-    private _animationsDiabled : boolean = false;
+    private _embedderDiabled : boolean = false;
 
     /* methods - constructor */
 
     constructor(
         private _displayService : DisplayService,
-        private globalState: GlobalStateSingleton
+        private globalState: GlobalStateSingleton,
     ) {
         this._disabled = true;
         this._sub  = this._displayService.graph$.subscribe(
@@ -60,17 +60,17 @@ export class TracesButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get animationsDiabled() : boolean {
-        return this._animationsDiabled;
+    public get embedderDiabled() : boolean {
+        return this._embedderDiabled;
     };
 
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
-        } else if (this._animationsDiabled) {
-            return 'display traces as animated objects';
+        } else if (this._embedderDiabled) {
+            return 'automatically arrange nodes';
         } else {
-            return 'hide animated trace objects';
+            return 'disable automatic node arrangement';
         };
     };
 
@@ -83,10 +83,10 @@ export class TracesButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('traces button clicked - event : ' + inEvent);
+        console.log('embedder button clicked - event : ' + inEvent);
         /* to be removed - end */
-        this._animationsDiabled = !(this._animationsDiabled);
-        this.globalState.updateState({ animationsDisabled: this._animationsDiabled });
+        this._embedderDiabled = !(this._embedderDiabled);
+        this.globalState.updateState({ embedderDiabled: this._embedderDiabled });
         this._displayService.refreshData();
     };
 

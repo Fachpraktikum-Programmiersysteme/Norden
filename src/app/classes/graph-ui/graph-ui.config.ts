@@ -1,28 +1,33 @@
-import { Injectable } from '@angular/core';
-import { CssColorName } from '../display/css-color-names';
+import {Injectable} from '@angular/core';
+
+import {CssColorName} from '../display/css-color-names';
 
 @Injectable({
     providedIn: 'root',
 })
 export class GraphUiConfig {
-    // Canvas dimensions
+
+    // canvas dimensions
     readonly canvasWidth: number = 1800;
     readonly canvasHeight: number = 600;
 
-    // Node and arc dimensions
+    // node and arc dimensions
     readonly defaultNodeRadius: number = 20;
     readonly defaultArrowRadius: number = 2;
     readonly defaultTraceRadius: number = 7;
     readonly defaultStrokeWidth: number = 5;
 
-    // Textbox dimensions
+    // textbox dimensions
     readonly defaultTextBoxWidth: number = 400;
     readonly defaultTextBoxHeight: number = 90;
     readonly defaultMaxTextWidth: number = Math.floor(
         Math.ceil(this.defaultTextBoxWidth - this.defaultTextBoxWidth / 10) / 10
     );
 
-    // Default colors for nodes, arcs, traces, and text
+    // default delay between animations
+    // readonly defaultAnimationDelay : number = 2;
+
+    // default colors for nodes, arcs, traces, and text
     readonly defaultNodeStroke: CssColorName = 'Black';
     readonly activeNodeStroke: CssColorName = 'OrangeRed';
     readonly visitedNodeStroke: CssColorName = 'Green';

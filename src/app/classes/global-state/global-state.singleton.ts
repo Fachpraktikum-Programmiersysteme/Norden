@@ -2,16 +2,18 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface GlobalState {
-    overrideActive: boolean;
+    infoOverrideActive: boolean;
     animationsDisabled: boolean;
+    embedderDiabled: boolean;
     mode: 'default' | 'dfg';
 }
 
 @Injectable({ providedIn: 'root' })
 export class GlobalStateSingleton {
     private stateSubject = new BehaviorSubject<GlobalState>({
-        overrideActive: false,
+        infoOverrideActive: false,
         animationsDisabled: false,
+        embedderDiabled: false,
         mode: 'default',
     });
 

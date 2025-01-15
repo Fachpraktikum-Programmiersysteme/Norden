@@ -1,0 +1,16 @@
+<button 
+    mat-fab 
+    [matTooltip]="tooltip" 
+    [disabled]="disabled"
+    (click)="processMouseClick($event)"
+>
+    @if (embedderDiabled) {
+        <mat-icon>
+            open_with
+        </mat-icon>
+    } @else {
+        <mat-icon>
+            swap_horiz
+        </mat-icon>
+    }
+</button>

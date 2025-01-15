@@ -14,6 +14,7 @@ import {DisplayComponent} from './components/display/display.component';
 import {DeleteButtonComponent} from './components/button_delete-graph/delete-button.component';
 import {ExampleFileComponent} from './components/example-file/example-file.component';
 import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
+import {EmbedderButtonComponent} from './components/button_activate-spring-embedder/embedder-button.component';
 import {FooterComponent} from './components/footer/footer.component';
 import {ModeButtonComponent} from './components/button_switch-display-mode/mode-button.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
@@ -34,6 +35,7 @@ import {ToastComponent} from "./components/toast/toast.component";
     BrowserAnimationsModule,
     BrowserModule,
     DeleteButtonComponent,
+    EmbedderButtonComponent,
     ExampleFileComponent,
     InfoButtonComponent,
     MatButtonModule,

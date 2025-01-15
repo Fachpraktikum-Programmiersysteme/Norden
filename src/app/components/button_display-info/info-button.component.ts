@@ -68,6 +68,8 @@ export class InfoButtonComponent implements OnDestroy {
     public get tooltip() : string {
         if (this._disabled) {
             return '[currently disabled]';
+        } else if (this._overrideActive) {
+            return 'hide all node information';
         } else {
             return 'display all node information';
         };
@@ -85,7 +87,7 @@ export class InfoButtonComponent implements OnDestroy {
         console.log('info button clicked - event : ' + inEvent);
         /* to be removed - end */
         this._overrideActive = !(this._overrideActive);
-        this.globalState.updateState({ overrideActive: this._overrideActive });
+        this.globalState.updateState({ infoOverrideActive: this._overrideActive });
         this._displayService.refreshData();
     };
 

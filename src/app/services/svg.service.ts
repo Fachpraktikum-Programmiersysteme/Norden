@@ -1,17 +1,15 @@
 import {Injectable} from '@angular/core';
 
+import {GlobalStateSingleton} from "../classes/global-state/global-state.singleton";
+import {GraphUiConfig} from "../classes/graph-ui/graph-ui.config";
 import {Graph} from '../classes/graph-representation/graph';
 import {Node} from '../classes/graph-representation/node';
 import {Arc} from '../classes/graph-representation/arc';
-import {GlobalStateSingleton} from "../classes/global-state/global-state.singleton";
-import {GraphUiConfig} from "../classes/graph-ui/graph-ui.config";
 
 @Injectable({
     providedIn: 'root'
 })
 export class SvgService {
-
-    // private readonly defaultAnimationDelay : number = 2;
 
     private readonly arrowSVG : SVGElement = this.createSvgElement('svg');
     private readonly infosSVG : SVGElement = this.createSvgElement('svg');
@@ -29,7 +27,7 @@ export class SvgService {
         this.initArrow();
         this.initInfos();
         this.globalState.state$.subscribe((state) => {
-            this._infoOverride = state.overrideActive;
+            this._infoOverride = state.infoOverrideActive;
             this._noAnimations = state.animationsDisabled;
             this._displayMode = state.mode;
         });

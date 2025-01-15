@@ -9,11 +9,12 @@ import {SvgService} from '../../services/svg.service';
 
 import {ExampleFileComponent} from "../example-file/example-file.component";
 
+import {SpringEmbedderAlgorithm} from "../../classes/spring-embedder/spring-embedder.algorithm";
+import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
 import {Graph} from '../../classes/graph-representation/graph';
 import {Node} from 'src/app/classes/graph-representation/node';
 import {Arc} from 'src/app/classes/graph-representation/arc';
 import {Cut} from '../../classes/graph-representation/cut';
-import {SpringEmbedderAlgorithm} from "../../classes/spring-embedder/spring-embedder.algorithm";
 
 
 
@@ -68,8 +69,9 @@ export class DisplayComponent implements OnDestroy {
         private _svgService: SvgService,
         private _displayService: DisplayService,
         private _fileReaderService: FileReaderService,
-        private _http: HttpClient,
         private _renderAlgorithm: SpringEmbedderAlgorithm,
+        private _globalState: GlobalStateSingleton,
+        private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
         this._sub = this._displayService.graph$.subscribe(
@@ -873,43 +875,43 @@ export class DisplayComponent implements OnDestroy {
         if (this.drawingArea === undefined) {
             console.debug('drawing area not ready yet');
             return;
-        }
-
-        this._graph = this._renderAlgorithm.applyLayout(this._graph);
-        const canvasWidth = this.drawingArea.nativeElement.clientWidth;
-        const canvasHeight = this.drawingArea.nativeElement.clientHeight;
-        this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
-
+        };
+        if (!(this._globalState.currentState.embedderDiabled)) {
+            this._graph = this._renderAlgorithm.applyLayout(this._graph);
+            const canvasWidth = this.drawingArea.nativeElement.clientWidth;
+            const canvasHeight = this.drawingArea.nativeElement.clientHeight;
+            this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
+        };
         this.clearDrawingArea();
         const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
         for (const arc of arcs) {
             this.drawingArea.nativeElement.appendChild(arc);
-        }
+        };
         const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
         for (const node of nodes) {
             this.drawingArea.nativeElement.appendChild(node);
-        }
+        };
         const infos: SVGElement[] = this._svgService.createSvgInfos(this._graph);
         for (const info of infos) {
             this.drawingArea.nativeElement.appendChild(info);
-        }
+        };
         if (!this.dragInProgress) {
             const traces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
             for (const trace of traces) {
                 this.drawingArea.nativeElement.appendChild(trace);
-            }
-        }
-    }
+            };
+        };
+    };
 
 
     private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
         if (drawingArea?.childElementCount === undefined) {
             return;
-        }
+        };
         while (drawingArea.childElementCount > 0) {
             drawingArea.removeChild(drawingArea.lastChild as ChildNode);
-        }
+        };
     };
 
     private resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
@@ -923,7 +925,7 @@ export class DisplayComponent implements OnDestroy {
                 minY = Math.min(minY, node.y);
                 maxX = Math.max(maxX, node.x);
                 maxY = Math.max(maxY, node.y);
-            }
+            };
         });
 
         const graphWidth = maxX - minX;
@@ -943,8 +945,8 @@ export class DisplayComponent implements OnDestroy {
             if (node) {
                 node.x = node.x * scale + offsetX;
                 node.y = node.y * scale + offsetY;
-            }
+            };
         });
-    }
+    };
 
-}
+};

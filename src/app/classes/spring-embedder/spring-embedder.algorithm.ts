@@ -1,8 +1,9 @@
-import { Graph } from '../graph-representation/graph';
-import { Node } from '../graph-representation/node';
-import { Arc } from '../graph-representation/arc';
-import {GraphUiConfig} from "../graph-ui/graph-ui.config";
 import {Injectable} from "@angular/core";
+
+import {GraphUiConfig} from "../graph-ui/graph-ui.config";
+import {Graph} from '../graph-representation/graph';
+import {Node} from '../graph-representation/node';
+import {Arc} from '../graph-representation/arc';
 
 @Injectable({
     providedIn: 'root', // Makes it available application-wide
