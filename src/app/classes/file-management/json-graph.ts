@@ -29,7 +29,7 @@ export interface JsonGraph {
     },
 
     dfgs?: {
-        [dfgID: string]: [string, string, Array<string>, Array<string>]
+        [dfgID: string]: [string, string, Array<string>, Array<string>, Array<Array<string>>]
     },
 
     marked?: [

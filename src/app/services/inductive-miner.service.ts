@@ -1,12 +1,13 @@
 import {Injectable} from "@angular/core";
 
+import {ToastService} from './toast.service';
 import {DisplayService} from "./display.service";
 
+import {GraphGraphicsConfig} from "../classes/display/graph-graphics.config";
 import {Graph} from '../classes/graph-representation/graph';
 import {Node} from "../classes/graph-representation/node";
 import {Arc} from "../classes/graph-representation/arc";
 import {DFG} from "../classes/graph-representation/dfg";
-import {GraphUiConfig} from "../classes/graph-ui/graph-ui.config";
 
 @Injectable({
     providedIn: 'root'
@@ -16,8 +17,9 @@ export class InductiveMinerService {
     /* methods : constructor */
 
     public constructor(
+        private _toastService : ToastService,
         private _displayService : DisplayService,
-        private _graphUiConfig : GraphUiConfig,
+        private _graphicsConfig : GraphGraphicsConfig,
     ) {};
 
     /* methods : other */
@@ -51,306 +53,242 @@ export class InductiveMinerService {
         };
     };
 
-    public checkCut(inOutGraph : Graph) : boolean {
+    // TODO - after implementation and test of all components, modify toasts and remove timeouts
+    // 
+    public async checkInput(inOutGraph : Graph) {
         this.checkGraphStartEnd(inOutGraph);
-        let cutFound : boolean = false;
-        if (!cutFound) {
-            cutFound = this.checkExclusiveCut(inOutGraph);
-        };
-        if (!cutFound) {
-            cutFound = this.checkSequenceCut(inOutGraph);
-        };
-        if (!cutFound) {
-            cutFound = this.checkParallelCut(inOutGraph);
-        };
-        if (!cutFound) {
-            cutFound = this.checkLoopCut(inOutGraph);
-        };
-        if (cutFound) {
-            this.unmarkMarked(inOutGraph);
-        };
-        this.checkBaseCase(inOutGraph);
-        return cutFound;
-    };
-
-    /* to be removed - start */
-    public testExclusiveCut(inOutGraph : Graph) : void  {
-        this.checkExclusiveCut(inOutGraph);
-    };
-    /* to be removed - end */
-
-    /* to be removed - start */
-    public testUnmarkMarked(inOutGraph : Graph) : void  {
-        this.unmarkMarked(inOutGraph);
-    };
-    /* to be removed - end */
-
-    /* to be removed - start */
-    public testBaseCase(inOutGraph : Graph) : void  {
-        this.checkBaseCase(inOutGraph);
-    };
-    /* to be removed - end */
-
-    private checkExclusiveCut(inOutGraph : Graph) : boolean {
-        /* to be removed - start */
-        console.error('im_service started check for exclusive cut');
-        /* to be removed - end */
-        if (inOutGraph.markedArcs.length !== 2) {
-            /* to be removed - start */
-            console.error('cut rejected on check 1');
-            /* to be removed - end */
-            return false;
-        };
-        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
-        if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 2');
-            /* to be removed - end */
-            return false;
-        };
-        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
-        if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 3');
-            /* to be removed - end */
-            return false;
-        };
-        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
-        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
-        if (cutArcs === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 4');
-            /* to be removed - end */
-            return false;
-        };
-        const tempPlay : Node = new Node(0, 'support', 'placeholder', cutArcs[0].targetX, cutArcs[0].targetY);
-        const tempStop : Node = new Node(0, 'support', 'placeholder', cutArcs[1].sourceX, cutArcs[1].sourceY);
-        let splitM : [Node, Node, Node[], Arc[]];
-        let splitU : [Node, Node, Node[], Arc[]];
-        if (dfg.startNode.marked) {
-            if (dfg.endNode.marked) {
-                splitM = [dfg.startNode, dfg.endNode, [], []];
-                splitU = [tempPlay, tempStop, [], []];
-            } else {
-                /* to be removed - start */
-                console.error('cut rejected on check 5');
-                /* to be removed - end */
-                return false;
-            };
-        } else {
-            if (dfg.endNode.marked) {
-                /* to be removed - start */
-                console.error('cut rejected on check 6');
-                /* to be removed - end */
-                return false;
-            } else {
-                splitU = [dfg.startNode, dfg.endNode, [], []];
-                splitM = [tempPlay, tempStop, [], []];
-            };
-        };
-        for (const arc of dfg.arcs) {
-            if (arc.marked) {
-                if (arc.source.marked) {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        console.error('cut rejected on check 7');
-                        /* to be removed - end */
-                        return false;
-                    } else {
-                        /* arc is cut --> skip arc */
-                    };
+        inOutGraph.resetAllChanged();
+        inOutGraph.resetAllNew();
+        this._displayService.refreshData();
+        /* TODO - part to be modified - start */
+        this._toastService.showToast('changed flags reset, 2s until check for EC', 'info');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        /* TODO - part to be modified - end */
+        this._displayService.refreshData();
+        let inputAccepted : boolean = false;
+        if (!inputAccepted) {
+            const checkEC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkExclusiveCut(inOutGraph);
+            inputAccepted = checkEC[0];
+            if (inputAccepted) {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input accepted as EC, 3s until execution', 'success');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                /* TODO - part to be modified - end */
+                if (checkEC[1] !== undefined) {
+                    this.executeExclusiveCut(inOutGraph, checkEC[1][0], checkEC[1][1], checkEC[1][2], checkEC[1][3], checkEC[1][4], checkEC[1][5]);
+                    this._displayService.refreshData();
+                    /* TODO - part to be modified - start */
+                    this._toastService.showToast('EC executed, 4s until reset of marked flags', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 4000));
+                    /* TODO - part to be modified - end */
+                    inOutGraph.resetAllMarked();
                 } else {
-                    if (arc.target.marked) {
-                        /* arc is cut --> skip arc */
-                    } else {
-                        /* to be removed - start */
-                        console.error('cut rejected on check 8');
-                        /* to be removed - end */
-                        return false;
-                    };
+                    throw new Error('#srv.mnr.ccI.000: ' + 'input check failed - check identified exclusive cut, but did not return associated values');
                 };
             } else {
-                if (arc.source.marked) {
-                    if (arc.target.marked) {
-                        splitM[3].push(arc);
-                    } else {
-                        /* to be removed - start */
-                        console.error('cut rejected on check 9');
-                        /* to be removed - end */
-                        return false;
-                    };
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input rejected as EC, 2s until check for SC', 'error');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                /* TODO - part to be modified - end */
+            };
+        };
+        if (!inputAccepted) {
+            const checkSC : [boolean, undefined | []] = this.checkSequenceCut(inOutGraph);
+            inputAccepted = checkSC[0];
+            if (inputAccepted) {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input accepted as SC, 3s until execution', 'success');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                /* TODO - part to be modified - end */
+                if (checkSC[1] !== undefined) {
+                    this.executeSequenceCut(inOutGraph);
+                    this._displayService.refreshData();
+                    /* TODO - part to be modified - start */
+                    this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 4000));
+                    /* TODO - part to be modified - end */
+                    inOutGraph.resetAllMarked();
                 } else {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        console.error('cut rejected on check 10');
-                        /* to be removed - end */
-                        return false;
-                    } else {
-                        splitU[3].push(arc);
-                    };
+                    throw new Error('#srv.mnr.ccI.001: ' + 'input check failed - check identified sequence cut, but did not return associated values');
                 };
-            };
-        };
-        for (const node of dfg.nodes) {
-            if (node.marked) {
-                splitM[2].push(node);
             } else {
-                splitU[2].push(node);
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input rejected as SC, 2s until check for PC', 'error');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                /* TODO - part to be modified - end */
             };
         };
-        if ((splitM[3].length) < (splitM[2].length - 1)) {
-            /* to be removed - start */
-            console.error('cut rejected on check 11');
-            /* to be removed - end */
-            return false;
+        if (!inputAccepted) {
+            const checkPC : [boolean, undefined | []] = this.checkParallelCut(inOutGraph);
+            inputAccepted = checkPC[0];
+            if (inputAccepted) {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input accepted as PC, 3s until execution', 'success');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                /* TODO - part to be modified - end */
+                if (checkPC[1] !== undefined) {
+                    this.executeParallelCut(inOutGraph);
+                    this._displayService.refreshData();
+                    /* TODO - part to be modified - start */
+                    this._toastService.showToast('PC executed, 4s until reset of marked flags', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 4000));
+                    /* TODO - part to be modified - end */
+                    inOutGraph.resetAllMarked();
+                } else {
+                    throw new Error('#srv.mnr.ccI.002: ' + 'input check failed - check identified parallel cut, but did not return associated values');
+                };
+            } else {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input rejected as PC, 2s until check for LC', 'error');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                /* TODO - part to be modified - end */
+            };
         };
-        if ((splitU[3].length) < (splitU[2].length - 1)) {
-            /* to be removed - start */
-            console.error('cut rejected on check 12');
-            /* to be removed - end */
-            return false;
+        if (!inputAccepted) {
+            const checkLC : [boolean, undefined | []] = this.checkLoopCut(inOutGraph);
+            inputAccepted = checkLC[0];
+            if (inputAccepted) {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input accepted as LC, 3s until execution', 'success');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                /* TODO - part to be modified - end */
+                if (checkLC[1] !== undefined) {
+                    this.executeLoopCut(inOutGraph);
+                    this._displayService.refreshData();
+                    /* TODO - part to be modified - start */
+                    this._toastService.showToast('LC executed, 4s until reset of marked flags', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 4000));
+                    /* TODO - part to be modified - end */
+                    inOutGraph.resetAllMarked();
+                } else {
+                    throw new Error('#srv.mnr.ccI.003: ' + 'input check failed - check identified loop cut, but did not return associated values');
+                };
+            } else {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input rejected as LC, 2s until check for BC', 'error');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                /* TODO - part to be modified - end */
+            };
         };
-        if ((splitU[0] === dfg.startNode) && (splitU[1] === dfg.endNode)) {
-            /* to be removed - start */
-            console.error('found exclusive cut, will execute');
-            /* to be removed - end */
-            this.executeExclusiveCut(inOutGraph, cutArcs, dfg, splitU, splitM);
-        } else if ((splitM[0] === dfg.startNode) && (splitM[1] === dfg.endNode)) {
-            /* to be removed - start */
-            console.error('found exclusive cut, will execute');
-            /* to be removed - end */
-            this.executeExclusiveCut(inOutGraph, cutArcs, dfg, splitM, splitU);
+        if (!inputAccepted) {
+            const checkBC : [boolean, undefined | [DFG, Node | undefined]] = this.checkBaseCase(inOutGraph);
+            inputAccepted = checkBC[0];
+            if (inputAccepted) {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input accepted as BC, 3s until execution', 'success');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                /* TODO - part to be modified - end */
+                if (checkBC[1] !== undefined) {
+                    if (checkBC[1][1] !== undefined) {
+                        this.executeBaseCase(inOutGraph, checkBC[1][0], checkBC[1][1]);
+                    } else {
+                        this.executeBaseCase(inOutGraph, checkBC[1][0]);
+                    };
+                    this._displayService.refreshData();
+                    /* TODO - part to be modified - start */
+                    this._toastService.showToast('BC executed, 4s until reset of marked flags', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 4000));
+                    /* TODO - part to be modified - end */
+                    inOutGraph.resetAllMarked();
+                } else {
+                    throw new Error('#srv.mnr.ccI.004: ' + 'input check failed - check identified base case, but did not return associated values');
+                };
+            } else {
+                /* TODO - part to be modified - start */
+                this._toastService.showToast('input rejected as BC, end of checks reached --> no matching pattern found', 'error');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                /* TODO - part to be modified - end */
+            };
+        };
+        // 
+        /* TODO - alternative implementation for test purposes - start */
+        // 
+        // inOutGraph.resetAllMarked();
+        // this._displayService.refreshData();
+        // this._toastService.showToast('marked flags reset, 2s until automated check for all BC', 'info');
+        // await new Promise(resolve => setTimeout(resolve, 2000));
+        // const cases : number = this.autoCheckBaseCase(inOutGraph);
+        // this._toastService.showToast('end of checks reached, found ' + cases.toString() + ' BC', 'error');
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        // 
+        /* TODO - alternative implementation for test purposes - end */
+        // 
+        this._displayService.refreshData();
+        /* TODO - part to be modified - start */
+        if (this.checkTermination(inOutGraph)) {
+            this._toastService.showToast('the inductive miner has terminated', 'success');
         } else {
-            throw new Error('#srv.mnr.cec.000: ' + 'exclusive cut check failed - inconsitent split of dfg detected (neither sub-dfg contains both the start node and the end node of the dfg)');
+            this._toastService.showToast('termination condition of inductive miner is not met', 'error');
         };
-        this._displayService.updateData(inOutGraph);
-        return true;
+        /* TODO - part to be modified - end */
     };
 
-    private checkSequenceCut(inOutGraph : Graph) : boolean {
-        if (inOutGraph.markedArcs.length < 1) {
-            /* to be removed - start */
-            console.error('cut rejected on check 1');
-            /* to be removed - end */
-            return false;
-        };
-        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
-        if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 2');
-            /* to be removed - end */
-            return false;
-        };
-        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
-        if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 3');
-            /* to be removed - end */
-            return false;
-        };
-        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
-        const cutsCheck : [Arc[], boolean] | undefined = this.checkCutArcsSC(inOutGraph, dfg);
-        if (cutsCheck === undefined) {
-            /* to be removed - start */
-            console.error('cut rejected on check 4');
-            /* to be removed - end */
-            return false;
-        };
-        const cutArcs : Arc[] = cutsCheck[0];
-        const cutsStartOnMarked : boolean = cutsCheck[1];
-
-        return false;
+    /* to be removed - start */
+    public testResetMarked(inOutGraph : Graph) : void  {
+        inOutGraph.resetAllMarked();
+        this._displayService.refreshData();
     };
-
-    private checkParallelCut(inOutGraph : Graph) : boolean {
-        return false;
+    public testResetChanges(inOutGraph : Graph) : void  {
+        inOutGraph.resetAllChanged();
+        inOutGraph.resetAllNew();
+        this._displayService.refreshData();
     };
-
-    private checkLoopCut(inOutGraph : Graph) : boolean {
-        return false;
+    public testExclusiveCut(inOutGraph : Graph) : boolean  {
+        const returnValue : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkExclusiveCut(inOutGraph);
+        this._displayService.refreshData();
+        return returnValue[0];
     };
+    public testBaseCase(inOutGraph : Graph) : boolean  {
+        const checkBC : [boolean, undefined | [DFG, Node | undefined]] = this.checkBaseCase(inOutGraph);
+        if (checkBC[0]) {
+            if (checkBC[1] !== undefined) {
+                if (checkBC[1][1] !== undefined) {
+                    this.executeBaseCase(inOutGraph, checkBC[1][0], checkBC[1][1]);
+                } else {
+                    this.executeBaseCase(inOutGraph, checkBC[1][0]);
+                };
+            } else {
+                throw new Error('#srv.mnr.tbc.000: ' + 'test base case check failed - check identified base case, but did not return associated values');
+            };
+        };
+        this._displayService.refreshData();
+        return checkBC[0];
+    };
+    public testAutoBaseCase(inOutGraph : Graph) : number  {
+        const returnValue : number = this.autoCheckBaseCase(inOutGraph);
+        this._displayService.refreshData();
+        return returnValue;
+    };
+    /* to be removed - end */
 
-    private checkBaseCase(inOutGraph : Graph) : number {
+    private autoCheckBaseCase(inOutGraph : Graph) : number {
         /* to be removed - start */
-        console.error('im_service started check for base cases');
+        console.log('im_service started automated check for base cases');
         /* to be removed - end */
-        const caseArray : [DFG, Node | undefined][] = [];
+        inOutGraph.resetAllChanged();
+        inOutGraph.resetAllNew();
+        const casesArray : [DFG, Node | undefined][] = [];
         let casesFound : number = 0;
         for (const dfg of inOutGraph.dfgArray) {
             if (dfg.nodes.length < 4) {
-                /* to be removed - start */
-                console.error('found base case candidate');
-                /* to be removed - end */
-                if (dfg.nodes.length === 3) {
-                    if (dfg.arcs.length !== 2) {
-                        throw new Error('#srv.mnr.cbc.000: ' + 'base case check failed - inconsitent dfg detected (three nodes, but more or less than two arcs)');
+                inOutGraph.resetAllMarked();
+                for (const node of dfg.nodes) {
+                    inOutGraph.setElementMarkedFlag(node, true);
+                };
+                const checkBC : [boolean, undefined | [DFG, Node | undefined]] = this.checkBaseCase(inOutGraph);
+                if (checkBC[0]) {
+                    if (checkBC[1] !== undefined) {
+                        casesArray.push(checkBC[1])
+                        casesFound++;
+                    } else {
+                        throw new Error('#srv.mnr.abc.000: ' + 'automated base case check failed - check identified base case, but did not return associated values');
                     };
-                    if (dfg.arcs[0].weight !== dfg.arcs[1].weight) {
-                        throw new Error('#srv.mnr.cbc.001: ' + 'base case check failed - inconsitent dfg detected (three nodes, but the two arcs have different weights)');
-                    };
-                    if (dfg.startNode.type !== 'support') {
-                        throw new Error('#srv.mnr.cbc.002: ' + 'base case check failed - inconsitent dfg detected (start node type is not \'support\')');
-                    };
-                    if (dfg.startNode.label !== 'play') {
-                        throw new Error('#srv.mnr.cbc.003: ' + 'base case check failed - inconsitent dfg detected (start node label is not \'play\')');
-                    };
-                    if (dfg.endNode.type !== 'support') {
-                        throw new Error('#srv.mnr.cbc.004: ' + 'base case check failed - inconsitent dfg detected (end node type is not \'support\')');
-                    };
-                    if (dfg.endNode.label !== 'stop') {
-                        throw new Error('#srv.mnr.cbc.005: ' + 'base case check failed - inconsitent dfg detected (end node label is not \'stop\')');
-                    };
-                    let midNode : Node | undefined;
-                    let midCount : number = 0;
-                    for (const node of dfg.nodes) {
-                        if ((node !== dfg.startNode) && (node !== dfg.endNode)) {
-                            midNode = node;
-                            midCount++;
-                        };
-                    };
-                    if (midCount !== 1) {
-                        throw new Error('#srv.mnr.cbc.006: ' + 'base case check failed - inconsitent dfg detected (three nodes, but more than one node that is neither start nor end)');
-                    };
-                    if (midNode === undefined) {
-                        throw new Error('#srv.mnr.cbc.007: ' + 'base case check failed - impossible error)');
-                    };
-                    if (midNode.type !== 'event') {
-                        throw new Error('#srv.mnr.cbc.008: ' + 'base case check failed - inconsitent dfg detected (middle node type is not \'event\')');
-                    };
-                    for (const arc of dfg.arcs) {
-                        if (arc.source === dfg.startNode) {
-                            if (arc.target !== midNode) {
-                                throw new Error('#srv.mnr.cbc.009: ' + 'base case check failed - inconsitent dfg detected (three nodes, but contains arc from the start node to a target node that is not the middle node)');
-                            };
-                        } else if (arc.source === midNode) {
-                            if (arc.target !== dfg.endNode) {
-                                throw new Error('#srv.mnr.cbc.010: ' + 'base case check failed - inconsitent dfg detected (three nodes, but contains arc from the middle node to a target node that is not the end node)');
-                            };
-                        } else {
-                            throw new Error('#srv.mnr.cbc.011: ' + 'base case check failed - inconsitent dfg detected (three nodes, but contains arc with source node that is neither the start node nor the middle node)');
-                        };
-                    };
-                    caseArray.push([dfg, midNode]);
-                    casesFound++;
-                } else if (dfg.nodes.length === 2) {
-                    if (dfg.arcs.length !== 1) {
-                        throw new Error('#srv.mnr.cbc.012: ' + 'base case check failed - inconsitent dfg detected (two nodes, but more or less than one arc)');
-                    };
-                    if (dfg.arcs[0].source !== dfg.startNode) {
-                        throw new Error('#srv.mnr.cbc.013: ' + 'base case check failed - inconsitent dfg detected (two nodes, but the source node of the only arc is not the start node)');
-                    };
-                    if (dfg.arcs[0].target !== dfg.endNode) {
-                        throw new Error('#srv.mnr.cbc.014: ' + 'base case check failed - inconsitent dfg detected (two nodes, but the target node of the only arc is not the end node)');
-                    };
-                    caseArray.push([dfg, undefined]);
-                    casesFound++;
-                } else {
-                    throw new Error('#srv.mnr.cbc.015: ' + 'base case check failed - inconsitent dfg detected (less than two nodes) detected');
                 };
             };
         };
+        inOutGraph.resetAllMarked();
         let casesExecuted : number = 0;
-        for (const foundCase of caseArray) {
+        for (const foundCase of casesArray) {
             if (foundCase[1] !== undefined) {
                 this.executeBaseCase(inOutGraph, foundCase[0], foundCase[1]);
             } else {
@@ -359,134 +297,745 @@ export class InductiveMinerService {
             casesExecuted++;
         };
         if (casesExecuted !== casesFound) {
-            throw new Error('#srv.mnr.cbc.016: ' + 'base case check failed - found ' + casesFound + ' cases, but executed ' + casesExecuted);
+            throw new Error('#srv.mnr.abc.001: ' + 'automated base case check failed - found ' + casesFound + ' cases, but executed ' + casesExecuted);
         };
         return casesFound;
     };
 
-    private executeExclusiveCut(
-        inOutGraph : Graph,
-        inCutArcs : [Arc, Arc],
-        inSplitDFG : DFG,
-        inOldDFG : [Node, Node, Node[], Arc[]],
-        inNewDFG : [Node, Node, Node[], Arc[]]
-    ) : void {
-        const playX : number = (inCutArcs[0].sourceX + Math.ceil((inCutArcs[0].targetX - inCutArcs[0].sourceX) * (2/3)));
-        const playY : number = (inCutArcs[0].sourceY + Math.ceil((inCutArcs[0].targetY - inCutArcs[0].sourceY) * (2/3)));
-        const stopX : number = (inCutArcs[1].sourceX + Math.ceil((inCutArcs[1].targetX - inCutArcs[1].sourceX) * (1/3)));
-        const stopY : number = (inCutArcs[1].sourceY + Math.ceil((inCutArcs[1].targetY - inCutArcs[1].sourceY) * (1/3)));
-        const playAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'play', playX, playY);
-        if (!(playAdded[0])) {
-            throw new Error('#srv.mnr.eec.000: ' + 'exclusive cut execution failed - start node could not be added due to conflict with existing node)');
+    private checkExclusiveCut(
+        inOutGraph : Graph
+    ) : [
+        boolean, 
+        undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]
+    ] {
+        /* to be removed - start */
+        console.log('im_service started check of exclusive cut');
+        /* to be removed - end */
+        if (inOutGraph.markedArcs.length !== 2) {
+            /* to be removed - start */
+            console.log('cut rejected on check 1');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        const stopAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'stop', stopX, stopY);
-        if (!(stopAdded[0])) {
-            throw new Error('#srv.mnr.eec.001: ' + 'exclusive cut execution failed - end node could not be added due to conflict with existing node)');
+        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
+        if (cutDFG === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 2');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        const arcOneAdded = inOutGraph.addArc(playAdded[2], inCutArcs[0].target, inCutArcs[0].weight);
-        if (!(arcOneAdded[0])) {
-            throw new Error('#srv.mnr.eec.002: ' + 'exclusive cut execution failed - addition of arc from new play node to old start node failed due to conflict with an existing arc');
+        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
+        if (dfgPos === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 3');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        const arcTwoAdded = inOutGraph.addArc(inCutArcs[1].source, stopAdded[2], inCutArcs[1].weight);
-        if (!(arcTwoAdded[0])) {
-            throw new Error('#srv.mnr.eec.003: ' + 'exclusive cut execution failed - addition of arc from old end node to new stop node failed due to conflict with an existing arc');
+        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
+        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
+        if (cutArcs === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 4');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        if (inCutArcs[0].marked) {
-            arcOneAdded[2].marked = true;
-            inOutGraph.markedArcs.push(arcOneAdded[2]);
-            // playAdded[2].marked = true;
-            // inOutGraph.markedNodes.push(playAdded[2]);
-        };
-        if (inCutArcs[1].marked) {
-            arcTwoAdded[2].marked = true;
-            inOutGraph.markedArcs.push(arcTwoAdded[2]);
-            // stopAdded[2].marked = true;
-            // inOutGraph.markedNodes.push(stopAdded[2]);
-        };
-        let newPlaceOne : Node | undefined;
-        let newPlaceTwo : Node | undefined;
-        if (this.checkGraphStart(inOutGraph, inCutArcs[0].source)) {
-            this.replaceArc(inOutGraph, inCutArcs[0], inCutArcs[0].source, playAdded[2]);
-        } else {
-            newPlaceOne = this.replaceArcInsertNode(inOutGraph, inCutArcs[0], inCutArcs[0].source, playAdded[2], 'place', '');
-        };
-        if (this.checkGraphEnd(inOutGraph, inCutArcs[1].target)) {
-            this.replaceArc(inOutGraph, inCutArcs[1], stopAdded[2], inCutArcs[1].target);
-        } else {
-            newPlaceTwo = this.replaceArcInsertNode(inOutGraph, inCutArcs[1], stopAdded[2], inCutArcs[1].target, 'place', '');
-        };
-        if (newPlaceOne !== undefined) {
-            if (newPlaceTwo !== undefined) {
-                for (const trace of inOutGraph.logArray) {
-                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
-                        if (trace[evIdx] === inCutArcs[0].target) {
-                            trace.splice(evIdx, 0, newPlaceOne, playAdded[2]);
-                            evIdx = (evIdx + 2);
-                        };
-                        if (trace[evIdx] === inCutArcs[1].source) {
-                            trace.splice((evIdx + 1), 0, stopAdded[2], newPlaceTwo);
-                            evIdx = (evIdx + 2);
-                        };
-                    };
-                };
+        let endpointsMarked : boolean;
+        if (dfg.startNode.marked) {
+            if (dfg.endNode.marked) {
+                endpointsMarked = true;
             } else {
-                for (const trace of inOutGraph.logArray) {
-                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
-                        if (trace[evIdx] === inCutArcs[0].target) {
-                            trace.splice(evIdx, 0, newPlaceOne, playAdded[2]);
-                            evIdx = (evIdx + 2);
-                        };
-                        if (trace[evIdx] === inCutArcs[1].source) {
-                            trace.splice((evIdx + 1), 0, stopAdded[2]);
-                            evIdx = (evIdx + 1);
-                        };
-                    };
-                };
+                /* to be removed - start */
+                console.log('cut rejected on check 5');
+                /* to be removed - end */
+                return [false, undefined];
             };
         } else {
-            if (newPlaceTwo !== undefined) {
-                for (const trace of inOutGraph.logArray) {
-                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
-                        if (trace[evIdx] === inCutArcs[0].target) {
-                            trace.splice(evIdx, 0, playAdded[2]);
-                            evIdx = (evIdx + 1);
-                        };
-                        if (trace[evIdx] === inCutArcs[1].source) {
-                            trace.splice((evIdx + 1), 0, stopAdded[2], newPlaceTwo);
-                            evIdx = (evIdx + 2);
-                        };
+            if (dfg.endNode.marked) {
+                /* to be removed - start */
+                console.log('cut rejected on check 6');
+                /* to be removed - end */
+                return [false, undefined];
+            } else {
+                endpointsMarked = false;
+            };
+        };
+        let splitM : [Node[], Arc[]] = [[], []];
+        let splitU : [Node[], Arc[]] = [[], []];
+        for (const arc of dfg.arcs) {
+            if (arc.marked) {
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 7');
+                        /* to be removed - end */
+                        return [false, undefined];
+                    } else {
+                        /* arc is cut --> skip arc */
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        /* arc is cut --> skip arc */
+                    } else {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 8');
+                        /* to be removed - end */
+                        return [false, undefined];
                     };
                 };
             } else {
-                for (const trace of inOutGraph.logArray) {
-                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
-                        if (trace[evIdx] === inCutArcs[0].target) {
-                            trace.splice(evIdx, 0, playAdded[2]);
-                            evIdx = (evIdx + 1);
-                        };
-                        if (trace[evIdx] === inCutArcs[1].source) {
-                            trace.splice((evIdx + 1), 0, stopAdded[2]);
-                            evIdx = (evIdx + 1);
-                        };
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        splitM[1].push(arc);
+                    } else {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 9');
+                        /* to be removed - end */
+                        return [false, undefined];
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 10');
+                        /* to be removed - end */
+                        return [false, undefined];
+                    } else {
+                        splitU[1].push(arc);
                     };
                 };
             };
         };
-        inNewDFG[0] = playAdded[2];
-        inNewDFG[1] = stopAdded[2];
-        inNewDFG[2].push(playAdded[2]);
-        inNewDFG[2].push(stopAdded[2]);
-        inNewDFG[3].push(arcOneAdded[2]);
-        inNewDFG[3].push(arcTwoAdded[2]);
-        inSplitDFG.update(inOldDFG[0], inOldDFG[1], inOldDFG[2], inOldDFG[3])
-        inOutGraph.appendDFG(inNewDFG[0], inNewDFG[1], inNewDFG[2], inNewDFG[3])
+        for (const node of dfg.nodes) {
+            if (node !== dfg.startNode) {
+                if (node !== dfg.endNode) {
+                    if (node.marked) {
+                        splitM[0].push(node);
+                    } else {
+                        splitU[0].push(node);
+                    };
+                } else {
+                    /* skip node */
+                };
+            } else {
+                /* skip node */
+            };
+        };
+        if ((splitM[1].length) < (splitM[0].length - 1)) {
+            /* to be removed - start */
+            console.log('cut rejected on check 11');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if ((splitU[1].length) < (splitU[0].length - 1)) {
+            /* to be removed - start */
+            console.log('cut rejected on check 12');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        /* to be removed - start */
+        console.log('found exclusive cut');
+        /* to be removed - end */
+        return [true, [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]]];
     };
 
-    private executeSequenceCut() : void {};
+    private checkSequenceCut(
+        inOutGraph : Graph
+    ) : [
+        boolean, 
+        undefined | []
+    ] {
+        return [false, undefined];
+    };
 
-    private executeParallelCut() : void {};
+    private checkParallelCut(
+        inOutGraph : Graph
+    ) : [
+        boolean, 
+        undefined | []
+    ] {
+        return [false, undefined];
+    };
 
-    private executeLoopCut() : void {};
+    private checkLoopCut(inOutGraph : Graph) : [
+        boolean, 
+        undefined | []
+    ] {
+        return [false, undefined];
+    };
+
+    private checkBaseCase(
+        inOutGraph : Graph
+    ) : [
+        boolean, 
+        undefined | [DFG, Node | undefined]
+    ] {
+        /* to be removed - start */
+        console.log('im_service started check of base case');
+        /* to be removed - end */
+        if (inOutGraph.markedArcs.length !== 0) {
+            /* to be removed - start */
+            console.log('base case rejected on check 1');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if (inOutGraph.markedNodes.length < 2) {
+            /* to be removed - start */
+            console.log('base case rejected on check 2');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if (inOutGraph.markedNodes.length > 3) {
+            /* to be removed - start */
+            console.log('base case rejected on check 3');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
+        if (cutDFG === undefined) {
+            /* to be removed - start */
+            console.log('base case rejected on check 4');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
+        if (dfgPos === undefined) {
+            /* to be removed - start */
+            console.log('base case rejected on check 5');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
+        if (dfg.nodes.length > 4) {
+            /* to be removed - start */
+            console.log('base case rejected on check 6');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if (dfg.startNode.type !== 'support') {
+            throw new Error('#srv.mnr.cbc.000: ' + 'base case check failed - inconsitent dfg detected (start node type is not \'support\')');
+        };
+        if (dfg.startNode.label !== 'play') {
+            throw new Error('#srv.mnr.cbc.001: ' + 'base case check failed - inconsitent dfg detected (start node label is not \'play\')');
+        };
+        if (dfg.endNode.type !== 'support') {
+            throw new Error('#srv.mnr.cbc.002: ' + 'base case check failed - inconsitent dfg detected (end node type is not \'support\')');
+        };
+        if (dfg.endNode.label !== 'stop') {
+            throw new Error('#srv.mnr.cbc.003: ' + 'base case check failed - inconsitent dfg detected (end node label is not \'stop\')');
+        };
+        if (dfg.nodes.length === 3) {
+            if (dfg.arcs.length !== 2) {
+                /* to be removed - start */
+                console.log('base case rejected on check 7');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].weight !== dfg.arcs[1].weight) {
+                /* to be removed - start */
+                console.log('base case rejected on check 8');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            let midNode : Node | undefined;
+            let midCount : number = 0;
+            for (const node of dfg.nodes) {
+                if ((node !== dfg.startNode) && (node !== dfg.endNode)) {
+                    midNode = node;
+                    midCount++;
+                };
+            };
+            if (midCount !== 1) {
+                throw new Error('#srv.mnr.cbc.004: ' + 'base case check failed - inconsitent dfg detected (three nodes, but more than one node that is neither start nor end)');
+            };
+            if (midNode === undefined) {
+                throw new Error('#srv.mnr.cbc.005: ' + 'base case check failed - impossible error)');
+            };
+            if (midNode.type !== 'event') {
+                throw new Error('#srv.mnr.cbc.006: ' + 'base case check failed - inconsitent dfg detected (middle node type is not \'event\')');
+            };
+            for (const arc of dfg.arcs) {
+                if (arc.source === dfg.startNode) {
+                    if (arc.target !== midNode) {
+                        /* to be removed - start */
+                        console.log('base case rejected on check 9');
+                        /* to be removed - end */
+                        return [false, undefined];
+                    };
+                } else if (arc.source === midNode) {
+                    if (arc.target !== dfg.endNode) {
+                        /* to be removed - start */
+                        console.log('base case rejected on check 10');
+                        /* to be removed - end */
+                        return [false, undefined];
+                    };
+                } else {
+                    /* to be removed - start */
+                    console.log('base case rejected on check 11');
+                    /* to be removed - end */
+                    return [false, undefined];
+                };
+            };
+            return [true, [dfg, midNode]];
+        } else if (dfg.nodes.length === 2) {
+            if (dfg.arcs.length !== 1) {
+                /* to be removed - start */
+                console.log('base case rejected on check 12');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].source !== dfg.startNode) {
+                /* to be removed - start */
+                console.log('base case rejected on check 13');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].target !== dfg.endNode) {
+                /* to be removed - start */
+                console.log('base case rejected on check 14');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            return [true, [dfg, undefined]];
+        } else {
+            throw new Error('#srv.mnr.cbc.015: ' + 'base case check failed - inconsitent dfg detected (less than two nodes) detected');
+        };
+    };
+
+    private executeExclusiveCut(
+        inOutGraph : Graph,
+        inSplitDFG : DFG,
+        inMarkedSubgraph : [Node[], Arc[]],
+        inUnmarkedSubgraph : [Node[], Arc[]],
+        inEndPointsMarked : boolean,
+        inCutStartArc : Arc,
+        inCutEndArc : Arc
+    ) : void {
+        /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg */
+        let cutSubgraph : [Node[], Arc[]];
+        let restSubgraph : [Node[], Arc[]];
+        if (inEndPointsMarked) {
+            cutSubgraph = inUnmarkedSubgraph;
+            restSubgraph = inMarkedSubgraph;
+        } else {
+            cutSubgraph = inMarkedSubgraph;
+            restSubgraph = inUnmarkedSubgraph;
+        };
+        /* checking if the cut DFG starts at the global start of the graph or ends at the global end */
+        const startOfGraph : boolean = this.checkGraphStart(inOutGraph, inCutStartArc.source);
+        const endOfGraph : boolean = this.checkGraphEnd(inOutGraph, inCutEndArc.target);
+        /* generating new start and end nodes and matching arcs */
+        const globalPlayNodeArray : Node[] = [];
+        const globalStopNodeArray : Node[] = [];
+        let restSubgraphPlay : Node;
+        let restSubgraphStop : Node;
+        let cutSubgraphPlay : Node;
+        let cutSubgraphStop : Node;
+        let uncutStartArcs : Arc[] = [];
+        let uncutStartArcsWeight : number = 0;
+        let uncutEndArcs : Arc[] = [];
+        let uncutEndArcsWeight : number = 0;
+        let uncutMidArcs : Arc[] = [];
+        let uncutStartNodesCount : number = 0;
+        let uncutStartNodesX : number = 0;
+        let uncutStartNodesY : number = 0;
+        let uncutEndNodesCount : number = 0;
+        let uncutEndNodesX : number = 0;
+        let uncutEndNodesY : number = 0;
+        for (const arc of restSubgraph[1]) {
+            if (arc.source === inSplitDFG.startNode) {
+                uncutStartArcs.push(arc);
+            } else if (arc.target === inSplitDFG.endNode) {
+                uncutEndArcs.push(arc);
+            } else {
+                uncutMidArcs.push(arc);
+            };
+            if (arc.source === inSplitDFG.startNode) {
+                uncutStartNodesX = uncutStartNodesX + arc.target.x;
+                uncutStartNodesY = uncutStartNodesY + arc.target.y;
+                uncutStartArcsWeight = uncutStartArcsWeight + arc.weight;
+                uncutStartNodesCount++;
+            };
+            if (arc.target === inSplitDFG.endNode) {
+                uncutEndNodesX = uncutEndNodesX + arc.source.x;
+                uncutEndNodesY = uncutEndNodesY + arc.source.y;
+                uncutEndArcsWeight = uncutEndArcsWeight + arc.weight;
+                uncutEndNodesCount++;
+            };
+        };
+        restSubgraph[1] = [];
+        for (const arc of uncutMidArcs) {
+            restSubgraph[1].push(arc);
+        };
+        const nextUncutNodeFromStartX : number = Math.floor(uncutStartNodesX / uncutStartNodesCount);
+        const nextUncutNodeFromStartY : number = Math.floor(uncutStartNodesY / uncutStartNodesCount);
+        const nextUncutNodeFromEndX : number = Math.floor(uncutEndNodesX / uncutEndNodesCount);
+        const nextUncutNodeFromEndY : number = Math.floor(uncutEndNodesY / uncutEndNodesCount);
+        if (startOfGraph) {
+            const startArcWeight : number = (inCutStartArc.weight + uncutStartArcsWeight);
+            const globalPlayNodes : [Node, Node, Node] = this.transformStart(inOutGraph, inSplitDFG.startNode, startArcWeight);
+            globalPlayNodeArray.push(globalPlayNodes[0], globalPlayNodes[1], globalPlayNodes[2]);
+            const globalPlayPlaceTwo : Node = globalPlayNodes[2];
+            const cutPlayX : number = Math.floor((globalPlayPlaceTwo.x / 2) + (inCutStartArc.target.x / 2));
+            const cutPlayY : number = Math.floor((globalPlayPlaceTwo.y / 2) + (inCutStartArc.target.y / 2));
+            const restPlayX : number = Math.floor((globalPlayPlaceTwo.x / 2) + (nextUncutNodeFromStartX / 2));
+            const restPlayY : number = Math.floor((globalPlayPlaceTwo.y / 2) + (nextUncutNodeFromStartY / 2));
+            const cutPlayAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'play', cutPlayX, cutPlayY);
+            if (!(cutPlayAdded[0])) {
+                throw new Error('#srv.mnr.eec.000: ' + 'exclusive cut execution failed - new start node for cut part of split dfg could not be added due to conflict with existing node)');
+            };
+            const restPlayAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'play', restPlayX, restPlayY);
+            if (!(restPlayAdded[0])) {
+                throw new Error('#srv.mnr.eec.001: ' + 'exclusive cut execution failed - new start node for rest part of split dfg could not be added due to conflict with existing node)');
+            };
+            restSubgraphPlay = restPlayAdded[2];
+            cutSubgraphPlay = cutPlayAdded[2];
+            if (inEndPointsMarked) {
+                inOutGraph.setElementMarkedFlag(restSubgraphPlay, true);
+            } else {
+                inOutGraph.setElementMarkedFlag(cutSubgraphPlay, true);
+            };
+            inOutGraph.setElementNewFlag(restSubgraphPlay, true);
+            inOutGraph.setElementNewFlag(cutSubgraphPlay, true);
+            const arcToRestAdded = inOutGraph.addArc(globalPlayPlaceTwo, restSubgraphPlay, uncutStartArcsWeight);
+            if (!(arcToRestAdded[0])) {
+                throw new Error('#srv.mnr.eec.002: ' + 'exclusive cut execution failed - addition of arc from second play place to first new start node failed due to conflict with an existing arc');
+            };
+            const arcToCutAdded = inOutGraph.addArc(globalPlayPlaceTwo, cutSubgraphPlay, inCutStartArc.weight);
+            if (!(arcToCutAdded[0])) {
+                throw new Error('#srv.mnr.eec.003: ' + 'exclusive cut execution failed - addition of arc from second play place to second new start node failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementMarkedFlag(arcToCutAdded[2], inCutStartArc.marked);
+            inOutGraph.setElementChangedFlag(arcToRestAdded[2], true);
+            inOutGraph.setElementChangedFlag(arcToCutAdded[2], true);
+            for (const arc of uncutStartArcs) {
+                restSubgraph[1].push(this.replaceArc(inOutGraph, arc, restSubgraphPlay, arc.target));
+            };
+            cutSubgraph[1].push(this.replaceArc(inOutGraph, inCutStartArc, cutSubgraphPlay, inCutStartArc.target));
+        } else {
+            const incomingArcs : Arc[] = [];
+            for (const arc of inOutGraph.arcs) {
+                if (arc.target === inSplitDFG.startNode) {
+                    incomingArcs.push(arc);
+                };
+            };
+            if (incomingArcs.length < 1) {
+                throw new Error('#srv.mnr.eec.004: ' + 'exclusive cut execution failed - no arc leading to the old start node of the split dfg was found within the graph');
+            } else if (incomingArcs.length > 1) {
+                throw new Error('#srv.mnr.eec.005: ' + 'exclusive cut execution failed - more than one arc leading to the old start node of the split dfg was found within the graph');
+            };
+            const incomingArc : Arc = incomingArcs[0];
+            const cutPlayX : number = Math.floor((incomingArc.source.x / 2) + (inCutStartArc.target.x / 2));
+            const cutPlayY : number = Math.floor((incomingArc.source.y / 2) + (inCutStartArc.target.y / 2));
+            const restPlayX : number = Math.floor((incomingArc.source.x / 2) + (nextUncutNodeFromStartX / 2));
+            const restPlayY : number = Math.floor((incomingArc.source.y / 2) + (nextUncutNodeFromStartY / 2));
+            const cutPlayAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'play', cutPlayX, cutPlayY);
+            if (!(cutPlayAdded[0])) {
+                throw new Error('#srv.mnr.eec.006: ' + 'exclusive cut execution failed - new start node for cut part of split dfg could not be added due to conflict with existing node)');
+            };
+            restSubgraphPlay = inSplitDFG.startNode;
+            cutSubgraphPlay = cutPlayAdded[2];
+            restSubgraphPlay.coordinates = [restPlayX, restPlayY]
+            if (!(inEndPointsMarked)) {
+                inOutGraph.setElementMarkedFlag(cutSubgraphPlay, true);
+            };
+            inOutGraph.setElementChangedFlag(restSubgraphPlay, true);
+            inOutGraph.setElementNewFlag(cutSubgraphPlay, true);
+            incomingArc.weight = (incomingArc.weight - inCutStartArc.weight);
+            if (incomingArc.weight < 1) {
+                throw new Error('#srv.mnr.eec.007: ' + 'exclusive cut execution failed - the weight of only arc leading into the split dfg is not higher than the weight of the first cut arc within the split dfg');
+            };
+            const arcToCutAdded = inOutGraph.addArc(incomingArc.source, cutSubgraphPlay, inCutStartArc.weight);
+            if (!(arcToCutAdded[0])) {
+                throw new Error('#srv.mnr.eec.008: ' + 'exclusive cut execution failed - addition of arc from outer source node to new start node failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementChangedFlag(incomingArc, true);
+            inOutGraph.setElementChangedFlag(arcToCutAdded[2], true);
+            for (const arc of uncutStartArcs) {
+                restSubgraph[1].push(arc);
+            };
+            cutSubgraph[1].push(this.replaceArc(inOutGraph, inCutStartArc, cutSubgraphPlay, inCutStartArc.target));
+        };
+        if (endOfGraph) {
+            const endArcWeight : number = (inCutEndArc.weight + uncutEndArcsWeight);
+            const globalStopNodes : [Node, Node, Node] = this.transformEnd(inOutGraph, inSplitDFG.endNode, endArcWeight);
+            globalStopNodeArray.push(globalStopNodes[0], globalStopNodes[1], globalStopNodes[2]);
+            const globalStopPlaceOne : Node = globalStopNodes[0];
+            const cutStopX : number = Math.floor((inCutEndArc.source.x / 2) + (globalStopPlaceOne.x / 2));
+            const cutStopY : number = Math.floor((inCutEndArc.source.y / 2) + (globalStopPlaceOne.y / 2));
+            const restStopX : number = Math.floor((nextUncutNodeFromEndX / 2) + (globalStopPlaceOne.x / 2));
+            const restStopY : number = Math.floor((nextUncutNodeFromEndY / 2) + (globalStopPlaceOne.y / 2));
+            const cutStopAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'stop', cutStopX, cutStopY);
+            if (!(cutStopAdded[0])) {
+                throw new Error('#srv.mnr.eec.009: ' + 'exclusive cut execution failed - new end node for cut part of split dfg could not be added due to conflict with existing node)');
+            };
+            const restStopAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'stop', restStopX, restStopY);
+            if (!(restStopAdded[0])) {
+                throw new Error('#srv.mnr.eec.010: ' + 'exclusive cut execution failed - new end node for rest part of split dfg could not be added due to conflict with existing node)');
+            };
+            restSubgraphStop = restStopAdded[2];
+            cutSubgraphStop = cutStopAdded[2];
+            if (inEndPointsMarked) {
+                inOutGraph.setElementMarkedFlag(restSubgraphStop, true);
+            } else {
+                inOutGraph.setElementMarkedFlag(cutSubgraphStop, true);
+            };
+            inOutGraph.setElementNewFlag(restSubgraphStop, true);
+            inOutGraph.setElementNewFlag(cutSubgraphStop, true);
+            const arcFromRestAdded = inOutGraph.addArc(restSubgraphStop, globalStopPlaceOne, uncutEndArcsWeight);
+            if (!(arcFromRestAdded[0])) {
+                throw new Error('#srv.mnr.eec.011: ' + 'exclusive cut execution failed - addition of arc from first new end node to first stop place failed due to conflict with an existing arc');
+            };
+            const arcFromCutAdded = inOutGraph.addArc(cutSubgraphStop, globalStopPlaceOne, inCutEndArc.weight);
+            if (!(arcFromCutAdded[0])) {
+                throw new Error('#srv.mnr.eec.012: ' + 'exclusive cut execution failed - addition of arc from second new end node to first stop place failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementMarkedFlag(arcFromCutAdded[2], inCutEndArc.marked);
+            inOutGraph.setElementChangedFlag(arcFromRestAdded[2], true);
+            inOutGraph.setElementChangedFlag(arcFromCutAdded[2], true);
+            for (const arc of uncutEndArcs) {
+                restSubgraph[1].push(this.replaceArc(inOutGraph, arc, arc.source, restSubgraphStop));
+            };
+            cutSubgraph[1].push(this.replaceArc(inOutGraph, inCutEndArc, inCutEndArc.source, cutSubgraphStop));
+        } else {
+            const outgoingArcs : Arc[] = [];
+            for (const arc of inOutGraph.arcs) {
+                if (arc.source === inSplitDFG.endNode) {
+                    outgoingArcs.push(arc);
+                };
+            };
+            if (outgoingArcs.length < 1) {
+                throw new Error('#srv.mnr.eec.013: ' + 'exclusive cut execution failed - no arc coming from the old end node of the split dfg was found within the graph');
+            } else if (outgoingArcs.length > 1) {
+                throw new Error('#srv.mnr.eec.014: ' + 'exclusive cut execution failed - more than one arc coming from the old end node of the split dfg was found within the graph');
+            };
+            const outgoingArc : Arc = outgoingArcs[0];
+            const cutStopX : number = Math.floor((inCutEndArc.source.x / 2) + (outgoingArc.target.x / 2));
+            const cutStopY : number = Math.floor((inCutEndArc.source.y / 2) + (outgoingArc.target.y / 2));
+            const restStopX : number = Math.floor((nextUncutNodeFromEndX / 2) + (outgoingArc.target.x / 2));
+            const restStopY : number = Math.floor((nextUncutNodeFromEndY / 2) + (outgoingArc.target.y / 2));
+            const cutStopAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'stop', cutStopX, cutStopY);
+            if (!(cutStopAdded[0])) {
+                throw new Error('#srv.mnr.eec.015: ' + 'exclusive cut execution failed - new end node for cut part of split dfg could not be added due to conflict with existing node)');
+            };
+            restSubgraphStop = inSplitDFG.endNode;
+            cutSubgraphStop = cutStopAdded[2];
+            restSubgraphStop.coordinates = [restStopX, restStopY]
+            if (!(inEndPointsMarked)) {
+                inOutGraph.setElementMarkedFlag(cutSubgraphStop, true);
+            };
+            inOutGraph.setElementChangedFlag(restSubgraphStop, true);
+            inOutGraph.setElementNewFlag(cutSubgraphStop, true);
+            outgoingArc.weight = (outgoingArc.weight - inCutEndArc.weight);
+            if (outgoingArc.weight < 1) {
+                throw new Error('#srv.mnr.eec.016: ' + 'exclusive cut execution failed - the weight of only arc coming from the split dfg is not higher than the weight of the last cut arc within the split dfg');
+            };
+            const arcFromCutAdded = inOutGraph.addArc(cutSubgraphStop, outgoingArc.target, inCutEndArc.weight);
+            if (!(arcFromCutAdded[0])) {
+                throw new Error('#srv.mnr.eec.017: ' + 'exclusive cut execution failed - addition of arc from new end node to outer target node failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementChangedFlag(outgoingArc, true);
+            inOutGraph.setElementChangedFlag(arcFromCutAdded[2], true);
+            for (const arc of uncutEndArcs) {
+                restSubgraph[1].push(arc);
+            };
+            cutSubgraph[1].push(this.replaceArc(inOutGraph, inCutEndArc, inCutEndArc.source, cutSubgraphStop));
+        };
+        /* splitting the dfg event log between the cut part and the rest part */
+        const cutSubLog : Node[][] = [];
+        const restSubLog : Node[][] = [];
+        if (inEndPointsMarked) {
+            for (const trace of inSplitDFG.log) {
+                const cutTrace : Node[] = [cutSubgraphPlay];
+                const restTrace : Node[] = [restSubgraphPlay];
+                for (let eventIdx = 1; eventIdx < (trace.length - 1); eventIdx++) {
+                    if (trace[eventIdx].marked) {
+                        restTrace.push(trace[eventIdx]);
+                    } else {
+                        cutTrace.push(trace[eventIdx]);
+                    };
+                };
+                cutTrace.push(cutSubgraphStop);
+                restTrace.push(restSubgraphStop);
+                if (cutTrace.length > 2) {
+                    cutSubLog.push(cutTrace);
+                };
+                if (restTrace.length > 2) {
+                    restSubLog.push(restTrace);
+                };
+            };
+        } else {
+            for (const trace of inSplitDFG.log) {
+                const cutTrace : Node[] = [cutSubgraphPlay];
+                const restTrace : Node[] = [restSubgraphPlay];
+                for (let eventIdx = 1; eventIdx < (trace.length - 1); eventIdx++) {
+                    if (trace[eventIdx].marked) {
+                        cutTrace.push(trace[eventIdx]);
+                    } else {
+                        restTrace.push(trace[eventIdx]);
+                    };
+                };
+                cutTrace.push(cutSubgraphStop);
+                restTrace.push(restSubgraphStop);
+                if (cutTrace.length > 2) {
+                    cutSubLog.push(cutTrace);
+                };
+                if (restTrace.length > 2) {
+                    restSubLog.push(restTrace);
+                };
+            };
+        };
+        /* updating the graph event log */
+        if (startOfGraph) {
+            if (globalPlayNodeArray.length !== 3) {
+                throw new Error('#srv.mnr.eec.018: ' + 'exclusive cut execution failed - newly transformed global play nodes were not assigned properly');
+            };
+            if (endOfGraph) {
+                if (globalStopNodeArray.length !== 3) {
+                    throw new Error('#srv.mnr.eec.019: ' + 'exclusive cut execution failed - newly transformed global stop nodes were not assigned properly');
+                };
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, globalPlayNodeArray[0], globalPlayNodeArray[1], globalPlayNodeArray[2], cutSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            } else {
+                                trace.splice(evIdx, 1, globalPlayNodeArray[0], globalPlayNodeArray[1], globalPlayNodeArray[2], restSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            };
+                        };
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, cutSubgraphStop, globalStopNodeArray[0], globalStopNodeArray[1], globalStopNodeArray[2]);
+                                evIdx = (evIdx + 3);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphStop, globalStopNodeArray[0], globalStopNodeArray[1], globalStopNodeArray[2]);
+                                evIdx = (evIdx + 3);
+                            };
+                        };
+                    };
+                };
+            } else {
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, globalPlayNodeArray[0], globalPlayNodeArray[1], globalPlayNodeArray[2], cutSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            } else {
+                                trace.splice(evIdx, 1, globalPlayNodeArray[0], globalPlayNodeArray[1], globalPlayNodeArray[2], restSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            };
+                        };
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, cutSubgraphStop);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphStop);
+                            };
+                        };
+                    };
+                };
+            };
+        } else {
+            if (endOfGraph) {
+                if (globalStopNodeArray.length !== 3) {
+                    throw new Error('#srv.mnr.eec.020: ' + 'exclusive cut execution failed - newly transformed global stop nodes were not assigned properly');
+                };
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, cutSubgraphPlay);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphPlay);
+                            };
+                        };
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, cutSubgraphStop, globalStopNodeArray[0], globalStopNodeArray[1], globalStopNodeArray[2]);
+                                evIdx = (evIdx + 3);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphStop, globalStopNodeArray[0], globalStopNodeArray[1], globalStopNodeArray[2]);
+                                evIdx = (evIdx + 3);
+                            };
+                        };
+                    };
+                };               
+            } else {
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, cutSubgraphPlay);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphPlay);
+                            };
+                        };
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, cutSubgraphStop);
+                            } else {
+                                trace.splice(evIdx, 1, restSubgraphStop);
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        /* updating dfgs */
+        restSubgraph[0].push(restSubgraphPlay);
+        restSubgraph[0].push(restSubgraphStop);
+        cutSubgraph[0].push(cutSubgraphPlay);
+        cutSubgraph[0].push(cutSubgraphStop);
+        if (inEndPointsMarked) {
+            inSplitDFG.update(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
+            inOutGraph.appendDFG(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
+        } else {
+            inSplitDFG.update(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
+            inOutGraph.appendDFG(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
+        };
+        /* deleting replaced endpoints and updating references */
+        if (startOfGraph) {
+            const transformedGlobalPlay : Node | undefined = inOutGraph.startNode;
+            if (transformedGlobalPlay !== undefined) {
+                inOutGraph.startNode = globalPlayNodeArray[0];
+                if (!(inOutGraph.deleteNode(transformedGlobalPlay))) {
+                    throw new Error('#srv.mnr.eec.021: ' + 'exclusive cut execution failed - old global play node was not deleted properly');
+                };
+            } else {
+                throw new Error('#srv.mnr.eec.022: ' + 'exclusive cut execution failed - the global start node within the graph is undefined');
+            };
+        };
+        if (endOfGraph) {
+            const transformedGlobalStop : Node | undefined = inOutGraph.endNode;
+            if (transformedGlobalStop !== undefined) {
+                inOutGraph.endNode = globalStopNodeArray[2];
+                if (!(inOutGraph.deleteNode(transformedGlobalStop))) {
+                    throw new Error('#srv.mnr.eec.023: ' + 'exclusive cut execution failed - old global stop node was not deleted properly');
+                };
+            } else {
+                throw new Error('#srv.mnr.eec.024: ' + 'exclusive cut execution failed - the global end node within the graph is undefined');
+            };
+        };
+    };
+
+    private executeSequenceCut(
+        inOutGraph : Graph
+    ) : void {
+
+    };
+
+    private executeParallelCut(
+        inOutGraph : Graph
+    ) : void {
+
+    };
+
+    private executeLoopCut(
+        inOutGraph : Graph
+    ) : void {
+
+    };
 
     private executeBaseCase(
         inOutGraph : Graph,
@@ -768,7 +1317,7 @@ export class InductiveMinerService {
         inReplacedArc : Arc,
         inNewArcSourceNode : Node,
         inNewArcTargetNode : Node
-    ) : void {
+    ) : Arc {
         const arcAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcSourceNode, inNewArcTargetNode, inReplacedArc.weight);
         if (!(arcAdded[0])) {
             throw new Error('#srv.mnr.rpa.000: ' + 'replacing cut arc failed - new arc from source node to target node could not be added due to conflict with an existing arc');
@@ -778,9 +1327,9 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.rpa.001: ' + 'replacing cut arc failed - deletion of replaced arc failed');
         };
         if (inReplacedArc.marked) {
-            newArc.marked = true;
-            inOutGraph.markedArcs.push(newArc);
+            inOutGraph.setElementMarkedFlag(newArc, true);
         };
+        return newArc;
     };
 
     private replaceArcInsertNode(
@@ -812,50 +1361,11 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.rip.003: ' + 'replacing cut arc failed - deletion of replaced arc failed');
         };
         if (inReplacedArc.marked) {
-            newArcOne.marked = true;
-            inOutGraph.markedArcs.push(newArcOne);
-            newArcTwo.marked = true;
-            inOutGraph.markedArcs.push(newArcTwo);
-            // newArcPlace.marked = true;
-            // inOutGraph.markedNodes.push(newArcPlace);
+            inOutGraph.setElementMarkedFlag(newArcOne, true);
+            inOutGraph.setElementMarkedFlag(newArcTwo, true);
+            // inOutGraph.setElementMarkedFlag(newArcPlace, true);
         };
         return newArcPlace;
-    };
-
-    private unmarkMarked(
-        inOutGraph : Graph
-    ) {
-        /* to be removed - start */
-        console.error('im_service started check for marked elements to unmark');
-        /* to be removed - end */
-        for (const node of inOutGraph.markedNodes) {
-            if (node.marked) {
-                node.marked = false;
-            } else {
-                throw new Error('#srv.mnr.umm.000: ' + 'unmarking marked elements failed - the marked nodes array contains an unmarked node (' + node + ')');
-            };
-        };
-        inOutGraph.markedNodes = [];
-        for (const arc of inOutGraph.markedArcs) {
-            if (arc.marked) {
-                arc.marked = false;
-            } else {
-                throw new Error('#srv.mnr.umm.001: ' + 'unmarking marked elements failed - the marked arcs array contains an unmarked arc (' + arc + ')');
-            };
-        };
-        inOutGraph.markedArcs = [];
-        for (const node of inOutGraph.nodes) {
-            if (node !== undefined) {
-                if (node.marked) {
-                    throw new Error('#srv.mnr.umm.002: ' + 'unmarking marked elements failed - found a marked node that is not part of the marked nodes array (' + node + ')');
-                };
-            };
-        };
-        for (const arc of inOutGraph.arcs) {
-            if (arc.marked) {
-                throw new Error('#srv.mnr.umm.003: ' + 'unmarking marked elements failed - found a marked arc that is not part of the marked arcs array (' + arc + ')');
-            };
-        };
     };
 
     private checkGraphStartEnd(
@@ -1038,7 +1548,7 @@ export class InductiveMinerService {
         inStartNode : Node,
         inArcWeight : number
     ) : [Node, Node, Node] {
-        const startPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
+        const startPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(startPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.tsn.000: ' + 'start node transformation failed - first start place could not be added due to conflict with existing node)');
         };
@@ -1048,7 +1558,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tsn.001: ' + 'start node transformation failed - start transition could not be added due to conflict with existing node)');
         };
         const startTransition : Node = startTransitionAdded[2];
-        const startPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
+        const startPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y + Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(startPlaceTwoAdded[0])) {
             throw new Error('#srv.mnr.tsn.002: ' + 'start node transformation failed - second start place could not be added due to conflict with existing node)');
         };
@@ -1064,17 +1574,17 @@ export class InductiveMinerService {
         };
         const startArcTwo : Arc = arcTwoAdded[2];
         if (inStartNode.marked) {
-            startPlaceOne.marked = true;
-            inOutGraph.markedNodes.push(startPlaceOne);
-            startTransition.marked = true;
-            inOutGraph.markedNodes.push(startTransition);
-            startPlaceTwo.marked = true;
-            inOutGraph.markedNodes.push(startPlaceTwo);
-            // startArcOne.marked = true;
-            // inOutGraph.markedArcs.push(startArcOne);
-            // startArcTwo.marked = true;
-            // inOutGraph.markedArcs.push(startArcTwo);
+            inOutGraph.setElementMarkedFlag(startPlaceOne, true);
+            inOutGraph.setElementMarkedFlag(startTransition, true);
+            inOutGraph.setElementMarkedFlag(startPlaceTwo, true);
+            // inOutGraph.setElementMarkedFlag(startArcOne, true);
+            // inOutGraph.setElementMarkedFlag(startArcTwo, true);
         };
+        inOutGraph.setElementNewFlag(startPlaceOne, true);
+        inOutGraph.setElementChangedFlag(startTransition, true);
+        inOutGraph.setElementNewFlag(startPlaceTwo, true);
+        inOutGraph.setElementNewFlag(startArcOne, true);
+        inOutGraph.setElementNewFlag(startArcTwo, true);
         return [startPlaceOne, startTransition, startPlaceTwo]
     };
 
@@ -1088,9 +1598,9 @@ export class InductiveMinerService {
         };
         const midTransition : Node = midTransitionAdded[2];
         if (inMidNode.marked) {
-            midTransition.marked = true;
-            inOutGraph.markedNodes.push(midTransition);
+            inOutGraph.setElementMarkedFlag(midTransition, true);
         };
+        inOutGraph.setElementChangedFlag(midTransition, true);
         return midTransition;
     };
 
@@ -1099,7 +1609,7 @@ export class InductiveMinerService {
         inEndNode : Node,
         inArcWeight : number
     ) : [Node, Node, Node] {
-        const endPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
+        const endPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(endPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.ten.000: ' + 'end node transformation failed - first end place could not be added due to conflict with existing node)');
         };
@@ -1109,7 +1619,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.ten.001: ' + 'end node transformation failed - end transition could not be added due to conflict with existing node)');
         };
         const endTransition : Node = endTransitionAdded[2];
-        const endPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2)));
+        const endPlaceTwoAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y + Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(endPlaceTwoAdded[0])) {
             throw new Error('#srv.mnr.ten.002: ' + 'end node transformation failed - second end place could not be added due to conflict with existing node)');
         };
@@ -1125,17 +1635,17 @@ export class InductiveMinerService {
         };
         const endArcTwo : Arc = endArcTwoAdded[2];
         if (inEndNode.marked) {
-            endPlaceOne.marked = true;
-            inOutGraph.markedNodes.push(endPlaceOne);
-            endTransition.marked = true;
-            inOutGraph.markedNodes.push(endTransition);
-            endPlaceTwo.marked = true;
-            inOutGraph.markedNodes.push(endPlaceTwo);
-            // endArcOne.marked = true;
-            // inOutGraph.markedArcs.push(endArcOne);
-            // endArcTwo.marked = true;
-            // inOutGraph.markedArcs.push(endArcTwo);
+            inOutGraph.setElementMarkedFlag(endPlaceOne, true);
+            inOutGraph.setElementMarkedFlag(endTransition, true);
+            inOutGraph.setElementMarkedFlag(endPlaceTwo, true);
+            // inOutGraph.setElementMarkedFlag(endArcOne, true);
+            // inOutGraph.setElementMarkedFlag(endArcTwo, true);
         };
+        inOutGraph.setElementNewFlag(endPlaceOne, true);
+        inOutGraph.setElementChangedFlag(endTransition, true);
+        inOutGraph.setElementNewFlag(endPlaceTwo, true);
+        inOutGraph.setElementNewFlag(endArcOne, true);
+        inOutGraph.setElementNewFlag(endArcTwo, true);
         return [endPlaceOne, endTransition, endPlaceTwo]
     };
 
@@ -1145,7 +1655,7 @@ export class InductiveMinerService {
         inEndNode : Node,
         inArc : Arc
     ) : [Node, Node, Node, Node, Node] {
-        const startY : number = (inStartNode.y - Math.ceil(this._graphUiConfig.defaultNodeRadius / 2));
+        const startY : number = (inStartNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2));
         const startPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, startY);
         if (!(startPlaceAdded[0])) {
             throw new Error('#srv.mnr.tse.000: ' + 'start-end transformation failed - start place could not be added due to conflict with existing node)');
@@ -1168,7 +1678,7 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tse.003: ' + 'start-end transformation failed - end transition could not be added due to conflict with existing node)');
         };
         const endTransition : Node = endTransitionAdded[2];
-        const endY : number = (inEndNode.y + Math.ceil(this._graphUiConfig.defaultNodeRadius / 2));
+        const endY : number = (inEndNode.y + Math.ceil(this._graphicsConfig.defaultNodeRadius / 2));
         const endPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, endY);
         if (!(endPlaceAdded[0])) {
             throw new Error('#srv.mnr.tse.004: ' + 'start-end transformation failed - end place could not be added due to conflict with existing node)');
@@ -1198,29 +1708,29 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tse.009: ' + 'start-end transformation failed - deletion of old arc from start node (support) to end node (support) failed');
         };
         if (inStartNode.marked) {
-            startPlace.marked = true;
-            inOutGraph.markedNodes.push(startPlace);
-            startTransition.marked = true;
-            inOutGraph.markedNodes.push(startTransition);
-            // startArc.marked = true;
-            // inOutGraph.markedArcs.push(startArc);
+            inOutGraph.setElementMarkedFlag(startPlace, true);
+            inOutGraph.setElementMarkedFlag(startTransition, true);
+            // inOutGraph.setElementMarkedFlag(startArc, true);
         };
         if (inEndNode.marked) {
-            endTransition.marked = true;
-            inOutGraph.markedNodes.push(endTransition);
-            endPlace.marked = true;
-            inOutGraph.markedNodes.push(endPlace);
-            // endArc.marked = true;
-            // inOutGraph.markedArcs.push(endArc);
+            inOutGraph.setElementMarkedFlag(endTransition, true);
+            inOutGraph.setElementMarkedFlag(endPlace, true);
+            // inOutGraph.setElementMarkedFlag(endArc, true);
         };
         if (inArc.marked) {
-            midArcOne.marked = true;
-            inOutGraph.markedArcs.push(midArcOne);
-            midArcTwo.marked = true;
-            inOutGraph.markedArcs.push(midArcTwo);
-            // midPlace.marked = true;
-            // inOutGraph.markedNodes.push(midPlace);
+            inOutGraph.setElementMarkedFlag(midArcOne, true);
+            inOutGraph.setElementMarkedFlag(midArcTwo, true);
+            // inOutGraph.setElementMarkedFlag(midPlace, true);
         };
+        inOutGraph.setElementNewFlag(startPlace, true);
+        inOutGraph.setElementChangedFlag(startTransition, true);
+        inOutGraph.setElementNewFlag(midPlace, true);
+        inOutGraph.setElementChangedFlag(endTransition, true);
+        inOutGraph.setElementNewFlag(endPlace, true);
+        inOutGraph.setElementNewFlag(startArc, true);
+        inOutGraph.setElementChangedFlag(midArcOne, true);
+        inOutGraph.setElementChangedFlag(midArcTwo, true);
+        inOutGraph.setElementNewFlag(endArc, true);
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
 

@@ -19,26 +19,32 @@
     align-items: flex-start;
 }
 
-.gap_30px {
+.gap_30px_v {
     width:100%;
     height:30px;
 }
 
-.gap_40px {
+.gap_40px_v {
     width:100%;
     height:40px;
 }
+
+.gap_40px_h {
+    width:40px;
+    height:100%;
+}
+
 
 .inputContainer {
     width:20%;
 }
 
 .logContainer {
-    width:95%; 
+    width:70%; 
 }
 
 .outputContainer {
-    width:20%;
+    width:49%;
 }
 
 .red {

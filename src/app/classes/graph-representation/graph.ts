@@ -27,17 +27,17 @@ export class Graph {
     private _markedNodes : Array<Node>;
     private _markedArcs : Array<Arc>;
 
+    private _changedNodes : Array<Node>;
+    private _changedArcs : Array<Arc>;
+
+    private _newNodes : Array<Node>;
+    private _newArcs : Array<Arc>;
+
     private _initialState : boolean;
 
     /* methods : constructor */
     
     public constructor(
-        /* to be removed - start*/
-        // inNodes? : Array<Node>, 
-        // inArcs? : Array<Arc>, 
-        // inDFGs? : Array<[Node, Node, Node[], Arc[]]>, 
-        // inEventLog? : Array<Node[]>
-        /* to be removed - end*/
     ) {
         this._nodes = [];
         this._nodeCount = 0;
@@ -53,51 +53,11 @@ export class Graph {
         this._dfgMax = 0;
         this._markedNodes = [];
         this._markedArcs = [];
+        this._changedNodes = [];
+        this._changedArcs = [];
+        this._newNodes = [];
+        this._newArcs = [];
         this._initialState = true;
-        /* to be removed - start*/
-        // if ((inNodes !== undefined) && (inNodes.length > 0)) {
-        //     for (const node of inNodes) {
-        //         this.addNode(node.type, node.label, node.x, node.y);
-        //     };
-        //     this._initialState = false;
-        // };
-        // if ((inArcs !== undefined) && (inArcs.length > 0)) {
-        //     for (const arc of inArcs) {
-        //         this.addArc(arc.target, arc.source, arc.dfg, arc.weight);
-        //     };
-        //     this._initialState = false;
-        // };
-        // if ((inEventLog !== undefined) && (inEventLog.length > 0)) {
-        //     let eventFound : boolean = false;
-        //     for (const trace of inEventLog) {
-        //         if (trace.length > 0) {
-        //             eventFound = true;
-        //             const traceArray : Node[] = [];
-        //             for (const event of trace) {
-        //                 traceArray.push(event);
-        //             };
-        //             this._logArray.push(traceArray);
-        //         };
-        //     };
-        //     if (eventFound) {
-        //         this._initialState = false;
-        //     };
-        // };
-        // if ((inDFGs !== undefined) && (inDFGs.length > 0)) {
-        //     let dfgFound : boolean = false;
-        //     for (const dfg of inDFGs) {
-        //         if (dfg.length === 4) {
-        //             dfgFound = true;
-        //             this._dfgMax++;
-        //             const newDFG : DFG = new DFG(this._dfgMax, dfg[0], dfg[1], dfg[2], dfg[3])
-        //             this._dfgArray.push(newDFG);
-        //         };
-        //     };
-        //     if (dfgFound) {
-        //         this._initialState = false;
-        //     };
-        // };
-        /* to be removed - end*/
     };
 
     /* methods : getters */
@@ -158,6 +118,22 @@ export class Graph {
         return this._markedArcs;
     };
 
+    public get changedNodes() : Array<Node> {
+        return this._changedNodes;
+    };
+
+    public get changedArcs() : Array<Arc> {
+        return this._changedArcs;
+    };
+
+    public get newNodes() : Array<Node> {
+        return this._newNodes;
+    };
+
+    public get newArcs() : Array<Arc> {
+        return this._newArcs;
+    };
+
     public get initialState(): boolean {
         return this._initialState;
     };
@@ -188,6 +164,34 @@ export class Graph {
 
     public set markedArcs(inMarkedArcs : Arc[]) {
         this._markedArcs = inMarkedArcs;
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public set changedNodes(inChangedNodes : Node[]) {
+        this._changedNodes = inChangedNodes;
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public set changedArcs(inChangedArcs : Arc[]) {
+        this._changedArcs = inChangedArcs;
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public set newNodes(inNewNodes : Node[]) {
+        this._newNodes = inNewNodes;
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public set newArcs(inNewArcs : Arc[]) {
+        this._newArcs = inNewArcs;
         if (this._initialState) {
             this._initialState = false;
         };
@@ -355,28 +359,6 @@ export class Graph {
         return false;
     };
 
-    /* TODO - if the service works as intended, remove the following comments */
-    // 
-    // public deleteNode(
-    //     inIndex : number
-    // ) : Node | undefined {
-    //     if (inIndex > 0) {
-    //         if (inIndex < (this._nodes.length)) {
-    //             const deletedEntry : Node | undefined = this._nodes[inIndex];
-    //             this._nodes[inIndex] = undefined;
-    //             this._nodeCount--;
-    //             if (this._initialState) {
-    //                 this._initialState = false;
-    //             };
-    //             return deletedEntry;
-    //         } else {
-    //             throw new Error('#cls.grp.rmn.000: ' + 'node deletion failed - given index (' + inIndex + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
-    //         };
-    //     } else {
-    //         throw new Error('#cls.grp.rmn.001: ' + 'node deletion failed - given index (' + inIndex + ') is less than zero');
-    //     };
-    // };
-
     private checkArc(
         inSource : Node, 
         inTarget : Node
@@ -538,112 +520,18 @@ export class Graph {
         return false;
     };
 
-    /* TODO - if the service works as intended, remove the following comments */
-    // 
-    // public deleteArc(
-    //     inSource : Node, 
-    //     inTarget : Node
-    // ) : number {
-    //     if (inSource.id > 0) {
-    //         if (inTarget.id > 0) {
-    //             if (inSource.id < (this._nodes.length)) {
-    //                 if (inTarget.id < (this._nodes.length)) {
-    //                     let arcExists : [boolean, number?] = this.checkArc(inSource, inTarget);
-    //                     if (arcExists[0]) {
-    //                         if (arcExists[1] !== undefined) {
-    //                             if (this._arcs[arcExists[1]].reverseExists === true) {
-    //                                 const reverseExists : [boolean, number?] = this.checkArc(inTarget, inSource);
-    //                                 if (reverseExists[0]) {
-    //                                     if (reverseExists[1] !== undefined) {
-    //                                         this._arcs[reverseExists[1]].reverseExists = false;
-    //                                     } else {
-    //                                         throw new Error('#cls.grp.rma.000: ' + 'arc deletion failed - impossible error');
-    //                                     };
-    //                                 } else {
-    //                                     throw new Error('#cls.grp.rma.001: ' + 'arc deletion failed - arc to be deleted states that a reverse arc exists, but no such arc was found');
-    //                                 };
-    //                             };
-    //                             const foundArcs = this._arcs[arcExists[1]].weight;
-    //                             this._arcs[arcExists[1]].weight = 0;
-    //                             this._arcCount = (this._arcCount - foundArcs);
-    //                             this._arcs.splice(arcExists[1], 1);
-    //                             if (this._initialState) {
-    //                                 this._initialState = false;
-    //                             };
-    //                             return foundArcs;
-    //                         } else {
-    //                             throw new Error('#cls.grp.rma.002: ' + 'arc deletion failed - impossible error');
-    //                         };
-    //                     } else {
-    //                         throw new Error('#cls.grp.rma.003: ' + 'arc deletion failed - no arc exists from source node (' + inSource.id + ') to target node (' + inTarget.id + ')');
-    //                     };
-    //                 } else {
-    //                     throw new Error('#cls.grp.rma.004: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
-    //                 };
-    //             } else {
-    //                 throw new Error('#cls.grp.rma.005: ' + 'arc deletion failed - given index of source node (' + inSource.id + ') is greater than the highest within the array (' + (this._nodes.length - 1) + ')');
-    //             };
-    //         } else {
-    //             throw new Error('#cls.grp.rma.006: ' + 'arc deletion failed - given index of target node (' + inTarget.id + ') is less than zero');
-    //         };
-    //     } else {
-    //         throw new Error('#cls.grp.rma.007: ' + 'arc deletion failed - given index of source node  (' + inSource.id + ') is less than zero');
-    //     };
-    // };
-
     public appendDFG(
-        inStartNode: Node, 
-        inEndNode: Node, 
-        inNodes: Node[], 
-        inArcs: Arc[]
+        inStartNode : Node, 
+        inEndNode : Node, 
+        inNodes : Node[], 
+        inArcs : Arc[], 
+        inLog : Node[][]
     ) : [
         number, 
         DFG
     ] {
-        if (inNodes.length < 2) {
-            throw new Error('#cls.grp.apd.000: ' + 'appending dfg failed - number of nodes given (' + inNodes.length + ') is less than two');
-        };
-        if (inArcs.length < 1) {
-            throw new Error('#cls.grp.apd.001: ' + 'appending dfg failed - number of arcs given (' + inArcs.length + ') is less than one');
-        };
-        if (inStartNode.type !== 'support') {
-            throw new Error('#cls.grp.apd.002: ' + 'appending dfg failed - type of given start node (\'' + inStartNode.type + '\') is not \'support\')');
-        };
-        if (inStartNode.label !== 'play') {
-            throw new Error('#cls.grp.apd.003: ' + 'appending dfg failed - label of given start node (\'' + inStartNode.label + '\') is not \'play\')');
-        };
-        if (inEndNode.type !== 'support') {
-            throw new Error('#cls.grp.apd.004: ' + 'appending dfg failed - type of given end node (\'' + inEndNode.type + '\') is not \'support\')');
-        };
-        if (inEndNode.label !== 'stop') {
-            throw new Error('#cls.grp.apd.005: ' + 'appending dfg failed - label of given end node (\'' + inEndNode.label + '\') is not \'stop\')');
-        };
-        let startNotFound : boolean = true;
-        let endNotFound : boolean = true;
-        for (const node of inNodes) {
-            if (node === inStartNode) {
-                startNotFound = false;
-            } else if (node === inEndNode) {
-                endNotFound = false;
-            };
-        };
-        if (startNotFound) {
-            if (endNotFound) {
-                throw new Error('#cls.grp.apd.006: ' + 'appending dfg failed - neither the given start node (' + inStartNode + '), nor the given end node (' + inEndNode + ') is part of the given array of nodes (' + inNodes + ')');
-            } else {
-                throw new Error('#cls.grp.apd.007: ' + 'appending dfg failed - the given start node (' + inStartNode + ') is not part of the given array of nodes (' + inNodes + ')');
-            }
-        } else if (endNotFound) {
-            throw new Error('#cls.grp.apd.008: ' + 'appending dfg failed - the given end node (' + inEndNode + ') is not part of the given array of nodes (' + inNodes + ')');
-        };
-        const addedDFG : DFG = new DFG(this._dfgMax, inStartNode, inEndNode, inNodes, inArcs)
+        const addedDFG : DFG = new DFG(this._dfgMax, inStartNode, inEndNode, inNodes, inArcs, inLog)
         const dfgLength : number = this.dfgArray.push(addedDFG);
-        for (const node of inNodes) {
-            node.dfg = this._dfgMax;
-        };
-        for (const arc of inArcs) {
-            arc.dfg = this._dfgMax;
-        };
         this._dfgCount++;
         this._dfgMax++;
         if (this._initialState) {
@@ -676,31 +564,253 @@ export class Graph {
         return false;
     };
 
-    /* TODO - if the service works as intended, remove the following comments */
-    // 
-    // public deleteDFG(
-    //     inPosition : number
-    // ) : DFG[] {
-    //     if (inPosition >= 0) {
-    //         if (inPosition < this._dfgArray.length) {
-    //             for (const node of this._dfgArray[inPosition].nodes) {
-    //                 node.dfg = undefined;
-    //             };
-    //             for (const arc of this._dfgArray[inPosition].arcs) {
-    //                 arc.dfg = undefined;
-    //             };
-    //             const splicedDFGs : DFG[] = this._dfgArray.splice(inPosition, 1);
-    //             this._dfgCount--;
-    //             if (this._initialState) {
-    //                 this._initialState = false;
-    //             };
-    //             return splicedDFGs;
-    //         } else {
-    //             throw new Error('#cls.grp.rmd.000: ' + 'dfg deletion failed - given position (' + inPosition + ') is larger than array size (' + this._dfgArray.length + ')');
-    //         };
-    //     } else {
-    //         throw new Error('#cls.grp.rmd.001: ' + 'dfg deletion failed - given position (' + inPosition + ') is less than zero'); 
-    //     };
-    // };
+    public setElementMarkedFlag(inElement : Node | Arc, inValue : boolean) {
+        if (inValue !== inElement.marked) {
+            if (inElement instanceof Node) {
+                if (inValue) {
+                    this.markedNodes.push(inElement);
+                    inElement.marked = true;
+                } else {
+                    let nodeID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const node of this.markedNodes) {
+                        if (node !== inElement) {
+                            nodeID++;
+                        } else {
+                            foundElement = true;
+                            this.markedNodes.splice(nodeID, 1);
+                            inElement.marked = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.000: ' + 'reset of node marked flag failed - given node (' + inElement + ') is flagged as marked, but not a part of the marked nodes array (' + this.markedNodes + ')');
+                    };
+                };
+            } else {
+                if (inValue) {
+                    this.markedArcs.push(inElement);
+                    inElement.marked = true;
+                } else {
+                    let arcID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const arc of this.markedArcs) {
+                        if (arc !== inElement) {
+                            arcID++;
+                        } else {
+                            foundElement = true;
+                            this.markedArcs.splice(arcID, 1);
+                            inElement.marked = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.001: ' + 'reset of arc marked flag failed - given arc (' + inElement + ') is flagged as marked, but not a part of the marked arcs array (' + this.markedArcs + ')');
+                    };
+                };
+            };
+            if (this._initialState) {
+                this._initialState = false;
+            };
+        };
+    };
+
+    public resetAllMarked() {
+        for (const node of this.markedNodes) {
+            if (node.marked) {
+                node.marked = false;
+            } else {
+                throw new Error('#cls.grp.rsm.000: ' + 'resetting mark flag of all marked elements failed - the marked nodes array contains a node not flagged as marked: (' + node + ')');
+            };
+        };
+        this.markedNodes = [];
+        for (const arc of this.markedArcs) {
+            if (arc.marked) {
+                arc.marked = false;
+            } else {
+                throw new Error('#cls.grp.rsm.001: ' + 'resetting mark flag of all marked elements failed - the marked arcs array contains an arc not flagged as marked: (' + arc + ')');
+            };
+        };
+        this.markedArcs = [];
+        for (const node of this.nodes) {
+            if (node !== undefined) {
+                if (node.marked) {
+                    throw new Error('#cls.grp.rsm.002: ' + 'resetting mark flag of all marked elements failed - found a marked node that is not part of the marked nodes array (' + node + ')');
+                };
+            };
+        };
+        for (const arc of this.arcs) {
+            if (arc.marked) {
+                throw new Error('#cls.grp.rsm.003: ' + 'resetting mark flag of all marked elements failed - found a marked arc that is not part of the marked arcs array (' + arc + ')');
+            };
+        };
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public setElementChangedFlag(inElement : Node | Arc, inValue : boolean) {
+        if (inValue !== inElement.changed) {
+            if (inElement instanceof Node) {
+                if (inValue) {
+                    this.changedNodes.push(inElement);
+                    inElement.changed = true;
+                } else {
+                    let nodeID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const node of this.changedNodes) {
+                        if (node !== inElement) {
+                            nodeID++;
+                        } else {
+                            foundElement = true;
+                            this.changedNodes.splice(nodeID, 1);
+                            inElement.changed = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.000: ' + 'reset of node changed flag failed - given node (' + inElement + ') is flagged as changed, but not a part of the changed nodes array (' + this.changedNodes + ')');
+                    };
+                };
+            } else {
+                if (inValue) {
+                    this.changedArcs.push(inElement);
+                    inElement.changed = true;
+                } else {
+                    let arcID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const arc of this.changedArcs) {
+                        if (arc !== inElement) {
+                            arcID++;
+                        } else {
+                            foundElement = true;
+                            this.changedArcs.splice(arcID, 1);
+                            inElement.changed = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.001: ' + 'reset of arc changed flag failed - given arc (' + inElement + ') is flagged as changed, but not a part of the changed arcs array (' + this.changedArcs + ')');
+                    };
+                };
+            };
+            if (this._initialState) {
+                this._initialState = false;
+            };
+        };
+    };
+
+    public resetAllChanged() {
+        for (const node of this.changedNodes) {
+            if (node.changed) {
+                node.changed = false;
+            } else {
+                throw new Error('#cls.grp.rsc.000: ' + 'resetting change flag of all changed elements failed - the changed nodes array contains a node not flagged as changed: (' + node + ')');
+            };
+        };
+        this.changedNodes = [];
+        for (const arc of this.changedArcs) {
+            if (arc.changed) {
+                arc.changed = false;
+            } else {
+                throw new Error('#cls.grp.rsc.001: ' + 'resetting change flag of all changed elements failed - the changed arcs array contains an arc not flagged as changed: (' + arc + ')');
+            };
+        };
+        this.changedArcs = [];
+        for (const node of this.nodes) {
+            if (node !== undefined) {
+                if (node.changed) {
+                    throw new Error('#cls.grp.rsc.002: ' + 'resetting change flag of all changed elements failed - found a changed node that is not part of the changed nodes array (' + node + ')');
+                };
+            };
+        };
+        for (const arc of this.arcs) {
+            if (arc.changed) {
+                throw new Error('#cls.grp.rsc.003: ' + 'resetting change flag of all changed elements failed - found a changed arc that is not part of the changed arcs array (' + arc + ')');
+            };
+        };
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
+
+    public setElementNewFlag(inElement : Node | Arc, inValue : boolean) {
+        if (inValue !== inElement.newlyCreated) {
+            if (inElement instanceof Node) {
+                if (inValue) {
+                    this.newNodes.push(inElement);
+                    inElement.newlyCreated = true;
+                } else {
+                    let nodeID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const node of this.newNodes) {
+                        if (node !== inElement) {
+                            nodeID++;
+                        } else {
+                            foundElement = true;
+                            this.newNodes.splice(nodeID, 1);
+                            inElement.newlyCreated = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.000: ' + 'reset of node new flag failed - given node (' + inElement + ') is flagged as new, but not a part of the new nodes array (' + this.newNodes + ')');
+                    };
+                };
+            } else {
+                if (inValue) {
+                    this.newArcs.push(inElement);
+                    inElement.newlyCreated = true;
+                } else {
+                    let arcID : number = 0;
+                    let foundElement : boolean = false;
+                    for (const arc of this.newArcs) {
+                        if (arc !== inElement) {
+                            arcID++;
+                        } else {
+                            foundElement = true;
+                            this.newArcs.splice(arcID, 1);
+                            inElement.newlyCreated = false;
+                        };
+                    };
+                    if (!foundElement) {
+                        throw new Error('#cls.grp.sem.001: ' + 'reset of arc new flag failed - given arc (' + inElement + ') is flagged as new, but not a part of the new arcs array (' + this.newArcs + ')');
+                    };
+                };
+            };
+            if (this._initialState) {
+                this._initialState = false;
+            };
+        };
+    };
+
+    public resetAllNew() {
+        for (const node of this.newNodes) {
+            if (node.newlyCreated) {
+                node.newlyCreated = false;
+            } else {
+                throw new Error('#cls.grp.rsc.000: ' + 'resetting change flag of all new elements failed - the new nodes array contains a node not flagged as new: (' + node + ')');
+            };
+        };
+        this.newNodes = [];
+        for (const arc of this.newArcs) {
+            if (arc.newlyCreated) {
+                arc.newlyCreated = false;
+            } else {
+                throw new Error('#cls.grp.rsc.001: ' + 'resetting change flag of all new elements failed - the new arcs array contains an arc not flagged as new: (' + arc + ')');
+            };
+        };
+        this.newArcs = [];
+        for (const node of this.nodes) {
+            if (node !== undefined) {
+                if (node.newlyCreated) {
+                    throw new Error('#cls.grp.rsc.002: ' + 'resetting change flag of all new elements failed - found a new node that is not part of the new nodes array (' + node + ')');
+                };
+            };
+        };
+        for (const arc of this.arcs) {
+            if (arc.newlyCreated) {
+                throw new Error('#cls.grp.rsc.003: ' + 'resetting change flag of all new elements failed - found a new arc that is not part of the new arcs array (' + arc + ')');
+            };
+        };
+        if (this._initialState) {
+            this._initialState = false;
+        };
+    };
 
 };

@@ -317,6 +317,7 @@ export class JsonParserService {
                 const endNode : Node | undefined = this.graph.nodes[this.nodeIds[jsonDfg[1]]];
                 const nodes : Node[] = [];
                 const arcs : Arc[] = [];
+                const log : Node[][] = [];
                 for (const nodeID of jsonDfg[2]) {
                     const node : Node | undefined = this.graph.nodes[this.nodeIds[nodeID]]
                     if (node !== undefined) {
@@ -328,18 +329,30 @@ export class JsonParserService {
                 for (const arcID of jsonDfg[3]) {
                     arcs.push(this.graph.arcs[this.arcIds[arcID]]);
                 };
+                for (const trace of jsonDfg[4]) {
+                    const traceArray : Node[] = [];
+                    for (let eventID = 0; eventID < trace.length; eventID++) {
+                        const event : Node | undefined = this.graph.nodes[this.nodeIds[eventID]]
+                        if (event !== undefined) {
+                            traceArray.push(event);
+                        } else {
+                            throw new Error('#srv.jps.prd.001: ' + 'parsing dfg from .json file failed - node with id "' + eventID + '" is set as part of a dfg log in json, but the corresponding node in graph with id "' + this.nodeIds[eventID] + '" is undefined');
+                        };
+                    };
+                    log.push(traceArray);
+                };
                 if (startNode !== undefined) {
                     if (endNode !== undefined) {
-                        this.graph.appendDFG(startNode, endNode, nodes, arcs);
+                        this.graph.appendDFG(startNode, endNode, nodes, arcs, log);
                         /* TODO - if the service works as intended, remove the following comments */
                         // if (dfgId !== this.dfgIds[jsonDfgId]) {
                         //     throw new Error('#srv.jps.prd.000: ' + 'parsing dfg from .json file failed - id of last appended dfg (' + dfgId + ') is not equal to predicted id (' + this.dfgIds[jsonDfgId] + ')');
                         // };
                     } else {
-                        throw new Error('#srv.jps.prd.001: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[1] + '" is set as end of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[1]] + '" is undefined');
+                        throw new Error('#srv.jps.prd.002: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[1] + '" is set as end of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[1]] + '" is undefined');
                     };
                 } else {
-                    throw new Error('#srv.jps.prd.002: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[0] + '" is set as start of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[0]] + '" is undefined');
+                    throw new Error('#srv.jps.prd.003: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[0] + '" is set as start of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[0]] + '" is undefined');
                 };
                 dfgCount++;
             };
