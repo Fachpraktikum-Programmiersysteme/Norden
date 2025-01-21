@@ -64,6 +64,8 @@ export class TextParserService {
             let traceArray : Node[];
             const logArray : Node[][] = [];
             const dfgArray : Node[] = [];
+            const dfgLogArray : Node[][] = [];
+            let dfgTraceArray : Node[];
 
             const graph : Graph = new Graph();
             
@@ -96,6 +98,8 @@ export class TextParserService {
             for (const trace of eventLogArray) {
                 traceArray = [];
                 traceArray.push(startNode);
+                dfgTraceArray = [];
+                dfgTraceArray.push(startNode);
                 for (const event of trace) {
                     let eventLabel : string;
                     if (event === undefined) {
@@ -108,6 +112,7 @@ export class TextParserService {
                     currentNode = nodeAdded[2];
                     if (currentNode !== undefined) {
                         traceArray.push(currentNode);
+                        dfgTraceArray.push(currentNode);
                         if (nodeAdded[0]) {
                             dfgArray.push(currentNode);
                         };
@@ -127,16 +132,12 @@ export class TextParserService {
                     lastNode = undefined;
                 };
                 traceArray.push(endNode);
+                dfgTraceArray.push(endNode);
                 logArray.push(traceArray);
+                dfgLogArray.push(dfgTraceArray);
             };
 
-            /* to be removed - start */
-            console.log(' >> parsing of input text finished');
-            console.log(' >> dfgArray : ' + dfgArray);
-            console.log(' >> graph.nodes : ' + graph.nodes);
-            /* to be removed - end */
-
-            graph.appendDFG(startNode, endNode, dfgArray, graph.arcs);
+            graph.appendDFG(startNode, endNode, dfgArray, graph.arcs, dfgLogArray);
 
             graph.logArray = logArray;
     

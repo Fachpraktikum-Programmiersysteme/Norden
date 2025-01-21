@@ -6,10 +6,10 @@ import {Subscription} from 'rxjs';
 import {TextParserService} from './services/text-parser.service';
 import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
+import {GraphLogService} from "./services/graph-log.service";
 import {DisplayService} from './services/display.service';
+import {ToastService} from './services/toast.service';
 import {Graph} from './classes/graph-representation/graph';
-import { ToastService } from './services/toast/toast.service';
-import {GraphLogService} from "./classes/graph-log/graph-log.service";
 
 @Component({
     selector: 'app-root',
@@ -25,8 +25,9 @@ export class AppComponent implements OnDestroy {
     public fileAreaFc : FormControl;
     public logAreaFc : FormControl;
 
-    public logArray : [string, string][][];
-    toastMessages: Array<{
+    public logArray : {id : number, events : {id : number, label : string, color : string}[]}[] = [];
+
+    public toastMessages: Array<{
         message: string,
         type: "success" | "error" | "warning" | "info",
         duration: number }> = [];
@@ -47,9 +48,6 @@ export class AppComponent implements OnDestroy {
         this.logArray = [];
         this._sub = this._displayService.graph$.subscribe(
             graph => {
-                /* to be removed - start*/
-                console.log('app_component noticed new graph through subscription');
-                /* to be removed - end*/
                 this.logAreaFc.setValue(this._displayService.generateOutputLogString());
                 this.logArray = GraphLogService.generateOutputLogArray(graph);
             }
@@ -71,9 +69,6 @@ export class AppComponent implements OnDestroy {
     /* methods - other */
 
     public processSourceChange(inSourceData : [string, string]) : void {
-        /* to be removed - start*/
-        console.log('processing SourceChange-event - type: "' + inSourceData[0] + '", content: "' + inSourceData[1] + '"');
-        /* to be removed - end*/
         this.fileAreaFc.setValue(inSourceData[1]);
         let parsedContent : Graph = new Graph;
         switch (inSourceData[0]) {

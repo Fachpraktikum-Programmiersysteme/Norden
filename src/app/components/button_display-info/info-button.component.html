@@ -4,13 +4,13 @@
     [disabled]="disabled"
     (click)="processMouseClick($event)"
 >
-    @if (overrideActive) {
+    @if (overrideDisabled) {
         <mat-icon>
-            subtitles
+            subtitles_off
         </mat-icon>
     } @else {
         <mat-icon>
-            subtitles_off
+            subtitles
         </mat-icon>
     }
 </button>

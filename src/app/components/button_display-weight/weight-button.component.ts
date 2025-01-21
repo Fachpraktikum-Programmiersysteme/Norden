@@ -10,9 +10,9 @@ import {DisplayService} from '../../services/display.service';
 import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
 
 @Component({
-    selector: 'traces-button',
-    templateUrl: './traces-button.component.html',
-    styleUrls: ['./traces-button.component.css'],
+    selector: 'weight-button',
+    templateUrl: './weight-button.component.html',
+    styleUrls: ['./weight-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,16 +20,16 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class TracesButtonComponent implements OnDestroy {
+export class WeightButtonComponent implements OnDestroy {
 
     /* attributes */
 
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
-    private _logEmpty : boolean;
+    private _graphEmpty : boolean;
 
-    private _animationsDisabled : boolean;
+    private _weightsDisabled : boolean;
 
     /* methods - constructor */
 
@@ -39,16 +39,16 @@ export class TracesButtonComponent implements OnDestroy {
         private _toastService : ToastService,
     ) {
         this._disabled = true;
-        this._logEmpty = false;
-        this._animationsDisabled = true;
+        this._graphEmpty = false;
+        this._weightsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                if (this._displayService.graph.logArray.length > 0) {
-                    this._disabled = false;
-                    this._logEmpty = false;
-                } else {
+                if (this._displayService.graphEmpty) {
                     this._disabled = true;
-                    this._logEmpty = true;
+                    this._graphEmpty = true;
+                } else {
+                    this._disabled = false;
+                    this._graphEmpty = false;
                 }
             }
         );
@@ -66,22 +66,22 @@ export class TracesButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get animationsDisabled() : boolean {
-        return this._animationsDisabled;
+    public get weightsDisabled() : boolean {
+        return this._weightsDisabled;
     };
 
     public get tooltip() : string {
         if (this._disabled) {
-            if (this._logEmpty) {
-                return '[disabled] - (log empty)';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
             } else {
                 return '[currently disabled]';
             };
         } else {
-            if (this._animationsDisabled) {
-                return 'display animated trace objects';
+            if (this._weightsDisabled) {
+                return 'display arc weights';
             } else {
-                return 'hide animated trace objects';
+                return 'hide arc weights';
             };
         };
     };
@@ -89,13 +89,13 @@ export class TracesButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._animationsDisabled = !(this._animationsDisabled);
-        this._displaySettings.updateState({ traceAnimationsDisabled: this._animationsDisabled });
+        this._weightsDisabled = !(this._weightsDisabled);
+        this._displaySettings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
-        if (this._animationsDisabled) {
-            this._toastService.showToast('animated traces hidden', 'info');
+        if (this._weightsDisabled) {
+            this._toastService.showToast('arc weights hidden', 'info');
         } else {
-            this._toastService.showToast('animated traces shown', 'info');
+            this._toastService.showToast('arc weights shown', 'info');
         };
     };
 

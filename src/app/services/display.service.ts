@@ -71,20 +71,25 @@ export class DisplayService implements OnDestroy {
 
     public generateOutputLogString() : string {
         let outLogString : string = '';
+        let traceIdx : number = 0;
         for (const trace of this.graph.logArray) {
             let eventIdx : number = 0;
             for (const event of trace) {
                 if (eventIdx !== 0) {
-                    outLogString = outLogString + ' + "' + event.label + '"'
+                    outLogString = outLogString + ' "' + event.label + '"'
                 } else {
                     outLogString = outLogString + '"' + event.label + '"'
                 };
                 eventIdx++;
             };
             if (eventIdx !== 0) {
+                if (traceIdx < (this.graph.logArray.length - 1)) {
+                    outLogString = outLogString + ' + '
+                };
                 outLogString = outLogString + '\n'
                 outLogString = outLogString + '\n'
             };
+            traceIdx++;
         };
         return outLogString;
     };

@@ -5,7 +5,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 import {DisplayService} from '../../services/display.service';
-import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
+import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
 
 @Component({
     selector: 'mode-button',
@@ -24,56 +24,51 @@ export class ModeButtonComponent {
 
     /* attributes */
 
-    private _mode : 'default' | 'dfg';
+    private _mode : 'dfg' | 'changes';
 
     /* methods - constructor */
 
     constructor(
+        private _displaySettings: DisplaySettingsSingleton,
         private _displayService : DisplayService,
-        private globalState: GlobalStateSingleton,
     ) {
-        this._mode = 'default';
+        this._mode = 'dfg';
     };
 
     /* methods - getters */
 
-    public get mode() : 'default' | 'dfg' {
+    public get mode() : 'dfg' | 'changes' {
         return this._mode;
     };
 
     public get tooltip() : string {
-        if (this._mode) {
-            return 'switch display mode' + '\,\n';
+        if (this._mode === 'dfg') {
+            return 'switch display mode to highlight the latest cut\'s changes' + '\n' + '(currently highlighting DFG\'s)';
         } else {
-            return 'switch display mode' + '\,\n' + '(currently displaying DFG\'s)';
+            return 'switch display mode to highlighting DFG\'s' + '\n' + '(currently highlighting the latest cut\'s changes)';
         }
     };
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
     public processMouseClickA(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('mode button clicked - selected option A (default) : ' + inEvent);
+        console.log('mode button clicked - selected option A (dfg) : ' + inEvent);
         /* to be removed - end */
-        if (this._mode === 'dfg') {
-            this._mode = 'default';
-            this.globalState.updateState({ mode: this._mode });
+        if (this._mode === 'changes') {
+            this._mode = 'dfg';
+            this._displaySettings.updateState({ mode: this._mode });
             this._displayService.refreshData();
         };
     };
 
     public processMouseClickB(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('mode button clicked - selected option B (dfg) : ' + inEvent);
+        console.log('mode button clicked - selected option B (changes) : ' + inEvent);
         /* to be removed - end */
-        if (this._mode === 'default') {
-            this._mode = 'dfg';
-            this.globalState.updateState({ mode: this._mode });
+        if (this._mode === 'dfg') {
+            this._mode = 'changes';
+            this._displaySettings.updateState({ mode: this._mode });
             this._displayService.refreshData();
         };
     };

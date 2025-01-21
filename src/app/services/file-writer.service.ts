@@ -166,12 +166,19 @@ export class FileWriterService {
         jsonGraph.log = tracesArray;
         for (const dfg of inGraph.dfgArray) {
             const dfgID : string = dfgIds[dfg.id];
-            jsonGraph.dfgs[dfgID] = [nodeIds[dfg.startNode.id], nodeIds[dfg.endNode.id], [], []];
+            jsonGraph.dfgs[dfgID] = [nodeIds[dfg.startNode.id], nodeIds[dfg.endNode.id], [], [], []];
             for (const node of dfg.nodes) {
                 jsonGraph.dfgs[dfgID][2].push(nodeIds[node.id]);
             };
             for (let arcID = 0; arcID < dfg.arcs.length; arcID++) {
                 jsonGraph.dfgs[dfgID][3].push(arcIds[arcID]);
+            };
+            for (const trace of dfg.log) {
+                const traceArray : string[] = [];
+                for (let eventID = 0; eventID < trace.length; eventID++) {
+                    traceArray.push(nodeIds[eventID]);
+                };
+                jsonGraph.dfgs[dfgID][4].push(traceArray);
             };
         };
         return jsonGraph;

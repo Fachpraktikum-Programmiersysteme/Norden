@@ -5,8 +5,9 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
 
+import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
+import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
 
 @Component({
     selector: 'embedder-button',
@@ -26,23 +27,28 @@ export class EmbedderButtonComponent implements OnDestroy {
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
+    private _graphEmpty : boolean;
 
-    private _embedderDiabled : boolean = false;
+    private _embedderDisabled : boolean;
 
     /* methods - constructor */
 
     constructor(
+        private _displaySettings : DisplaySettingsSingleton,
         private _displayService : DisplayService,
-        private globalState: GlobalStateSingleton,
+        private _toastService : ToastService,
     ) {
         this._disabled = true;
+        this._graphEmpty = false;
+        this._embedderDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('traces-button_component noticed new log');
-                if (this._displayService.graph.logArray.length > 0) {
-                    this._disabled = false;
-                } else {
+                if (this._displayService.graphEmpty) {
                     this._disabled = true;
+                    this._graphEmpty = true;
+                } else {
+                    this._disabled = false;
+                    this._graphEmpty = false;
                 }
             }
         );
@@ -60,34 +66,37 @@ export class EmbedderButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get embedderDiabled() : boolean {
-        return this._embedderDiabled;
+    public get embedderDisabled() : boolean {
+        return this._embedderDisabled;
     };
 
     public get tooltip() : string {
         if (this._disabled) {
-            return '[currently disabled]';
-        } else if (this._embedderDiabled) {
-            return 'automatically arrange nodes';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
+            } else {
+                return '[currently disabled]';
+            };
         } else {
-            return 'disable automatic node arrangement';
+            if (this._embedderDisabled) {
+                return 'automatically arrange graph';
+            } else {
+                return 'disable graph arrangement';
+            };
         };
     };
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
     public processMouseClick(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('embedder button clicked - event : ' + inEvent);
-        /* to be removed - end */
-        this._embedderDiabled = !(this._embedderDiabled);
-        this.globalState.updateState({ embedderDiabled: this._embedderDiabled });
+        this._embedderDisabled = !(this._embedderDisabled);
+        this._displaySettings.updateState({ springEmbedderDisabled: this._embedderDisabled });
         this._displayService.refreshData();
+        if (this._embedderDisabled) {
+            this._toastService.showToast('automatic graph arrangement disabled', 'info');
+        } else {
+            this._toastService.showToast('automatic graph arrangement enabled', 'info');
+        };
     };
 
 };

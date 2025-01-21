@@ -23,7 +23,7 @@
     >
     </app-display>
     <div
-    class="gap_30px"
+    class="gap_30px_v"
     >
     </div>
     <div
@@ -31,36 +31,52 @@
     >
         <mat-form-field
             appearance="outline"
-            class="outputContainer"
+            class="logContainer"
         >
             <mat-label>
-                File Content
+                Event Log (detailed view)
             </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="7"
-                [formControl]="fileAreaFc"
+            <div
+                appearance="outline"
+                class="logContainer"
             >
-            </textarea>
-        </mat-form-field>
-        <mat-form-field
-            appearance="outline"
-            class="outputContainer"
-        >
-            <mat-label>
-                Event Log
-            </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                contenteditable="true"
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="7"
-                [formControl]="logAreaFc"
-            >
-            </textarea>
+                <textarea
+                    matInput
+                    cdkTextareaAutosize
+                >
+                </textarea>
+                @for (trace of logArray; track trace.id) {
+                    @if ($last) {
+                        <li>
+                        @for (event of trace.events; track event.id) {
+                            @if ($first) {
+                                "<font color={{event.color}}>{{event.label}}</font>"
+                            } @else {
+                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                            }
+                        }
+                        </li>
+                    } @else {
+                        <li>
+                            @for (event of trace.events; track event.id) {
+                                @if ($first) {
+                                    "<font color={{event.color}}>{{event.label}}</font>"
+                                } @else {
+                                    <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                }
+                            }
+                            <font> + </font>
+                        </li>
+                    }
+                } @empty {
+                    (no log available)
+                }
+                <textarea
+                    matInput
+                    cdkTextareaAutosize
+                >
+                </textarea>
+            </div>
         </mat-form-field>
         <text-input
             class="inputConatiner"
@@ -77,17 +93,31 @@
                 </save-button>
                 <delete-button>
                 </delete-button>
-                <embedder-button>
-                </embedder-button>
-                <info-button>
-                </info-button>
-                <traces-button>
-                </traces-button>
+                <div
+                class="gap_40px_h"
+                >
+                </div>
                 <submit-button>
                 </submit-button>
             </div>
             <div
-            class="gap_40px"
+                class="gap_40px_v"
+            >
+            </div>
+            <div
+                class="flexRowAlignSpaceEvenlyStart"
+            >
+                <embedder-button>
+                </embedder-button>
+                <traces-button>
+                </traces-button>
+                <info-button>
+                </info-button>
+                <weight-button>
+                </weight-button>
+            </div>
+            <div
+                class="gap_40px_v"
             >
             </div>
             <mode-button>
@@ -95,7 +125,7 @@
         </div>
     </div>
     <div
-        class="gap_30px"
+        class="gap_30px_v"
     >
     </div>
     <div
@@ -139,7 +169,12 @@
         </app-example-file>
     </div>
     <div
-        class="gap_30px"
+        class="gap_30px_v"
+    >
+    </div>
+    <hr>
+    <div
+        class="gap_30px_v"
     >
     </div>
     <div
@@ -147,37 +182,34 @@
     >
         <mat-form-field
             appearance="outline"
-            class="logContainer"
+            class="outputContainer"
         >
             <mat-label>
-                Event Log (detailed)
+                File Content
             </mat-label>
             <textarea
                 matInput
                 cdkTextareaAutosize
+                cdkAutosizeMinRows="3"
+                cdkAutosizeMaxRows="30"
+                [formControl]="fileAreaFc"
             >
             </textarea>
-            <div
-                appearance="outline"
-                class="logContainer"
-            >
-                @for (trace of logArray; track trace) {
-                    <li>
-                    @for (event of trace; track event) {
-                        @if ($first) {
-                            "<font color={{event[1]}}>{{event[0]}}</font>"
-                        } @else {
-                            <font> + </font>"<font color={{event[1]}}>{{event[0]}}</font>"
-                        }
-                    }
-                    </li>
-                } @empty {
-                    (no log available)
-                }
-            </div>
+        </mat-form-field>
+        <mat-form-field
+            appearance="outline"
+            class="outputContainer"
+        >
+            <mat-label>
+                Event Log
+            </mat-label>
             <textarea
                 matInput
                 cdkTextareaAutosize
+                contenteditable="true"
+                cdkAutosizeMinRows="3"
+                cdkAutosizeMaxRows="30"
+                [formControl]="logAreaFc"
             >
             </textarea>
         </mat-form-field>

@@ -4,13 +4,13 @@
     [disabled]="disabled"
     (click)="processMouseClick($event)"
 >
-    @if (embedderDiabled) {
+    @if (embedderDisabled) {
         <mat-icon>
-            open_with
+            auto_fix_off
         </mat-icon>
     } @else {
         <mat-icon>
-            swap_horiz
+            auto_fix_high
         </mat-icon>
     }
 </button>
