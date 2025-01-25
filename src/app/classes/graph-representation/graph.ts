@@ -5,7 +5,7 @@ import {DFG} from './dfg';
 export class Graph {
 
     /* attributes */
-    
+
     private _nodes : Array<Node | undefined>;
     private _startNode : Node | undefined;
     private _endNode : Node | undefined;
@@ -25,6 +25,7 @@ export class Graph {
     private _dfgMax : number;
 
     private _markedNodes : Array<Node>;
+    private _unmarkedNodes: Array<Node>
     private _markedArcs : Array<Arc>;
 
     private _changedNodes : Array<Node>;
@@ -36,7 +37,7 @@ export class Graph {
     private _initialState : boolean;
 
     /* methods : constructor */
-    
+
     public constructor(
     ) {
         this._nodes = [];
@@ -52,6 +53,7 @@ export class Graph {
         this._dfgCount = 0;
         this._dfgMax = 0;
         this._markedNodes = [];
+        this._unmarkedNodes = [];
         this._markedArcs = [];
         this._changedNodes = [];
         this._changedArcs = [];
@@ -113,6 +115,11 @@ export class Graph {
     public get markedNodes() : Array<Node> {
         return this._markedNodes;
     };
+
+    public get unmarkedNodes(): Array<Node>{
+        return this._nodes.filter(node => node !== undefined && node.unmarked) as Array<Node>
+    }
+
 
     public get markedArcs() : Array<Arc> {
         return this._markedArcs;
@@ -200,11 +207,11 @@ export class Graph {
     /* methods : other */
 
     public checkNode(
-        inType : 'support' | 'event' | 'place' | 'transition', 
+        inType : 'support' | 'event' | 'place' | 'transition',
         inLabel : string
     ) : [
-        boolean, 
-        number?, 
+        boolean,
+        number?,
         Node?
     ] {
         for (let i = 0; i < this._nodes.length; i++) {
@@ -225,13 +232,13 @@ export class Graph {
     };
 
     private appendNode(
-        inType : 'support' | 'event' | 'place' | 'transition', 
-        inLabel : string, 
-        inX? : number, 
+        inType : 'support' | 'event' | 'place' | 'transition',
+        inLabel : string,
+        inX? : number,
         inY? : number
     ) : [
-        boolean, 
-        number, 
+        boolean,
+        number,
         Node
     ] {
         let x : number;
@@ -274,13 +281,13 @@ export class Graph {
     };
 
     public addNode(
-        inType : 'support' | 'event' | 'place' | 'transition', 
-        inLabel : string, 
-        inX? : number, 
+        inType : 'support' | 'event' | 'place' | 'transition',
+        inLabel : string,
+        inX? : number,
         inY? : number
     ) : [
-        boolean, 
-        number, 
+        boolean,
+        number,
         Node
     ] {
         switch (inType) {
@@ -360,11 +367,11 @@ export class Graph {
     };
 
     private checkArc(
-        inSource : Node, 
+        inSource : Node,
         inTarget : Node
     ) : [
-        boolean, 
-        number?, 
+        boolean,
+        number?,
         Arc?
     ] {
         for (let i = 0; i < this._arcs.length; i++) {
@@ -378,12 +385,12 @@ export class Graph {
     };
 
     public addArc(
-        inSource : Node, 
-        inTarget : Node, 
+        inSource : Node,
+        inTarget : Node,
         inWeight? : number
     ) : [
-        boolean, 
-        number, 
+        boolean,
+        number,
         Arc
     ]  {
         if (inWeight === undefined) {
@@ -521,13 +528,13 @@ export class Graph {
     };
 
     public appendDFG(
-        inStartNode : Node, 
-        inEndNode : Node, 
-        inNodes : Node[], 
-        inArcs : Arc[], 
+        inStartNode : Node,
+        inEndNode : Node,
+        inNodes : Node[],
+        inArcs : Arc[],
         inLog : Node[][]
     ) : [
-        number, 
+        number,
         DFG
     ] {
         const addedDFG : DFG = new DFG(this._dfgMax, inStartNode, inEndNode, inNodes, inArcs, inLog)

@@ -31,10 +31,10 @@ export class Node {
     /* methods : constructor */
 
     public constructor(
-        inId : number, 
-        inType : 'support' | 'event' | 'place' | 'transition', 
-        inLabel : string, 
-        inX : number,  
+        inId : number,
+        inType : 'support' | 'event' | 'place' | 'transition',
+        inLabel : string,
+        inX : number,
         inY : number
     ) {
         this._id = inId;
@@ -108,6 +108,10 @@ export class Node {
         return this._marked;
     };
 
+    public get unmarked() : boolean {
+        return !this._marked;
+    };
+
     public get active() : boolean {
         return this._active;
     };
@@ -139,7 +143,7 @@ export class Node {
     public get hoverCancelled() : boolean {
         return this._hoverCancelled;
     };
-    
+
     /* methods : setters */
 
     public set x(inX : number) {

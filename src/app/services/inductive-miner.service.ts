@@ -54,70 +54,70 @@ export class InductiveMinerService {
     };
 
     // TODO - after implementation and test of all components, modify toasts and remove timeouts
-    // 
+    //
     public async checkInput(inOutGraph : Graph) {
         this.checkGraphStartEnd(inOutGraph);
         inOutGraph.resetAllChanged();
         inOutGraph.resetAllNew();
         this._displayService.refreshData();
         /* TODO - part to be modified - start */
-        this._toastService.showToast('changed flags reset, 2s until check for EC', 'info');
+        this._toastService.showToast('changed flags reset, 2s until check for Exclusive Cut', 'info');
         await new Promise(resolve => setTimeout(resolve, 2000));
         /* TODO - part to be modified - end */
         this._displayService.refreshData();
         let inputAccepted : boolean = false;
-        if (!inputAccepted) {
-            const checkEC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkExclusiveCut(inOutGraph);
-            inputAccepted = checkEC[0];
-            if (inputAccepted) {
-                /* TODO - part to be modified - start */
-                this._toastService.showToast('input accepted as EC, 3s until execution', 'success');
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                /* TODO - part to be modified - end */
-                if (checkEC[1] !== undefined) {
-                    this.executeExclusiveCut(inOutGraph, checkEC[1][0], checkEC[1][1], checkEC[1][2], checkEC[1][3], checkEC[1][4], checkEC[1][5]);
-                    this._displayService.refreshData();
-                    /* TODO - part to be modified - start */
-                    this._toastService.showToast('EC executed, 4s until reset of marked flags', 'info');
-                    await new Promise(resolve => setTimeout(resolve, 4000));
-                    /* TODO - part to be modified - end */
-                    inOutGraph.resetAllMarked();
-                } else {
-                    throw new Error('#srv.mnr.ccI.000: ' + 'input check failed - check identified exclusive cut, but did not return associated values');
-                };
-            } else {
-                /* TODO - part to be modified - start */
-                this._toastService.showToast('input rejected as EC, 2s until check for SC', 'error');
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                /* TODO - part to be modified - end */
-            };
-        };
-        if (!inputAccepted) {
-            const checkSC : [boolean, undefined | []] = this.checkSequenceCut(inOutGraph);
-            inputAccepted = checkSC[0];
-            if (inputAccepted) {
-                /* TODO - part to be modified - start */
-                this._toastService.showToast('input accepted as SC, 3s until execution', 'success');
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                /* TODO - part to be modified - end */
-                if (checkSC[1] !== undefined) {
-                    this.executeSequenceCut(inOutGraph);
-                    this._displayService.refreshData();
-                    /* TODO - part to be modified - start */
-                    this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info');
-                    await new Promise(resolve => setTimeout(resolve, 4000));
-                    /* TODO - part to be modified - end */
-                    inOutGraph.resetAllMarked();
-                } else {
-                    throw new Error('#srv.mnr.ccI.001: ' + 'input check failed - check identified sequence cut, but did not return associated values');
-                };
-            } else {
-                /* TODO - part to be modified - start */
-                this._toastService.showToast('input rejected as SC, 2s until check for PC', 'error');
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                /* TODO - part to be modified - end */
-            };
-        };
+        // if (!inputAccepted) {
+        //     const checkEC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkExclusiveCut(inOutGraph);
+        //     inputAccepted = checkEC[0];
+        //     if (inputAccepted) {
+        //         /* TODO - part to be modified - start */
+        //         this._toastService.showToast('input accepted as EC, 3s until execution', 'success');
+        //         await new Promise(resolve => setTimeout(resolve, 3000));
+        //         /* TODO - part to be modified - end */
+        //         if (checkEC[1] !== undefined) {
+        //             this.executeExclusiveCut(inOutGraph, checkEC[1][0], checkEC[1][1], checkEC[1][2], checkEC[1][3], checkEC[1][4], checkEC[1][5]);
+        //             this._displayService.refreshData();
+        //             /* TODO - part to be modified - start */
+        //             this._toastService.showToast('EC executed, 4s until reset of marked flags', 'info');
+        //             await new Promise(resolve => setTimeout(resolve, 4000));
+        //             /* TODO - part to be modified - end */
+        //             inOutGraph.resetAllMarked();
+        //         } else {
+        //             throw new Error('#srv.mnr.ccI.000: ' + 'input check failed - check identified exclusive cut, but did not return associated values');
+        //         };
+        //     } else {
+        //         /* TODO - part to be modified - start */
+        //         this._toastService.showToast('input rejected as EC, 2s until check for SC', 'error');
+        //         await new Promise(resolve => setTimeout(resolve, 2000));
+        //         /* TODO - part to be modified - end */
+        //     };
+        // };
+        // if (!inputAccepted) {
+        //     const checkSC : [boolean, undefined | []] = this.checkSequenceCut(inOutGraph);
+        //     inputAccepted = checkSC[0];
+        //     if (inputAccepted) {
+        //         /* TODO - part to be modified - start */
+        //         this._toastService.showToast('input accepted as SC, 3s until execution', 'success');
+        //         await new Promise(resolve => setTimeout(resolve, 3000));
+        //         /* TODO - part to be modified - end */
+        //         if (checkSC[1] !== undefined) {
+        //             this.executeSequenceCut(inOutGraph);
+        //             this._displayService.refreshData();
+        //             /* TODO - part to be modified - start */
+        //             this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info');
+        //             await new Promise(resolve => setTimeout(resolve, 4000));
+        //             /* TODO - part to be modified - end */
+        //             inOutGraph.resetAllMarked();
+        //         } else {
+        //             throw new Error('#srv.mnr.ccI.001: ' + 'input check failed - check identified sequence cut, but did not return associated values');
+        //         };
+        //     } else {
+        //         /* TODO - part to be modified - start */
+        //         this._toastService.showToast('input rejected as SC, 2s until check for PC', 'error');
+        //         await new Promise(resolve => setTimeout(resolve, 2000));
+        //         /* TODO - part to be modified - end */
+        //     };
+        // };
         if (!inputAccepted) {
             const checkPC : [boolean, undefined | []] = this.checkParallelCut(inOutGraph);
             inputAccepted = checkPC[0];
@@ -200,9 +200,9 @@ export class InductiveMinerService {
                 /* TODO - part to be modified - end */
             };
         };
-        // 
+        //
         /* TODO - alternative implementation for test purposes - start */
-        // 
+        //
         // inOutGraph.resetAllMarked();
         // this._displayService.refreshData();
         // this._toastService.showToast('marked flags reset, 2s until automated check for all BC', 'info');
@@ -210,9 +210,9 @@ export class InductiveMinerService {
         // const cases : number = this.autoCheckBaseCase(inOutGraph);
         // this._toastService.showToast('end of checks reached, found ' + cases.toString() + ' BC', 'error');
         // await new Promise(resolve => setTimeout(resolve, 1000));
-        // 
+        //
         /* TODO - alternative implementation for test purposes - end */
-        // 
+        //
         this._displayService.refreshData();
         /* TODO - part to be modified - start */
         if (this.checkTermination(inOutGraph)) {
@@ -305,7 +305,7 @@ export class InductiveMinerService {
     private checkExclusiveCut(
         inOutGraph : Graph
     ) : [
-        boolean, 
+        boolean,
         undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]
     ] {
         /* to be removed - start */
@@ -440,7 +440,7 @@ export class InductiveMinerService {
     private checkSequenceCut(
         inOutGraph : Graph
     ) : [
-        boolean, 
+        boolean,
         undefined | []
     ] {
         return [false, undefined];
@@ -449,14 +449,277 @@ export class InductiveMinerService {
     private checkParallelCut(
         inOutGraph : Graph
     ) : [
-        boolean, 
+        boolean,
         undefined | []
     ] {
+        /* to be removed - start */
+        console.log('im_service started check of parallel cut');
+        console.error(' im_service started check of parallel cut')
+        /* to be removed - end */
+        /*Prüfe, ob genau zwei Kanten im Graph markiert;*/
+        /*Wenn nicht, Schnitt abgelehnt*/
+        if (inOutGraph.markedArcs.length !== 2) {
+            /* to be removed - start */
+            console.log('cut rejected on check 1');
+            /* to be removed - end */
+            //return [false, undefined];
+        }
+        /*Prüfe, ob alle markierten kanten und knoten zu selben DFG gehören;*/
+        /*Wenn nicht, Schnitt abgelehnt*/
+        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
+        if (cutDFG === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 2');
+            /* to be removed - end */
+            return [false, undefined];
+        }
+        /*Position des identifizierten DFG finden*/
+        /*Wenn Position nicht gefunden, Schnitt abgelehnt*/
+        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
+        if (dfgPos === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 3');
+            /* to be removed - end */
+            return [false, undefined];
+        }
+        /*Prüfe, ob beide markierten kanten Anfangs- Endpunkt des DFG verbinden;*/
+        /*Wenn nicht, Schnitt abgelehnt*/
+        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
+        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
+        if (cutArcs === undefined) {
+            /* to be removed - start */
+            console.log('cut rejected on check 4');
+            /* to be removed - end */
+           // return [false, undefined];
+        }
+        /*Prüfe, ob markierte Knoten Start und Endpunkt darstellen;*/
+        /*Wenn nicht, Schnitt abgelehnt*/
+        let endpointsMarked : boolean;
+        if (dfg.startNode.marked) {
+            if (dfg.endNode.marked) {
+                endpointsMarked = true;
+            } else {
+                /* to be removed - start */
+                console.log('cut rejected on check 5');
+                /* to be removed - end */
+              //  return [false, undefined];
+            }
+        } else {
+            if (dfg.endNode.marked) {
+                /* to be removed - start */
+                console.log('cut rejected on check 6');
+                /* to be removed - end */
+              //  return [false, undefined];
+            } else {
+                endpointsMarked = false;
+            }
+        }
+        /*Aufteilung in markierte und nicht markierte Knoten+Kanten */
+        /*1. Loop über Kanten 2. Loop über Knoten*/
+        let splitM : [Node[], Arc[]] = [[], []];
+        let splitU : [Node[], Arc[]] = [[], []];
+        for (const arc of dfg.arcs) {
+            if (arc.marked) {
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 7');
+                        /* to be removed - end */
+                      //  return [false, undefined];
+                    } else {
+                        /* arc is cut --> skip arc */
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        /* arc is cut --> skip arc */
+                    } else {
+                        /* to be removed - start */
+                        console.log('cut rejected on check 8');
+                        /* to be removed - end */
+                     //   return [false, undefined];
+                    };
+                };
+            } else {
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        splitM[1].push(arc);
+                    } else {
+                        /* to be removed - start */
+                        //console.log('cut rejected on check 9');
+                        /* to be removed - end */
+                      //  return [false, undefined];
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        /* to be removed - start */
+                        // BEI PC ist dies der Fall. Gerade eine Bedingung
+                       // console.log('cut rejected on check 10');
+                        /* to be removed - end */
+                      //  return [false, undefined];
+                    } else {
+                        //Knoten die an Kanten hängen, nicht markiert
+                        splitU[1].push(arc);
+                    };
+                };
+            };
+        };
+        let markedConnectedToUnmarked: boolean = false
+        let unmarkedConnectedToMarked: boolean = false
+        for (const node of dfg.nodes) {
+            if (node !== dfg.startNode) {
+                if (node !== dfg.endNode) {
+                    if (node.marked) {
+                        splitM[0].push(node);
+                        /*Check, ob mit jeder Akti in A2 über Kante verbunden*/
+                        for (const arc of dfg.arcs){
+                            if (!arc.target.marked){
+                                markedConnectedToUnmarked = true
+                                console.error( node.label + ' Verbunden mit nich markiert')
+                                break
+                            }else{
+                                markedConnectedToUnmarked = false
+                            }
+                        }
+                    } else {
+                        splitU[0].push(node);
+                        /*Check, ob mit jeder Akti in A1 über Kante verbunden*/
+                        for (const arc of dfg.arcs){
+                            if (arc.target.marked){
+                                markedConnectedToUnmarked = true
+                                console.error(node.label + ' Verbunden mit markiert')
+                                break
+                            }else{
+                                markedConnectedToUnmarked = false
+                            }
+                        }
+                    };
+                } else {
+                    /* skip node */
+                };
+            } else {
+                /* skip node */
+            };
+        };
+        // Prüfen, ob die Menge der markierten bzw nicht markierten Knoten zusammenhängend
+        //markiert
+        if (!this.areMarkedNodesConnected(inOutGraph)){
+            console.error('cut rejected due to graph not beeing connected');
+        }else{
+            console.error('all marked nodes are connected')
+        }
+
+        //unmarkiert
+        if (!this.areNodesConnected(inOutGraph, false)){
+            console.error('cut rejected due to graph not beeing connected');
+        }else{
+            console.error('all unmarked nodes are connected')
+        }
+
+
+
+        if ((splitM[1].length) < (splitM[0].length - 1)) {
+            /* to be removed - start */
+            console.log('cut rejected on check 11');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if ((splitU[1].length) < (splitU[0].length - 1)) {
+            /* to be removed - start */
+            console.log('cut rejected on check 12');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        /* to be removed - start */
+        console.log('found exclusive cut');
+        /* to be removed - end */
         return [false, undefined];
     };
 
+    /**
+     * Check whether graph is beeing connected using Tiefen Breitensuche
+     *
+     * @param inOutGraph
+     * @private
+     */
+    private areMarkedNodesConnected(inOutGraph: Graph):boolean{
+        const markedNodes = inOutGraph.markedNodes
+        if (markedNodes.length === 0){
+            return false
+        }
+
+        const visited = new Set<Node>()
+        //start with random marked node
+        const stack = [markedNodes[0]]
+        while (stack.length > 0){
+            const currentNode = stack.pop()
+            if(!currentNode) continue
+
+            visited.add(currentNode)
+
+            //expand stack whenever we find a connecting arc to marked node
+            //using outgoing arcs
+            for (const arc of inOutGraph.arcs){
+                if(arc.source === currentNode && arc.target.marked && !visited.has(arc.target)){
+                    stack.push(arc.target)
+                }
+            }
+            //using incoming arcs
+            for (const arc of inOutGraph.arcs){
+                if (arc.target === currentNode && arc.source.marked && !visited.has(arc.source)){
+                    stack.push(arc.source)
+                }
+            }
+        }
+        //check whether all marked nodes have been visited
+        return markedNodes.every(node => visited.has(node))
+    }
+
+    /**
+     * Check whether graph is beeing connected using deepsearch
+     * @param inOutGraph
+     * @param useMarkedNodes decide whether marked nodes are beeing analyzed or unmarked nodes
+     * @private
+     */
+    private areNodesConnected(inOutGraph: Graph, useMarkedNodes: boolean):boolean{
+        //check whether nodes to be checked are marked or unmarked
+        const nodesToCheck = useMarkedNodes ? inOutGraph.markedNodes : inOutGraph.unmarkedNodes
+        if (nodesToCheck.length === 0){
+            return false
+        }
+
+        const visited = new Set<Node>()
+        //start with random marked or unmarked node
+        const stack = [nodesToCheck[0]]
+        while (stack.length > 0){
+            const currentNode = stack.pop()
+            if(!currentNode) continue
+
+            visited.add(currentNode)
+
+            //expand stack whenever we find a connecting arc to marked or unmarked node
+            //using outgoing arcs
+            for (const arc of inOutGraph.arcs){
+                if(arc.source === currentNode
+                    && ((useMarkedNodes && arc.target.marked) || (!useMarkedNodes && !arc.target.marked))
+                    && !visited.has(arc.target)){
+                    stack.push(arc.target)
+                }
+            }
+            //using incoming arcs
+            for (const arc of inOutGraph.arcs){
+                if (arc.target === currentNode
+                    && ((useMarkedNodes && arc.source.marked) || (!useMarkedNodes && !arc.source.marked))
+                    && !visited.has(arc.source)){
+                    stack.push(arc.source)
+                }
+            }
+        }
+        //check whether all marked or unmarked nodes have been visited
+        return nodesToCheck.every(node => visited.has(node))
+    }
+
     private checkLoopCut(inOutGraph : Graph) : [
-        boolean, 
+        boolean,
         undefined | []
     ] {
         return [false, undefined];
@@ -465,7 +728,7 @@ export class InductiveMinerService {
     private checkBaseCase(
         inOutGraph : Graph
     ) : [
-        boolean, 
+        boolean,
         undefined | [DFG, Node | undefined]
     ] {
         /* to be removed - start */
@@ -960,7 +1223,7 @@ export class InductiveMinerService {
                             };
                         };
                     };
-                };               
+                };
             } else {
                 for (const trace of inOutGraph.logArray) {
                     for (let evIdx = 0; evIdx < trace.length; evIdx++) {
