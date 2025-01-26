@@ -455,18 +455,15 @@ export class InductiveMinerService {
     ] {
         /* to be removed - start */
         console.log('im_service started check of parallel cut');
-        console.error(' im_service started check of parallel cut')
         /* to be removed - end */
-        /*Prüfe, ob genau zwei Kanten im Graph markiert;*/
-        /*Wenn nicht, Schnitt abgelehnt*/
+
         if (inOutGraph.markedArcs.length !== 2) {
             /* to be removed - start */
             console.log('cut rejected on check 1');
             /* to be removed - end */
-            //return [false, undefined];
+            return [false, undefined];
         }
-        /*Prüfe, ob alle markierten kanten und knoten zu selben DFG gehören;*/
-        /*Wenn nicht, Schnitt abgelehnt*/
+
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
             /* to be removed - start */
@@ -474,8 +471,7 @@ export class InductiveMinerService {
             /* to be removed - end */
             return [false, undefined];
         }
-        /*Position des identifizierten DFG finden*/
-        /*Wenn Position nicht gefunden, Schnitt abgelehnt*/
+
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
             /* to be removed - start */
@@ -483,8 +479,7 @@ export class InductiveMinerService {
             /* to be removed - end */
             return [false, undefined];
         }
-        /*Prüfe, ob beide markierten kanten Anfangs- Endpunkt des DFG verbinden;*/
-        /*Wenn nicht, Schnitt abgelehnt*/
+
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
         if (cutArcs === undefined) {
@@ -493,8 +488,7 @@ export class InductiveMinerService {
             /* to be removed - end */
             return [false, undefined];
         }
-        /*Prüfe, ob markierte Knoten Start und Endpunkt darstellen;*/
-        /*Wenn nicht, Schnitt abgelehnt*/
+
         let endpointsMarked : boolean;
         if (dfg.startNode.marked) {
             if (dfg.endNode.marked) {
@@ -515,55 +509,22 @@ export class InductiveMinerService {
                 endpointsMarked = false;
             }
         }
-        /*Aufteilung in markierte und nicht markierte Knoten+Kanten */
-        /*1. Loop über Kanten 2. Loop über Knoten*/
+
         let splitM : [Node[], Arc[]] = [[], []];
         let splitU : [Node[], Arc[]] = [[], []];
         for (const arc of dfg.arcs) {
-            if (arc.marked) {
-                if (arc.source.marked) {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 7');
-                        /* to be removed - end */
-                      //  return [false, undefined];
-                    } else {
-                        /* arc is cut --> skip arc */
-                    };
-                } else {
-                    if (arc.target.marked) {
-                        /* arc is cut --> skip arc */
-                    } else {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 8');
-                        /* to be removed - end */
-                     //   return [false, undefined];
-                    };
-                };
-            } else {
+            if (!arc.marked) {
                 if (arc.source.marked) {
                     if (arc.target.marked) {
                         splitM[1].push(arc);
-                    } else {
-                        /* to be removed - start */
-                        //console.log('cut rejected on check 9');
-                        /* to be removed - end */
-                      //  return [false, undefined];
-                    };
+                    }
                 } else {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        // BEI PC ist dies der Fall. Gerade eine Bedingung
-                       // console.log('cut rejected on check 10');
-                        /* to be removed - end */
-                      //  return [false, undefined];
-                    } else {
-                        //Knoten die an Kanten hängen, nicht markiert
+                    if (!arc.target.marked) {
                         splitU[1].push(arc);
-                    };
-                };
-            };
-        };
+                    }
+                }
+            }
+        }
         let markedConnectedToUnmarked: boolean = false
         let unmarkedConnectedToMarked: boolean = false
         for (const node of dfg.nodes) {
@@ -572,10 +533,10 @@ export class InductiveMinerService {
                     if (node.marked) {
                         splitM[0].push(node);
                         /*Check, ob mit jeder Akti in A2 über Kante verbunden*/
+                        //check whether marked node
                         for (const arc of dfg.arcs){
                             if (!arc.target.marked){
                                 markedConnectedToUnmarked = true
-                                console.error( node.label + ' Verbunden mit nich markiert')
                                 break
                             }else{
                                 markedConnectedToUnmarked = false
@@ -587,33 +548,30 @@ export class InductiveMinerService {
                         for (const arc of dfg.arcs){
                             if (arc.target.marked){
                                 markedConnectedToUnmarked = true
-                                console.error(node.label + ' Verbunden mit markiert')
                                 break
                             }else{
                                 markedConnectedToUnmarked = false
                             }
                         }
-                    };
+                    }
                 } else {
                     /* skip node */
                 };
             } else {
                 /* skip node */
             };
-        };
-        // Prüfen, ob die Menge der markierten bzw nicht markierten Knoten zusammenhängend
-        //markiert
-        if (!this.areNodesConnected(inOutGraph, true)){
-            console.error('cut rejected due to graph not beeing connected');
-        }else{
-            console.error('all marked nodes are connected')
         }
 
-        //unmarkiert
+        // Check whether marked or unmarked nodes are connected
+        //check marked
+        if (!this.areNodesConnected(inOutGraph, true)){
+            //console.error('cut rejected due to graph not beeing connected');
+            return [false, undefined];
+        }
+        //check unmarked
         if (!this.areNodesConnected(inOutGraph, false)){
-            console.error('cut rejected due to graph not beeing connected');
-        }else{
-            console.error('all unmarked nodes are connected')
+            //console.error('cut rejected due to graph not beeing connected');
+            return [false, undefined];
         }
 
         if ((splitM[1].length) < (splitM[0].length - 1)) {
@@ -629,7 +587,7 @@ export class InductiveMinerService {
             return [false, undefined];
         };
         /* to be removed - start */
-        console.log('found exclusive cut');
+        console.log('found parallel cut');
         /* to be removed - end */
        // return [false, undefined];
         return [true, [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]]];
@@ -1278,7 +1236,7 @@ export class InductiveMinerService {
         inCutStartArc : Arc,
         inCutEndArc : Arc
     ) : void {
-        
+
     };
 
 
