@@ -540,7 +540,6 @@ export class InductiveMinerService {
         for (const markedNode of splitM[0]){
             for(const unmarkedNode of splitU[0]){
                 const connected = dfg.arcs.some(
-                    //nur arc.target unmarkedNode?
                     arc => (arc.source === markedNode && arc.target === unmarkedNode) ||
                                 (arc.source === unmarkedNode && arc.target === markedNode)
                 )
@@ -557,7 +556,6 @@ export class InductiveMinerService {
         for (const markedNode of splitU[0]){
             for(const unmarkedNode of splitM[0]){
                 const connected = dfg.arcs.some(
-                    //nur arc.target markedNode?
                     arc => (arc.source === unmarkedNode && arc.target === markedNode) ||
                         (arc.source === markedNode && arc.target === unmarkedNode)
                 )
