@@ -525,52 +525,65 @@ export class InductiveMinerService {
                 }
             }
         }
-        let markedConnectedToUnmarked: boolean = false
-        let unmarkedConnectedToMarked: boolean = false
+
         for (const node of dfg.nodes) {
-            if (node !== dfg.startNode) {
-                if (node !== dfg.endNode) {
-                    if (node.marked) {
-                        splitM[0].push(node);
-                        /*Check, ob mit jeder Akti in A2 über Kante verbunden*/
-                        //check whether marked node
-                        for (const arc of dfg.arcs){
-                            if (!arc.target.marked){
-                                markedConnectedToUnmarked = true
-                                break
-                            }else{
-                                markedConnectedToUnmarked = false
-                            }
-                        }
-                    } else {
-                        splitU[0].push(node);
-                        /*Check, ob mit jeder Akti in A1 über Kante verbunden*/
-                        for (const arc of dfg.arcs){
-                            if (arc.target.marked){
-                                markedConnectedToUnmarked = true
-                                break
-                            }else{
-                                markedConnectedToUnmarked = false
-                            }
-                        }
-                    }
-                } else {
-                    /* skip node */
-                };
-            } else {
-                /* skip node */
-            };
+            if (node !== dfg.startNode
+                && node !== dfg.endNode) {
+                if(node.marked){
+                    splitM[0].push(node)
+                }else{
+                    splitU[0].push(node)
+                }
+            }
+        }
+        //Check if every marked node is connected to every unmarked node
+        for (const markedNode of splitM[0]){
+            for(const unmarkedNode of splitU[0]){
+                const connected = dfg.arcs.some(
+                    //nur arc.target unmarkedNode?
+                    arc => (arc.source === markedNode && arc.target === unmarkedNode) ||
+                                (arc.source === unmarkedNode && arc.target === markedNode)
+                )
+                if(!connected){
+                    /* to be removed - start */
+                    console.log ('cut rejected because not all marked nodes are connted to unmarked nodes')
+                    return [false, undefined]
+                    /* to be removed - end */
+                }
+            }
+        }
+
+        //Check if every unmarked node is connected to every marked node
+        for (const markedNode of splitU[0]){
+            for(const unmarkedNode of splitM[0]){
+                const connected = dfg.arcs.some(
+                    //nur arc.target markedNode?
+                    arc => (arc.source === unmarkedNode && arc.target === markedNode) ||
+                        (arc.source === markedNode && arc.target === unmarkedNode)
+                )
+                if(!connected){
+                    /* to be removed - start */
+                    console.log ('cut rejected because not all unmarked nodes are connted to marked nodes')
+                    return [false, undefined]
+                    /* to be removed - end */
+                }
+            }
         }
 
         // Check whether marked or unmarked nodes are connected
         //check marked
         if (!this.areNodesConnected(inOutGraph, true)){
-            //console.error('cut rejected due to graph not beeing connected');
+            /* to be removed - start */
+            console.log('cut rejected due to graph not being connected');
+            /* to be removed - end */
             return [false, undefined];
+
         }
         //check unmarked
         if (!this.areNodesConnected(inOutGraph, false)){
-            //console.error('cut rejected due to graph not beeing connected');
+            /* to be removed - start */
+            console.log('cut rejected due to graph not being connected');
+            /* to be removed - end */
             return [false, undefined];
         }
 
@@ -589,7 +602,7 @@ export class InductiveMinerService {
         /* to be removed - start */
         console.log('found parallel cut');
         /* to be removed - end */
-       // return [false, undefined];
+       //Aufruf adjustArcsForConnectivity um Kanten zu filtern die sich nur in A1 bzw A2 bewegen?
         return [true, [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]]];
     };
 
@@ -638,6 +651,12 @@ export class InductiveMinerService {
         return nodesToCheck.every(node => visited.has(node))
     }
 
+    /**
+     * Method filters arcs that are only used between marked nodes and
+     * arc that are only used beetwen unmarked nodes
+     * @param inOutGraph
+     * @private
+     */
     private adjustArcsForConnectivity(inOutGraph: Graph):[Arc[],Arc[]]{
         //set of marked and unmarked nodes
         const markedNodes = new Set(inOutGraph.markedNodes)
