@@ -13,13 +13,13 @@ export class DFG {
     private _log : Node[][];
 
     /* methods : constructor */
-    
+
     public constructor(
-        inId : number, 
-        inStartNode : Node, 
-        inEndNode : Node, 
-        inNodes : Node[], 
-        inArcs : Arc[], 
+        inId : number,
+        inStartNode : Node,
+        inEndNode : Node,
+        inNodes : Node[],
+        inArcs : Arc[],
         inLog : Node[][]
     ) {
         this._id = inId;
@@ -122,11 +122,11 @@ export class DFG {
 
     /* methods : other */
 
-    public update(
-        inStartNode: Node, 
-        inEndNode: Node, 
-        inNodes: Node[], 
-        inArcs: Arc[], 
+    public  update(
+        inStartNode: Node,
+        inEndNode: Node,
+        inNodes: Node[],
+        inArcs: Arc[],
         inLog : Node[][]
     ) : void {
         if (inNodes.length < 2) {

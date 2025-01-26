@@ -17,19 +17,19 @@ export class XesParserService {
     public parse(inXesString : string): Graph {
 
         let currentLine : number = 0;
-    
+
         let openedTraceLine : number | undefined = undefined;
         let openedEventLine : number | undefined = undefined;
         let closedEventLine : number | undefined = undefined;
         let closedTraceLine : number | undefined = undefined;
         let closedLogLine : number | undefined = undefined;
-    
+
         let openedTraceFlag : boolean = false;
         let openedEventFlag : boolean = false;
         let closedLogFlag : boolean = false;
 
         // let unnamedEvents : number = 0;
-    
+
         let eventName : string | undefined = undefined;
         let eventLifecycle : string | undefined = undefined;
 
@@ -76,8 +76,8 @@ export class XesParserService {
 
             for (const line of inXesString.split(/[\r\n]+/)){
                 currentLine++;
-                switch (line) {
-                    case '	<trace>' : {
+                switch (line.trim()) {
+                    case '<trace>' : {
                         if (closedLogFlag) {
                             throw new Error('#srv.xps.opt.000: ' + 'reading from .xes-file failed - could not parse .xes-format correctly - tried to open Trace in line ' + currentLine + ' after Log was closed in line ' + closedLogLine);
                         } else if (openedTraceFlag) {
@@ -95,7 +95,7 @@ export class XesParserService {
                         };
                         break;
                     }
-                    case '		<event>' : {
+                    case '<event>' : {
                         if (closedLogFlag) {
                             throw new Error('#srv.xps.ope.000: ' + 'reading from .xes-file failed - could not parse .xes-format correctly - tried to open Event in line ' + currentLine + ' after Log was closed in line ' + closedLogLine);
                         } else if (!openedTraceFlag) {
@@ -110,7 +110,7 @@ export class XesParserService {
                         };
                         break;
                     }
-                    case '		</event>' : {
+                    case '</event>' : {
                         if (closedLogFlag) {
                             throw new Error('#srv.xps.cle.000: ' + 'reading from .xes-file failed - could not parse .xes-format correctly - tried to close Event in line ' + currentLine + ' after Log was closed in line ' + closedLogLine);
                         } else if (!openedTraceFlag) {
@@ -167,7 +167,7 @@ export class XesParserService {
                         };
                         break;
                     }
-                    case '	</trace>' : {
+                    case '</trace>' : {
                         if (closedLogFlag) {
                             throw new Error('#srv.xps.clt.000: ' + 'reading from .xes-file failed - could not parse .xes-format correctly - tried to close Trace in line ' + currentLine + ' after Log was closed in line ' + closedLogLine);
                         } else if (!openedTraceFlag) {
@@ -250,7 +250,7 @@ export class XesParserService {
             graph.appendDFG(startNode, endNode, dfgArray, graph.arcs, dfgLogArray);
 
             graph.logArray = logArray;
-            
+
             return graph;
 
         } catch (error) {
