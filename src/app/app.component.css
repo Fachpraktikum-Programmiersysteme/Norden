@@ -29,11 +29,15 @@
     height:40px;
 }
 
+.gap_35px_h {
+    width:35px;
+    height:100%;
+}
+
 .gap_40px_h {
     width:40px;
     height:100%;
 }
-
 
 .inputContainer {
     width:20%;

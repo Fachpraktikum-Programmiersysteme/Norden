@@ -93,7 +93,7 @@ export class InductiveMinerService {
             };
         };
         if (!inputAccepted) {
-            const checkSC : [boolean, undefined | []] = this.checkSequenceCut(inOutGraph);
+            const checkSC : [boolean, undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean]] = this.checkSequenceCut(inOutGraph);
             inputAccepted = checkSC[0];
             if (inputAccepted) {
                 /* TODO - part to be modified - start */
@@ -101,7 +101,7 @@ export class InductiveMinerService {
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 /* TODO - part to be modified - end */
                 if (checkSC[1] !== undefined) {
-                    this.executeSequenceCut(inOutGraph);
+                    this.executeSequenceCut(inOutGraph, checkSC[1][0], checkSC[1][1], checkSC[1][2], checkSC[1][3], checkSC[1][4]);
                     this._displayService.refreshData();
                     /* TODO - part to be modified - start */
                     this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info');
@@ -262,7 +262,9 @@ export class InductiveMinerService {
     };
     /* to be removed - end */
 
-    private autoCheckBaseCase(inOutGraph : Graph) : number {
+    private autoCheckBaseCase(
+        inOutGraph : Graph
+    ) : number {
         /* to be removed - start */
         console.log('im_service started automated check for base cases');
         /* to be removed - end */
@@ -314,121 +316,74 @@ export class InductiveMinerService {
         /* to be removed - end */
         if (inOutGraph.markedArcs.length !== 2) {
             /* to be removed - start */
-            console.log('cut rejected on check 1');
+            console.log('exclusive cut rejected on check 1');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if (inOutGraph.markedNodes.length < 1) {
+            /* to be removed - start */
+            console.log('exclusive cut rejected on check 2');
             /* to be removed - end */
             return [false, undefined];
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
             /* to be removed - start */
-            console.log('cut rejected on check 2');
+            console.log('exclusive cut rejected on check 3');
             /* to be removed - end */
             return [false, undefined];
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
             /* to be removed - start */
-            console.log('cut rejected on check 3');
+            console.log('exclusive cut rejected on check 4');
             /* to be removed - end */
             return [false, undefined];
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
-        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
-        if (cutArcs === undefined) {
+        const endpointsMarked : boolean | undefined = this.checkEndpointsEC(dfg);
+        if (endpointsMarked === undefined) {
             /* to be removed - start */
-            console.log('cut rejected on check 4');
+            console.log('exclusive cut rejected on check 5');
             /* to be removed - end */
             return [false, undefined];
         };
-        let endpointsMarked : boolean;
-        if (dfg.startNode.marked) {
-            if (dfg.endNode.marked) {
-                endpointsMarked = true;
-            } else {
-                /* to be removed - start */
-                console.log('cut rejected on check 5');
-                /* to be removed - end */
-                return [false, undefined];
-            };
-        } else {
-            if (dfg.endNode.marked) {
-                /* to be removed - start */
-                console.log('cut rejected on check 6');
-                /* to be removed - end */
-                return [false, undefined];
-            } else {
-                endpointsMarked = false;
-            };
+        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
+        if (cutArcs === undefined) {
+            /* to be removed - start */
+            console.log('exclusive cut rejected on check 6');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        let splitM : [Node[], Arc[]] = [[], []];
-        let splitU : [Node[], Arc[]] = [[], []];
-        for (const arc of dfg.arcs) {
-            if (arc.marked) {
-                if (arc.source.marked) {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 7');
-                        /* to be removed - end */
-                        return [false, undefined];
-                    } else {
-                        /* arc is cut --> skip arc */
-                    };
-                } else {
-                    if (arc.target.marked) {
-                        /* arc is cut --> skip arc */
-                    } else {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 8');
-                        /* to be removed - end */
-                        return [false, undefined];
-                    };
-                };
-            } else {
-                if (arc.source.marked) {
-                    if (arc.target.marked) {
-                        splitM[1].push(arc);
-                    } else {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 9');
-                        /* to be removed - end */
-                        return [false, undefined];
-                    };
-                } else {
-                    if (arc.target.marked) {
-                        /* to be removed - start */
-                        console.log('cut rejected on check 10');
-                        /* to be removed - end */
-                        return [false, undefined];
-                    } else {
-                        splitU[1].push(arc);
-                    };
-                };
-            };
+        const splitM : [Node[], Arc[]] = [[], []];
+        const splitU : [Node[], Arc[]] = [[], []];
+        const arcSplit : [Arc[], Arc[]] | undefined = this.splitArcsEC(dfg);
+        if (arcSplit === undefined) {
+            /* to be removed - start */
+            console.log('exclusive cut rejected on check 7');
+            /* to be removed - end */
+            return [false, undefined];
         };
-        for (const node of dfg.nodes) {
-            if (node !== dfg.startNode) {
-                if (node !== dfg.endNode) {
-                    if (node.marked) {
-                        splitM[0].push(node);
-                    } else {
-                        splitU[0].push(node);
-                    };
-                } else {
-                    /* skip node */
-                };
-            } else {
-                /* skip node */
-            };
+        splitM[1] = arcSplit[0];
+        splitU[1] = arcSplit[1];
+        const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesEC(dfg);
+        if (nodeSplit === undefined) {
+            /* to be removed - start */
+            console.log('exclusive cut rejected on check 8');
+            /* to be removed - end */
+            return [false, undefined];
         };
+        splitM[0] = nodeSplit[0];
+        splitU[0] = nodeSplit[1];
         if ((splitM[1].length) < (splitM[0].length - 1)) {
             /* to be removed - start */
-            console.log('cut rejected on check 11');
+            console.log('exclusive cut rejected on check 9');
             /* to be removed - end */
             return [false, undefined];
         };
         if ((splitU[1].length) < (splitU[0].length - 1)) {
             /* to be removed - start */
-            console.log('cut rejected on check 12');
+            console.log('exclusive cut rejected on check 10');
             /* to be removed - end */
             return [false, undefined];
         };
@@ -441,10 +396,66 @@ export class InductiveMinerService {
     private checkSequenceCut(
         inOutGraph : Graph
     ) : [
-        boolean,
-        undefined | []
+        boolean, 
+        undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean]
     ] {
-        return [false, undefined];
+        if (inOutGraph.markedArcs.length < 1) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 1');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        if (inOutGraph.markedNodes.length < 2) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 2');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
+        if (cutDFG === undefined) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 3');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
+        if (dfgPos === undefined) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 4');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const dfg : DFG = inOutGraph.dfgArray[dfgPos];
+        const cutsStartOnMarked : boolean = inOutGraph.markedArcs[0].source.marked;
+        const endpointsCheck : boolean | undefined = this.checkEndpointsSC(dfg, cutsStartOnMarked);
+        if (endpointsCheck === undefined) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 5');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const splitT : [Node[], Arc[]] = [[], []];
+        const splitB : [Node[], Arc[]] = [[], []];
+        const arcSplit : [Arc[], Arc[], Arc[]] | undefined = this.splitArcsSC(dfg, cutsStartOnMarked);
+        if (arcSplit === undefined) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 6');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        const cutArcs = arcSplit[0];
+        splitT[1] = arcSplit[1];
+        splitB[1] = arcSplit[2];
+        const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesSC(dfg, cutsStartOnMarked);
+        if (nodeSplit === undefined) {
+            /* to be removed - start */
+            console.log('sequence cut rejected on check 7');
+            /* to be removed - end */
+            return [false, undefined];
+        };
+        splitT[0] = nodeSplit[0];
+        splitB[0] = nodeSplit[1];
+        return [true, [dfg, cutArcs, splitT, splitB, cutsStartOnMarked]];
     };
 
     private checkParallelCut(
@@ -456,30 +467,26 @@ export class InductiveMinerService {
         /* to be removed - start */
         console.log('im_service started check of parallel cut');
         /* to be removed - end */
-
         if (inOutGraph.markedArcs.length !== 2) {
             /* to be removed - start */
             console.log('cut rejected on check 1');
             /* to be removed - end */
             return [false, undefined];
-        }
-
+        };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
             /* to be removed - start */
             console.log('cut rejected on check 2');
             /* to be removed - end */
             return [false, undefined];
-        }
-
+        };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
             /* to be removed - start */
             console.log('cut rejected on check 3');
             /* to be removed - end */
             return [false, undefined];
-        }
-
+        };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
         if (cutArcs === undefined) {
@@ -487,8 +494,7 @@ export class InductiveMinerService {
             console.log('cut rejected on check 4');
             /* to be removed - end */
             return [false, undefined];
-        }
-
+        };
         let endpointsMarked : boolean;
         if (dfg.startNode.marked) {
             if (dfg.endNode.marked) {
@@ -498,7 +504,7 @@ export class InductiveMinerService {
                 console.log('cut rejected on check 5');
                 /* to be removed - end */
                return [false, undefined];
-            }
+            };
         } else {
             if (dfg.endNode.marked) {
                 /* to be removed - start */
@@ -507,9 +513,8 @@ export class InductiveMinerService {
                 return [false, undefined];
             } else {
                 endpointsMarked = false;
-            }
-        }
-
+            };
+        };
         let splitM : [Node[], Arc[]] = [[], []];
         let splitU : [Node[], Arc[]] = [[], []];
         for (const arc of dfg.arcs) {
@@ -517,59 +522,56 @@ export class InductiveMinerService {
                 if (arc.source.marked) {
                     if (arc.target.marked) {
                         splitM[1].push(arc);
-                    }
+                    };
                 } else {
                     if (!arc.target.marked) {
                         splitU[1].push(arc);
-                    }
-                }
-            }
-        }
-
+                    };
+                };
+            };
+        };
         for (const node of dfg.nodes) {
             if (node !== dfg.startNode
                 && node !== dfg.endNode) {
-                if(node.marked){
+                if (node.marked) {
                     splitM[0].push(node)
-                }else{
+                } else {
                     splitU[0].push(node)
-                }
-            }
-        }
-        //Check if every marked node is connected to every unmarked node
-        for (const markedNode of splitM[0]){
-            for(const unmarkedNode of splitU[0]){
+                };
+            };
+        };
+        /* checking whether every marked node is connected to every unmarked node */
+        for (const markedNode of splitM[0]) {
+            for (const unmarkedNode of splitU[0]) {
                 const connected = dfg.arcs.some(
                     arc => (arc.source === markedNode && arc.target === unmarkedNode) ||
                                 (arc.source === unmarkedNode && arc.target === markedNode)
-                )
-                if(!connected){
+                );
+                if (!connected) {
                     /* to be removed - start */
                     console.log ('cut rejected because not all marked nodes are connted to unmarked nodes')
                     return [false, undefined]
                     /* to be removed - end */
-                }
-            }
-        }
-
-        //Check if every unmarked node is connected to every marked node
-        for (const markedNode of splitU[0]){
-            for(const unmarkedNode of splitM[0]){
+                };
+            };
+        };
+        /* checking whether every unmarked node is connected to every marked node */
+        for (const markedNode of splitU[0]) {
+            for (const unmarkedNode of splitM[0]) {
                 const connected = dfg.arcs.some(
                     arc => (arc.source === unmarkedNode && arc.target === markedNode) ||
                         (arc.source === markedNode && arc.target === unmarkedNode)
-                )
-                if(!connected){
+                );
+                if (!connected) {
                     /* to be removed - start */
                     console.log ('cut rejected because not all unmarked nodes are connted to marked nodes')
                     return [false, undefined]
                     /* to be removed - end */
-                }
-            }
-        }
-
-        // Check whether marked or unmarked nodes are connected
-        //check marked
+                };
+            };
+        };
+        /* checking whether marked or unmarked nodes are connected */
+        /* checking marked nodes */
         if (!this.areNodesConnected(inOutGraph, true)){
             /* to be removed - start */
             console.log('cut rejected due to graph not being connected');
@@ -577,14 +579,13 @@ export class InductiveMinerService {
             return [false, undefined];
 
         }
-        //check unmarked
+        /* checking unmarked nodes */
         if (!this.areNodesConnected(inOutGraph, false)){
             /* to be removed - start */
             console.log('cut rejected due to graph not being connected');
             /* to be removed - end */
             return [false, undefined];
-        }
-
+        };
         if ((splitM[1].length) < (splitM[0].length - 1)) {
             /* to be removed - start */
             console.log('cut rejected on check 11');
@@ -600,79 +601,9 @@ export class InductiveMinerService {
         /* to be removed - start */
         console.log('found parallel cut');
         /* to be removed - end */
-       //Aufruf adjustArcsForConnectivity um Kanten zu filtern die sich nur in A1 bzw A2 bewegen?
+        /* TODO - Aufruf adjustArcsForConnectivity um Kanten zu filtern die sich nur in A1 bzw A2 bewegen? */
         return [true, [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]]];
     };
-
-    /**
-     * Check whether graph is beeing connected using deepsearch
-     * @param inOutGraph
-     * @param useMarkedNodes decide whether marked nodes are beeing analyzed or unmarked nodes
-     * @private
-     */
-    private areNodesConnected(inOutGraph: Graph, useMarkedNodes: boolean):boolean{
-        //check whether nodes to be checked are marked or unmarked
-        const nodesToCheck = useMarkedNodes ? inOutGraph.markedNodes : inOutGraph.unmarkedNodes
-        if (nodesToCheck.length === 0){
-            return false
-        }
-
-        const visited = new Set<Node>()
-
-        //start with random marked or unmarked node
-        const stack = [nodesToCheck[0]]
-        while (stack.length > 0){
-            const currentNode = stack.pop()
-            if(!currentNode) continue
-
-            visited.add(currentNode)
-
-            //expand stack whenever we find a connecting arc to marked or unmarked node
-            //using outgoing arcs
-            for (const arc of inOutGraph.arcs){
-                if(arc.source === currentNode
-                    && ((useMarkedNodes && arc.target.marked) || (!useMarkedNodes && !arc.target.marked))
-                    && !visited.has(arc.target)){
-                    stack.push(arc.target)
-                }
-            }
-            //using incoming arcs
-            for (const arc of inOutGraph.arcs){
-                if (arc.target === currentNode
-                    && ((useMarkedNodes && arc.source.marked) || (!useMarkedNodes && !arc.source.marked))
-                    && !visited.has(arc.source)){
-                    stack.push(arc.source)
-                }
-            }
-        }
-        //check whether all marked or unmarked nodes have been visited
-        return nodesToCheck.every(node => visited.has(node))
-    }
-
-    /**
-     * Method filters arcs that are only used between marked nodes and
-     * arc that are only used beetwen unmarked nodes
-     * @param inOutGraph
-     * @private
-     */
-    private adjustArcsForConnectivity(inOutGraph: Graph):[Arc[],Arc[]]{
-        //set of marked and unmarked nodes
-        const markedNodes = new Set(inOutGraph.markedNodes)
-        const unmarkedNodes = new Set(inOutGraph.unmarkedNodes)
-
-        //filter arcs for marked nodes
-        const markedArcs = inOutGraph.arcs.filter(arc =>
-            markedNodes.has(arc.source) && markedNodes.has(arc.target))
-        //filter arcs for unmarked nodes
-        const unmarkedArcs = inOutGraph.arcs.filter(arc =>
-            unmarkedNodes.has(arc.source) && unmarkedNodes.has(arc.target))
-        for (const arc of inOutGraph.arcs){
-            if(!markedArcs.includes(arc) && !unmarkedArcs.includes(arc)){
-                //inOutGraph.deleteArc(arc)
-            }
-        }
-        return [markedArcs, unmarkedArcs]
-    }
 
     private checkLoopCut(inOutGraph : Graph) : [
         boolean,
@@ -742,15 +673,21 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.cbc.003: ' + 'base case check failed - inconsitent dfg detected (end node label is not \'stop\')');
         };
         if (dfg.nodes.length === 3) {
-            if (dfg.arcs.length !== 2) {
+            if (inOutGraph.markedNodes.length !== 3) {
                 /* to be removed - start */
                 console.log('base case rejected on check 7');
                 /* to be removed - end */
                 return [false, undefined];
             };
-            if (dfg.arcs[0].weight !== dfg.arcs[1].weight) {
+            if (dfg.arcs.length !== 2) {
                 /* to be removed - start */
                 console.log('base case rejected on check 8');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].weight !== dfg.arcs[1].weight) {
+                /* to be removed - start */
+                console.log('base case rejected on check 9');
                 /* to be removed - end */
                 return [false, undefined];
             };
@@ -769,47 +706,55 @@ export class InductiveMinerService {
                 throw new Error('#srv.mnr.cbc.005: ' + 'base case check failed - impossible error)');
             };
             if (midNode.type !== 'event') {
-                throw new Error('#srv.mnr.cbc.006: ' + 'base case check failed - inconsitent dfg detected (middle node type is not \'event\')');
+                if ((midNode.type !== 'support') || (midNode.label !=='tau')) {
+                    throw new Error('#srv.mnr.cbc.006: ' + 'base case check failed - inconsitent dfg detected (middle node type is neither event nor tau)');
+                };
             };
             for (const arc of dfg.arcs) {
                 if (arc.source === dfg.startNode) {
                     if (arc.target !== midNode) {
                         /* to be removed - start */
-                        console.log('base case rejected on check 9');
+                        console.log('base case rejected on check 10');
                         /* to be removed - end */
                         return [false, undefined];
                     };
                 } else if (arc.source === midNode) {
                     if (arc.target !== dfg.endNode) {
                         /* to be removed - start */
-                        console.log('base case rejected on check 10');
+                        console.log('base case rejected on check 11');
                         /* to be removed - end */
                         return [false, undefined];
                     };
                 } else {
                     /* to be removed - start */
-                    console.log('base case rejected on check 11');
+                    console.log('base case rejected on check 12');
                     /* to be removed - end */
                     return [false, undefined];
                 };
             };
             return [true, [dfg, midNode]];
         } else if (dfg.nodes.length === 2) {
-            if (dfg.arcs.length !== 1) {
-                /* to be removed - start */
-                console.log('base case rejected on check 12');
-                /* to be removed - end */
-                return [false, undefined];
-            };
-            if (dfg.arcs[0].source !== dfg.startNode) {
+            if (inOutGraph.markedNodes.length !== 2) {
                 /* to be removed - start */
                 console.log('base case rejected on check 13');
                 /* to be removed - end */
                 return [false, undefined];
             };
-            if (dfg.arcs[0].target !== dfg.endNode) {
+            if (dfg.arcs.length !== 1) {
                 /* to be removed - start */
                 console.log('base case rejected on check 14');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].source !== dfg.startNode) {
+                /* to be removed - start */
+                console.log('base case rejected on check 15');
+                /* to be removed - end */
+                return [false, undefined];
+            };
+            if (dfg.arcs[0].target !== dfg.endNode) {
+                /* to be removed - start */
+                console.log('base case rejected on check 16');
                 /* to be removed - end */
                 return [false, undefined];
             };
@@ -820,23 +765,27 @@ export class InductiveMinerService {
     };
 
     private executeExclusiveCut(
-        inOutGraph : Graph,
-        inSplitDFG : DFG,
-        inMarkedSubgraph : [Node[], Arc[]],
-        inUnmarkedSubgraph : [Node[], Arc[]],
-        inEndPointsMarked : boolean,
-        inCutStartArc : Arc,
+        inOutGraph : Graph, 
+        inSplitDfg : DFG, 
+        inMarkedSubgraph : [Node[], Arc[]], 
+        inUnmarkedSubgraph : [Node[], Arc[]], 
+        inEndpointsMarked : boolean, 
+        inCutStartArc : Arc, 
         inCutEndArc : Arc
     ) : void {
         /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg */
-        let cutSubgraph : [Node[], Arc[]];
-        let restSubgraph : [Node[], Arc[]];
-        if (inEndPointsMarked) {
-            cutSubgraph = inUnmarkedSubgraph;
-            restSubgraph = inMarkedSubgraph;
+        const restSubgraph : [Node[], Arc[]] = [[], []];
+        const cutSubgraph : [Node[], Arc[]] = [[], []];
+        if (inEndpointsMarked) {
+            restSubgraph[0] = inMarkedSubgraph[0];
+            restSubgraph[1] = inMarkedSubgraph[1];
+            cutSubgraph[0] = inUnmarkedSubgraph[0];
+            cutSubgraph[1] = inUnmarkedSubgraph[1];
         } else {
-            cutSubgraph = inMarkedSubgraph;
-            restSubgraph = inUnmarkedSubgraph;
+            restSubgraph[0] = inUnmarkedSubgraph[0];
+            restSubgraph[1] = inUnmarkedSubgraph[1];
+            cutSubgraph[0] = inMarkedSubgraph[0];
+            cutSubgraph[1] = inMarkedSubgraph[1];
         };
         /* checking if the cut DFG starts at the global start of the graph or ends at the global end */
         const startOfGraph : boolean = this.checkGraphStart(inOutGraph, inCutStartArc.source);
@@ -860,23 +809,23 @@ export class InductiveMinerService {
         let uncutEndNodesX : number = 0;
         let uncutEndNodesY : number = 0;
         for (const arc of restSubgraph[1]) {
-            if (arc.source === inSplitDFG.startNode) {
+            if (arc.source === inSplitDfg.startNode) {
                 uncutStartArcs.push(arc);
-            } else if (arc.target === inSplitDFG.endNode) {
+            } else if (arc.target === inSplitDfg.endNode) {
                 uncutEndArcs.push(arc);
             } else {
                 uncutMidArcs.push(arc);
             };
-            if (arc.source === inSplitDFG.startNode) {
-                uncutStartNodesX = uncutStartNodesX + arc.target.x;
-                uncutStartNodesY = uncutStartNodesY + arc.target.y;
-                uncutStartArcsWeight = uncutStartArcsWeight + arc.weight;
+            if (arc.source === inSplitDfg.startNode) {
+                uncutStartNodesX = (uncutStartNodesX + arc.target.x);
+                uncutStartNodesY = (uncutStartNodesY + arc.target.y);
+                uncutStartArcsWeight = (uncutStartArcsWeight + arc.weight);
                 uncutStartNodesCount++;
             };
-            if (arc.target === inSplitDFG.endNode) {
-                uncutEndNodesX = uncutEndNodesX + arc.source.x;
-                uncutEndNodesY = uncutEndNodesY + arc.source.y;
-                uncutEndArcsWeight = uncutEndArcsWeight + arc.weight;
+            if (arc.target === inSplitDfg.endNode) {
+                uncutEndNodesX = (uncutEndNodesX + arc.source.x);
+                uncutEndNodesY = (uncutEndNodesY + arc.source.y);
+                uncutEndArcsWeight = (uncutEndArcsWeight + arc.weight);
                 uncutEndNodesCount++;
             };
         };
@@ -890,7 +839,7 @@ export class InductiveMinerService {
         const nextUncutNodeFromEndY : number = Math.floor(uncutEndNodesY / uncutEndNodesCount);
         if (startOfGraph) {
             const startArcWeight : number = (inCutStartArc.weight + uncutStartArcsWeight);
-            const globalPlayNodes : [Node, Node, Node] = this.transformStart(inOutGraph, inSplitDFG.startNode, startArcWeight);
+            const globalPlayNodes : [Node, Node, Node] = this.transformStart(inOutGraph, inSplitDfg.startNode, startArcWeight);
             globalPlayNodeArray.push(globalPlayNodes[0], globalPlayNodes[1], globalPlayNodes[2]);
             const globalPlayPlaceTwo : Node = globalPlayNodes[2];
             const cutPlayX : number = Math.floor((globalPlayPlaceTwo.x / 2) + (inCutStartArc.target.x / 2));
@@ -907,7 +856,7 @@ export class InductiveMinerService {
             };
             restSubgraphPlay = restPlayAdded[2];
             cutSubgraphPlay = cutPlayAdded[2];
-            if (inEndPointsMarked) {
+            if (inEndpointsMarked) {
                 inOutGraph.setElementMarkedFlag(restSubgraphPlay, true);
             } else {
                 inOutGraph.setElementMarkedFlag(cutSubgraphPlay, true);
@@ -932,7 +881,7 @@ export class InductiveMinerService {
         } else {
             const incomingArcs : Arc[] = [];
             for (const arc of inOutGraph.arcs) {
-                if (arc.target === inSplitDFG.startNode) {
+                if (arc.target === inSplitDfg.startNode) {
                     incomingArcs.push(arc);
                 };
             };
@@ -950,18 +899,19 @@ export class InductiveMinerService {
             if (!(cutPlayAdded[0])) {
                 throw new Error('#srv.mnr.eec.006: ' + 'exclusive cut execution failed - new start node for cut part of split dfg could not be added due to conflict with existing node)');
             };
-            restSubgraphPlay = inSplitDFG.startNode;
+            restSubgraphPlay = inSplitDfg.startNode;
             cutSubgraphPlay = cutPlayAdded[2];
             restSubgraphPlay.coordinates = [restPlayX, restPlayY]
-            if (!(inEndPointsMarked)) {
+            if (!(inEndpointsMarked)) {
                 inOutGraph.setElementMarkedFlag(cutSubgraphPlay, true);
             };
             inOutGraph.setElementChangedFlag(restSubgraphPlay, true);
             inOutGraph.setElementNewFlag(cutSubgraphPlay, true);
-            incomingArc.weight = (incomingArc.weight - inCutStartArc.weight);
-            if (incomingArc.weight < 1) {
+            const newWeight : number = (incomingArc.weight - inCutStartArc.weight);
+            if (newWeight < 1) {
                 throw new Error('#srv.mnr.eec.007: ' + 'exclusive cut execution failed - the weight of only arc leading into the split dfg is not higher than the weight of the first cut arc within the split dfg');
             };
+            inOutGraph.updateArcWeight(incomingArc, newWeight);
             const arcToCutAdded = inOutGraph.addArc(incomingArc.source, cutSubgraphPlay, inCutStartArc.weight);
             if (!(arcToCutAdded[0])) {
                 throw new Error('#srv.mnr.eec.008: ' + 'exclusive cut execution failed - addition of arc from outer source node to new start node failed due to conflict with an existing arc');
@@ -975,7 +925,7 @@ export class InductiveMinerService {
         };
         if (endOfGraph) {
             const endArcWeight : number = (inCutEndArc.weight + uncutEndArcsWeight);
-            const globalStopNodes : [Node, Node, Node] = this.transformEnd(inOutGraph, inSplitDFG.endNode, endArcWeight);
+            const globalStopNodes : [Node, Node, Node] = this.transformEnd(inOutGraph, inSplitDfg.endNode, endArcWeight);
             globalStopNodeArray.push(globalStopNodes[0], globalStopNodes[1], globalStopNodes[2]);
             const globalStopPlaceOne : Node = globalStopNodes[0];
             const cutStopX : number = Math.floor((inCutEndArc.source.x / 2) + (globalStopPlaceOne.x / 2));
@@ -992,7 +942,7 @@ export class InductiveMinerService {
             };
             restSubgraphStop = restStopAdded[2];
             cutSubgraphStop = cutStopAdded[2];
-            if (inEndPointsMarked) {
+            if (inEndpointsMarked) {
                 inOutGraph.setElementMarkedFlag(restSubgraphStop, true);
             } else {
                 inOutGraph.setElementMarkedFlag(cutSubgraphStop, true);
@@ -1017,7 +967,7 @@ export class InductiveMinerService {
         } else {
             const outgoingArcs : Arc[] = [];
             for (const arc of inOutGraph.arcs) {
-                if (arc.source === inSplitDFG.endNode) {
+                if (arc.source === inSplitDfg.endNode) {
                     outgoingArcs.push(arc);
                 };
             };
@@ -1035,18 +985,19 @@ export class InductiveMinerService {
             if (!(cutStopAdded[0])) {
                 throw new Error('#srv.mnr.eec.015: ' + 'exclusive cut execution failed - new end node for cut part of split dfg could not be added due to conflict with existing node)');
             };
-            restSubgraphStop = inSplitDFG.endNode;
+            restSubgraphStop = inSplitDfg.endNode;
             cutSubgraphStop = cutStopAdded[2];
             restSubgraphStop.coordinates = [restStopX, restStopY]
-            if (!(inEndPointsMarked)) {
+            if (!(inEndpointsMarked)) {
                 inOutGraph.setElementMarkedFlag(cutSubgraphStop, true);
             };
             inOutGraph.setElementChangedFlag(restSubgraphStop, true);
             inOutGraph.setElementNewFlag(cutSubgraphStop, true);
-            outgoingArc.weight = (outgoingArc.weight - inCutEndArc.weight);
-            if (outgoingArc.weight < 1) {
+            const newWeight : number = (outgoingArc.weight - inCutEndArc.weight);
+            if (newWeight < 1) {
                 throw new Error('#srv.mnr.eec.016: ' + 'exclusive cut execution failed - the weight of only arc coming from the split dfg is not higher than the weight of the last cut arc within the split dfg');
             };
+            inOutGraph.updateArcWeight(outgoingArc, newWeight);
             const arcFromCutAdded = inOutGraph.addArc(cutSubgraphStop, outgoingArc.target, inCutEndArc.weight);
             if (!(arcFromCutAdded[0])) {
                 throw new Error('#srv.mnr.eec.017: ' + 'exclusive cut execution failed - addition of arc from new end node to outer target node failed due to conflict with an existing arc');
@@ -1061,8 +1012,8 @@ export class InductiveMinerService {
         /* splitting the dfg event log between the cut part and the rest part */
         const cutSubLog : Node[][] = [];
         const restSubLog : Node[][] = [];
-        if (inEndPointsMarked) {
-            for (const trace of inSplitDFG.log) {
+        if (inEndpointsMarked) {
+            for (const trace of inSplitDfg.log) {
                 const cutTrace : Node[] = [cutSubgraphPlay];
                 const restTrace : Node[] = [restSubgraphPlay];
                 for (let eventIdx = 1; eventIdx < (trace.length - 1); eventIdx++) {
@@ -1082,7 +1033,7 @@ export class InductiveMinerService {
                 };
             };
         } else {
-            for (const trace of inSplitDFG.log) {
+            for (const trace of inSplitDfg.log) {
                 const cutTrace : Node[] = [cutSubgraphPlay];
                 const restTrace : Node[] = [restSubgraphPlay];
                 for (let eventIdx = 1; eventIdx < (trace.length - 1); eventIdx++) {
@@ -1206,11 +1157,11 @@ export class InductiveMinerService {
         restSubgraph[0].push(restSubgraphStop);
         cutSubgraph[0].push(cutSubgraphPlay);
         cutSubgraph[0].push(cutSubgraphStop);
-        if (inEndPointsMarked) {
-            inSplitDFG.update(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
+        if (inEndpointsMarked) {
+            inSplitDfg.update(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
             inOutGraph.appendDFG(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
         } else {
-            inSplitDFG.update(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
+            inSplitDfg.update(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
             inOutGraph.appendDFG(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
         };
         /* deleting replaced endpoints and updating references */
@@ -1239,9 +1190,303 @@ export class InductiveMinerService {
     };
 
     private executeSequenceCut(
-        inOutGraph : Graph
+        inOutGraph : Graph, 
+        inSplitDfg : DFG, 
+        inCutArcs : Arc[], 
+        inTopSubgraph : [Node[], Arc[]], 
+        inBotSubgraph : [Node[], Arc[]], 
+        inTopMarked : boolean
     ) : void {
-
+        /* generating new start and end nodes and matching arcs */
+        let topSubgraphPlay : Node;
+        let topSubgraphStop : Node;
+        let botSubgraphPlay : Node;
+        let botSubgraphStop : Node;
+        let cutArcsWeight : number = 0;
+        let cutArcsStartX : number = 0;
+        let cutArcsStartY : number = 0;
+        let cutArcsEndX : number = 0;
+        let cutArcsEndY : number = 0;
+        let cutArcsNum : number = inCutArcs.length;
+        for (const arc of inCutArcs) {
+            cutArcsWeight = (cutArcsWeight + arc.weight);
+            cutArcsStartX = (cutArcsStartX + arc.source.x);
+            cutArcsStartY = (cutArcsStartY + arc.source.y);
+            cutArcsEndX = (cutArcsEndX + arc.target.x);
+            cutArcsEndY = (cutArcsEndY + arc.target.y);
+        };
+        const cutArcsStartMidX : number = Math.floor(cutArcsStartX / cutArcsNum)
+        const cutArcsStartMidY : number = Math.floor(cutArcsStartY / cutArcsNum);
+        const cutArcsEndMidX : number = Math.floor(cutArcsEndX / cutArcsNum);
+        const cutArcsEndMidY : number = Math.floor(cutArcsEndY / cutArcsNum);
+        const newStopX : number = Math.floor((3 * (cutArcsStartMidX / 4)) + (cutArcsEndMidX / 4));
+        const newStopY : number = Math.floor((3 * (cutArcsStartMidY / 4)) + (cutArcsEndMidY / 4));
+        const newPlayX : number = Math.floor((cutArcsStartMidX / 4) + (3 * (cutArcsEndMidX / 4)));
+        const newPlayY : number = Math.floor((cutArcsStartMidY / 4) + (3 * (cutArcsEndMidY / 4)));
+        const newPlaceX : number = Math.floor((cutArcsStartMidX / 2) + (cutArcsEndMidX / 2));
+        const newPlaceY : number = Math.floor((cutArcsStartMidY / 2) + (cutArcsEndMidY / 2));
+        const newStopAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'stop', newStopX, newStopY);
+        if (!(newStopAdded[0])) {
+            throw new Error('#srv.mnr.esc.000: ' + 'sequence cut execution failed - new end node for top part of split dfg could not be added due to conflict with existing node)');
+        };
+        const newStop : Node = newStopAdded[2];
+        inTopSubgraph[0].push(newStop);
+        const newPlayAdded : [boolean, number, Node] = inOutGraph.addNode('support', 'play', newPlayX, newPlayY);
+        if (!(newPlayAdded[0])) {
+            throw new Error('#srv.mnr.esc.001: ' + 'sequence cut execution failed - new play node for bottom part of split dfg could not be added due to conflict with existing node)');
+        };
+        const newPlay : Node = newPlayAdded[2];
+        inBotSubgraph[0].push(newPlay);
+        const newPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', newPlaceX, newPlaceY);
+        if (!(newPlaceAdded[0])) {
+            throw new Error('#srv.mnr.esc.002: ' + 'sequence cut execution failed - new place between parts of split dfg could not be added due to conflict with existing node)');
+        };
+        const newPlace : Node = newPlaceAdded[2];
+        inOutGraph.setElementNewFlag(newStop, true);
+        inOutGraph.setElementNewFlag(newPlay, true);
+        inOutGraph.setElementNewFlag(newPlace, true);
+        topSubgraphPlay = inSplitDfg.startNode;
+        topSubgraphStop = newStop;
+        botSubgraphPlay = newPlay;
+        botSubgraphStop = inSplitDfg.endNode;
+        const innerArcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(newStop, newPlace, cutArcsWeight);
+        if (!(innerArcOneAdded[0])) {
+            throw new Error('#srv.mnr.esc.003: ' + 'sequence cut execution failed - arc from new stop node to new middle place could not be added due to conflict with an existing arc');
+        };
+        const innerArcOne : Arc = innerArcOneAdded[2];
+        const innerArcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(newPlace, newPlay, cutArcsWeight);
+        if (!(innerArcTwoAdded[0])) {
+            throw new Error('#srv.mnr.esc.004: ' + 'sequence cut execution failed - arc from new middle place to new end node could not be added due to conflict with an existing arc');
+        };
+        const innerArcTwo : Arc = innerArcTwoAdded[2];
+        inOutGraph.setElementMarkedFlag(innerArcOne, true);
+        inOutGraph.setElementMarkedFlag(innerArcTwo, true);
+        inOutGraph.setElementChangedFlag(innerArcOne, true);
+        inOutGraph.setElementChangedFlag(innerArcTwo, true);
+        let topTauCase : boolean = false;
+        let botTauCase : boolean = false;
+        let topTauArc : Arc | undefined = undefined;
+        let botTauArc : Arc | undefined = undefined;
+        let topTauTarget : Node | undefined = undefined;
+        let botTauSource : Node | undefined = undefined;
+        let topTauBranch : [Arc, Node, Arc] | undefined = undefined;
+        let botTauBranch : [Arc, Node, Arc] | undefined = undefined;
+        for (const arc of inCutArcs) {
+            const outerArcsAdded : [boolean, Arc, boolean, Arc] = this.replaceAndAddArc(inOutGraph, arc, arc.source, newStop, newPlay, arc.target);
+            if (outerArcsAdded[0]) {
+                if (outerArcsAdded[1].source === inSplitDfg.startNode) {
+                    topTauTarget = arc.target;
+                    topTauCase = true;
+                    topTauArc = outerArcsAdded[1];
+                } else {
+                    inTopSubgraph[1].push(outerArcsAdded[1]);
+                };
+            };
+            if (outerArcsAdded[2]) {
+                if (outerArcsAdded[3].target === inSplitDfg.endNode) {
+                    botTauSource = arc.source;
+                    botTauCase = true;
+                    botTauArc = outerArcsAdded[3];
+                } else {
+                    inBotSubgraph[1].push(outerArcsAdded[3]);
+                };
+            };
+        };
+        if (topTauCase && botTauCase) {
+            throw new Error('#srv.mnr.esc.005: ' + 'sequence cut execution failed - top and bottom split both contain tau case');
+        };
+        if (topTauCase) {
+            if (topTauArc !== undefined) {
+                topTauBranch = this.replaceArcInsertNode(inOutGraph, topTauArc, topTauArc.source, topTauArc.target, 'support', 'tau');
+                inTopSubgraph[1].push(topTauBranch[0]);
+                inTopSubgraph[0].push(topTauBranch[1]);
+                inTopSubgraph[1].push(topTauBranch[2]);
+            } else {
+                throw new Error('#srv.mnr.esc.006: ' + 'sequence cut execution failed - top split contains tau case, but tau arc returns undefined');
+            };
+        };
+        if (botTauCase) {
+            if (botTauArc !== undefined) {
+                botTauBranch = this.replaceArcInsertNode(inOutGraph, botTauArc, botTauArc.source, botTauArc.target, 'support', 'tau');
+                inBotSubgraph[1].push(botTauBranch[0]);
+                inBotSubgraph[0].push(botTauBranch[1]);
+                inBotSubgraph[1].push(botTauBranch[2]);
+            } else {
+                throw new Error('#srv.mnr.esc.007: ' + 'sequence cut execution failed - bottom split contains tau case, but tau arc returns undefined');
+            };
+        };
+        /* splitting the dfg event log between the cut part and the rest part */
+        const topSubLog : Node[][] = [];
+        const botSubLog : Node[][] = [];
+        if (inTopMarked) {
+            let topTauCount : number = 0;
+            let botTauCount : number = 0;
+            for (const trace of inSplitDfg.log) {
+                const topTrace : Node[] = [];
+                const botTrace : Node[] = [];
+                botTrace.push(newPlay);
+                for (let eventIdx = 0; eventIdx < trace.length; eventIdx++) {
+                    if (trace[eventIdx].marked) {
+                        topTrace.push(trace[eventIdx]);
+                    } else {
+                        botTrace.push(trace[eventIdx]);
+                    };
+                };
+                topTrace.push(newStop);
+                if (topTrace.length > 2) {
+                    topSubLog.push(topTrace);
+                } else if (topTrace.length === 2) {
+                    topTauCount++;
+                    if (topTauCase) {
+                        if (topTauBranch !== undefined) {
+                            topTrace.splice(1, 0, topTauBranch[1]);
+                            topSubLog.push(topTrace);
+                        } else {
+                            throw new Error('#srv.mnr.esc.008: ' + 'sequence cut execution failed - top tau case was detected, but top tau branch returns undefined');
+                        };
+                    } else {
+                        throw new Error('#srv.mnr.esc.009: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the top subgraph containing 2 nodes, but no top tau case was detected');
+                    };
+                } else {
+                    throw new Error('#srv.mnr.esc.010: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the top subgraph containing less than 2 nodes');
+                };
+                if (botTrace.length > 2) {
+                    botSubLog.push(botTrace);
+                } else if (botTrace.length === 2) {
+                    botTauCount++;
+                    if (botTauCase) {
+                        if (botTauBranch !== undefined) {
+                            botTrace.splice(1, 0, botTauBranch[1]);
+                            botSubLog.push(botTrace);
+                        } else {
+                            throw new Error('#srv.mnr.esc.011: ' + 'sequence cut execution failed - bottom tau case was detected, but bottom tau branch returns undefined');
+                        };
+                    } else {
+                        throw new Error('#srv.mnr.esc.012: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the bottom subgraph containing 2 nodes, but no bottom tau case was detected');
+                    };
+                } else {
+                    throw new Error('#srv.mnr.esc.013: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the bottom subgraph containing less than 2 nodes');
+                };
+            };
+            if (topTauCase) {
+                if (topTauArc !== undefined) {
+                    if (topTauCount !== topTauArc.weight) {
+                        throw new Error('#srv.mnr.esc.014: ' + 'sequence cut execution failed - splitting the log of the old dfg ' + topTauCount + ' tau cases were found within the top split, while the detected top tau arc had a weight of ' + topTauArc.weight);
+                    };
+                };
+            };
+            if (botTauCase) {
+                if (botTauArc !== undefined) {
+                    if (botTauCount !== botTauArc.weight) {
+                        throw new Error('#srv.mnr.esc.015: ' + 'sequence cut execution failed - splitting the log of the old dfg ' + botTauCount + ' tau cases were found within the bottom split, while the detected bottom tau arc had a weight of ' + botTauArc.weight);
+                    };
+                };
+            };
+        } else {
+            let topTauCount : number = 0;
+            let botTauCount : number = 0;
+            for (const trace of inSplitDfg.log) {
+                const topTrace : Node[] = [];
+                const botTrace : Node[] = [];
+                botTrace.push(newPlay);
+                for (let eventIdx = 0; eventIdx < trace.length; eventIdx++) {
+                    if (trace[eventIdx].marked) {
+                        botTrace.push(trace[eventIdx]);
+                    } else {
+                        topTrace.push(trace[eventIdx]);
+                    };
+                };
+                topTrace.push(newStop);
+                if (topTrace.length > 2) {
+                    topSubLog.push(topTrace);
+                } else if (topTrace.length === 2) {
+                    topTauCount++;
+                    if (topTauCase) {
+                        if (topTauBranch !== undefined) {
+                            topTrace.splice(1, 0, topTauBranch[1]);
+                            topSubLog.push(topTrace);
+                        } else {
+                            throw new Error('#srv.mnr.esc.016: ' + 'sequence cut execution failed - top tau case was detected, but top tau branch returns undefined');
+                        };
+                    } else {
+                        throw new Error('#srv.mnr.esc.017: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the top subgraph containing 2 nodes, but no top tau case was detected');
+                    };
+                } else {
+                    throw new Error('#srv.mnr.esc.018: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the top subgraph containing less than 2 nodes');
+                };
+                if (botTrace.length > 2) {
+                    botSubLog.push(botTrace);
+                } else if (botTrace.length === 2) {
+                    botTauCount++;
+                    if (botTauCase) {
+                        if (botTauBranch !== undefined) {
+                            botTrace.splice(1, 0, botTauBranch[1]);
+                            botSubLog.push(botTrace);
+                        } else {
+                            throw new Error('#srv.mnr.esc.019: ' + 'sequence cut execution failed - bottom tau case was detected, but bottom tau branch returns undefined');
+                        };
+                    } else {
+                        throw new Error('#srv.mnr.esc.020: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the bottom subgraph containing 2 nodes, but no bottom tau case was detected');
+                    };
+                } else {
+                    throw new Error('#srv.mnr.esc.021: ' + 'sequence cut execution failed - splitting trace from old dfg lead to a subtrace for the bottom subgraph containing less than 2 nodes');
+                };
+            };
+            if (topTauCase) {
+                if (topTauArc !== undefined) {
+                    if (topTauCount !== topTauArc.weight) {
+                        throw new Error('#srv.mnr.esc.022: ' + 'sequence cut execution failed - splitting the log of the old dfg ' + topTauCount + ' tau cases were found within the top split, while the detected top tau arc had a weight of ' + topTauArc.weight);
+                    };
+                };
+            };
+            if (botTauCase) {
+                if (botTauArc !== undefined) {
+                    if (botTauCount !== botTauArc.weight) {
+                        throw new Error('#srv.mnr.esc.023: ' + 'sequence cut execution failed - splitting the log of the old dfg ' + botTauCount + ' tau cases were found within the bottom split, while the detected bottom tau arc had a weight of ' + botTauArc.weight);
+                    };
+                };
+            };
+        };
+        /* updating the graph event log */
+        for (const trace of inOutGraph.logArray) {
+            for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                for (const arc of inCutArcs) {
+                    if (trace[evIdx] === arc.source) {
+                        if (trace[evIdx + 1] === arc.target) {
+                            trace.splice((evIdx + 1), 0, newStop, newPlace, newPlay);
+                            if (topTauCase) {
+                                if (topTauBranch !== undefined) {
+                                    if ((arc.source === inSplitDfg.startNode) && (arc.target === topTauTarget)) {
+                                        trace.splice((evIdx + 1), 0, topTauBranch[1]);
+                                        evIdx = (evIdx + 1);
+                                    };
+                                } else {
+                                    throw new Error('#srv.mnr.esc.024: ' + 'sequence cut execution failed - top tau case was detected, but top tau branch returns undefined');
+                                };
+                            } else if (botTauCase) {
+                                if (botTauBranch !== undefined) {
+                                    if ((arc.source === botTauSource) && (arc.target === inSplitDfg.endNode)) {
+                                        trace.splice((evIdx + 4), 0, botTauBranch[1]);
+                                        evIdx = (evIdx + 1);
+                                    };
+                                }else {
+                                    throw new Error('#srv.mnr.esc.025: ' + 'sequence cut execution failed - bottom tau case was detected, but bottom tau branch returns undefined');
+                                };
+                            };
+                            evIdx = (evIdx + 3);
+                        };
+                    };
+                };
+            };
+        };
+        /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg, then updating dfgs accordingly */
+        if (inTopMarked) {
+            inSplitDfg.update(botSubgraphPlay, botSubgraphStop, inBotSubgraph[0], inBotSubgraph[1], botSubLog);
+            inOutGraph.appendDFG(topSubgraphPlay, topSubgraphStop, inTopSubgraph[0], inTopSubgraph[1], topSubLog);
+        } else {
+            inSplitDfg.update(topSubgraphPlay, topSubgraphStop, inTopSubgraph[0], inTopSubgraph[1], topSubLog);
+            inOutGraph.appendDFG(botSubgraphPlay, botSubgraphStop, inBotSubgraph[0], inBotSubgraph[1], botSubLog);
+        };
     };
 
     private executeParallelCut(
@@ -1253,19 +1498,30 @@ export class InductiveMinerService {
         inCutStartArc : Arc,
         inCutEndArc : Arc
     ) : void {
-
+        /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg */
+        /* checking if the cut DFG starts at the global start of the graph or ends at the global end */
+        /* generating new start and end nodes and matching arcs */
+        /* splitting the dfg event log between the cut part and the rest part */
+        /* updating the graph event log */
+        /* updating dfgs */
+        /* deleting replaced endpoints and updating references */
     };
-
 
     private executeLoopCut(
         inOutGraph : Graph
     ) : void {
-
+        /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg */
+        /* checking if the cut DFG starts at the global start of the graph or ends at the global end */
+        /* generating new start and end nodes and matching arcs */
+        /* splitting the dfg event log between the cut part and the rest part */
+        /* updating the graph event log */
+        /* updating dfgs */
+        /* deleting replaced endpoints and updating references */
     };
 
     private executeBaseCase(
-        inOutGraph : Graph,
-        inDfg : DFG,
+        inOutGraph : Graph, 
+        inDfg : DFG, 
         inMiddleNode? : Node
     ) : void {
         if (inDfg.nodes.length === 3) {
@@ -1442,7 +1698,7 @@ export class InductiveMinerService {
                     } else {
                         const startNodes : [Node, Node, Node] = this.transformStart(inOutGraph, inDfg.startNode, inDfg.arcs[0].weight);
                         const endNodes : [Node, Node, Node] = this.transformEnd(inOutGraph, inDfg.endNode, inDfg.arcs[0].weight);
-                        const middleNode : Node = this.replaceArcInsertNode(inOutGraph, inDfg.arcs[0], startNodes[2], endNodes[0], 'transition', '');
+                        const middleNode : Node = this.replaceArcInsertNode(inOutGraph, inDfg.arcs[0], startNodes[2], endNodes[0], 'transition', '')[1];
                         const replaceArcsArray : [Arc, Node, Node][] = [];
                         for (const arc of inOutGraph.arcs) {
                             if (arc.source === inDfg.startNode) {
@@ -1538,75 +1794,8 @@ export class InductiveMinerService {
         };
     };
 
-    private replaceArc(
-        inOutGraph : Graph,
-        inReplacedArc : Arc,
-        inNewArcSourceNode : Node,
-        inNewArcTargetNode : Node
-    ) : Arc {
-        const arcAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcSourceNode, inNewArcTargetNode, inReplacedArc.weight);
-        if (!(arcAdded[0])) {
-            throw new Error('#srv.mnr.rpa.000: ' + 'replacing cut arc failed - new arc from source node to target node could not be added due to conflict with an existing arc');
-        };
-        const newArc : Arc = arcAdded[2];
-        if (!(inOutGraph.deleteArc(inReplacedArc))) {
-            throw new Error('#srv.mnr.rpa.001: ' + 'replacing cut arc failed - deletion of replaced arc failed');
-        };
-        if (inReplacedArc.marked) {
-            inOutGraph.setElementMarkedFlag(newArc, true);
-        };
-        return newArc;
-    };
-
-    private replaceArcInsertNode(
-        inOutGraph : Graph,
-        inReplacedArc : Arc,
-        inNewArcSourceNode : Node,
-        inNewArcTargetNode : Node,
-        inNewNodeType : 'place' | 'transition',
-        inNewNodeLabel : string
-    ) : Node {
-        const placeX : number = (inNewArcSourceNode.x + Math.ceil((inNewArcTargetNode.x - inNewArcSourceNode.x) / 2));
-        const placeY : number = (inNewArcSourceNode.y + Math.ceil((inNewArcTargetNode.y - inNewArcSourceNode.y) / 2));
-        const placeAdded : [boolean, number, Node] = inOutGraph.addNode(inNewNodeType, inNewNodeLabel, placeX, placeY);
-        if (!(placeAdded[0])) {
-            throw new Error('#srv.mnr.rip.000: ' + 'replacing cut arc failed - place could not be added due to conflict with an existing place');
-        };
-        const newArcPlace : Node = placeAdded[2];
-        const arcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcSourceNode, newArcPlace, inReplacedArc.weight);
-        if (!(arcOneAdded[0])) {
-            throw new Error('#srv.mnr.rip.001: ' + 'replacing cut arc failed - arc from source node to new place could not be added due to conflict with an existing arc');
-        };
-        const newArcOne : Arc = arcOneAdded[2];
-        const arcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(newArcPlace, inNewArcTargetNode, inReplacedArc.weight);
-        if (!(arcTwoAdded[0])) {
-            throw new Error('#srv.mnr.rip.002: ' + 'replacing cut arc failed - arc from new place to target node could not be added due to conflict with an existing arc');
-        };
-        const newArcTwo : Arc = arcTwoAdded[2];
-        if (!(inOutGraph.deleteArc(inReplacedArc))) {
-            throw new Error('#srv.mnr.rip.003: ' + 'replacing cut arc failed - deletion of replaced arc failed');
-        };
-        if (inReplacedArc.marked) {
-            inOutGraph.setElementMarkedFlag(newArcOne, true);
-            inOutGraph.setElementMarkedFlag(newArcTwo, true);
-            // inOutGraph.setElementMarkedFlag(newArcPlace, true);
-        };
-        return newArcPlace;
-    };
-
-    private checkGraphStartEnd(
-        inGraph : Graph
-    ) : void {
-        if (inGraph.startNode === undefined) {
-            throw new Error('#srv.mnr.cse.000: ' + 'graph check failed - start node of graph is undefined');
-        };
-        if (inGraph.endNode === undefined) {
-            throw new Error('#srv.mnr.cse.000: ' + 'graph check failed - end node of graph is undefined');
-        };
-    };
-
     private checkGraphStart(
-        inGraph : Graph,
+        inGraph : Graph, 
         inNode : Node
     ) : boolean {
         if (inGraph.startNode !== undefined) {
@@ -1621,7 +1810,7 @@ export class InductiveMinerService {
     };
 
     private checkGraphEnd(
-        inGraph : Graph,
+        inGraph : Graph, 
         inNode : Node
     ) : boolean {
         if (inGraph.endNode !== undefined) {
@@ -1632,6 +1821,17 @@ export class InductiveMinerService {
             };
         } else {
             throw new Error('#srv.mnr.cce.000: ' + 'cut check failed - end node of graph is undefined');
+        };
+    };
+
+    private checkGraphStartEnd(
+        inGraph : Graph
+    ) : void {
+        if (inGraph.startNode === undefined) {
+            throw new Error('#srv.mnr.cse.000: ' + 'graph check failed - start node of graph is undefined');
+        };
+        if (inGraph.endNode === undefined) {
+            throw new Error('#srv.mnr.cse.000: ' + 'graph check failed - end node of graph is undefined');
         };
     };
 
@@ -1655,7 +1855,7 @@ export class InductiveMinerService {
     };
 
     private checkMarkedNodesDFG(
-        inGraph : Graph,
+        inGraph : Graph, 
         inDFG : number
     ) : boolean {
         for (const node of inGraph.markedNodes) {
@@ -1667,7 +1867,7 @@ export class InductiveMinerService {
     };
 
     private checkMarkedArcsDFG(
-        inGraph : Graph,
+        inGraph : Graph, 
         inDFG : number
     ) : boolean {
         for (const arc of inGraph.markedArcs) {
@@ -1679,7 +1879,7 @@ export class InductiveMinerService {
     };
 
     private checkDfgPosition(
-        inGraph : Graph,
+        inGraph : Graph, 
         inDfgId : number
     ) : number | undefined {
         let dfgPos : number = 0;
@@ -1692,10 +1892,161 @@ export class InductiveMinerService {
         return undefined;
     };
 
-    private checkCutArcsEC(
-        inGraph : Graph,
+    private checkReachableNodes(
+        inDfg : DFG, 
+        inSourceNode : Node
+    ) : {
+        [nodeID : number] : boolean
+    } {
+        const nodesToCheck : Node[] = [inSourceNode];
+        let reached : number = 0;
+        let reachable : {
+            [nodeID : number] : boolean
+        } = {
+            [inSourceNode.id] : false
+        };
+        while (nodesToCheck.length > 0) {
+            const checkedNode : Node | undefined = nodesToCheck.pop();
+            if (checkedNode !== undefined) {
+                for (const arc of inDfg.arcs) {
+                    if (arc.source === checkedNode) {
+                        if (reachable[arc.target.id] === undefined) {
+                            nodesToCheck.push(arc.target);
+                            reachable[arc.target.id] = true;
+                            reached++;
+                        } else if (reachable[arc.target.id] === false) {
+                            reachable[arc.target.id] === true;
+                            reached++;
+                        };
+                    };
+                };
+            } else {
+                throw new Error('#srv.mnr.cfp.000: ' + 'path check failed - impossible error');
+            };
+        };
+        return reachable;
+    };
+
+    /**
+     * Check whether graph is beeing connected using deepsearch
+     * @param inOutGraph
+     * @param useMarkedNodes decide whether marked nodes are beeing analyzed or unmarked nodes
+     * @private
+     */
+    private areNodesConnected(
+        inOutGraph: Graph, 
+        useMarkedNodes: boolean
+    ) : boolean {
+        /* check whether nodes to be checked are marked or unmarked */
+        const nodesToCheck = useMarkedNodes ? inOutGraph.markedNodes : inOutGraph.unmarkedNodes
+        if (nodesToCheck.length === 0){
+            return false
+        }
+        const visited = new Set<Node>()
+        /* start with random marked or unmarked node */
+        const stack = [nodesToCheck[0]]
+        while (stack.length > 0){
+            const currentNode = stack.pop()
+            if(!currentNode) continue
+            visited.add(currentNode)
+            /* expand stack whenever we find a connecting arc to marked or unmarked node */
+            /* using outgoing arcs */
+            for (const arc of inOutGraph.arcs){
+                if(arc.source === currentNode
+                    && ((useMarkedNodes && arc.target.marked) || (!useMarkedNodes && !arc.target.marked))
+                    && !visited.has(arc.target)){
+                    stack.push(arc.target)
+                }
+            }
+            /* using incoming arcs */
+            for (const arc of inOutGraph.arcs){
+                if (arc.target === currentNode
+                    && ((useMarkedNodes && arc.source.marked) || (!useMarkedNodes && !arc.source.marked))
+                    && !visited.has(arc.source)){
+                    stack.push(arc.source)
+                }
+            }
+        }
+        /* check whether all marked or unmarked nodes have been visited */
+        return nodesToCheck.every(node => visited.has(node))
+    };
+
+    /**
+     * Method filters arcs that are only used between marked nodes and
+     * arc that are only used beetwen unmarked nodes
+     * @param inOutGraph
+     * @private
+     */
+    private adjustArcsForConnectivity(
+        inOutGraph: Graph
+    ) : [
+        Arc[], 
+        Arc[]
+    ] {
+        /* set of marked and unmarked nodes */
+        const markedNodes = new Set(inOutGraph.markedNodes)
+        const unmarkedNodes = new Set(inOutGraph.unmarkedNodes)
+        /* filter arcs for marked nodes */
+        const markedArcs = inOutGraph.arcs.filter(arc =>
+            markedNodes.has(arc.source) && markedNodes.has(arc.target))
+        /* filter arcs for unmarked nodes */
+        const unmarkedArcs = inOutGraph.arcs.filter(arc =>
+            unmarkedNodes.has(arc.source) && unmarkedNodes.has(arc.target))
+        for (const arc of inOutGraph.arcs){
+            if(!markedArcs.includes(arc) && !unmarkedArcs.includes(arc)){
+                // inOutGraph.deleteArc(arc)
+            }
+        }
+        return [markedArcs, unmarkedArcs]
+    };
+
+    private checkEndpointsEC(
         inDfg : DFG
-    ) : [Arc, Arc] | undefined {
+    ) : boolean | undefined {
+        if (inDfg.startNode.marked) {
+            if (inDfg.endNode.marked) {
+                return true;
+            } else {
+                return undefined;
+            };
+        } else {
+            if (inDfg.endNode.marked) {
+                return undefined;
+            } else {
+                return false;
+            };
+        };
+    };
+
+    private checkEndpointsSC(
+        inDfg : DFG, 
+        inCutsStartOnMarked : boolean
+    ) : boolean | undefined {
+        if (inCutsStartOnMarked) {
+            if (!(inDfg.startNode.marked)) {
+                return undefined;
+            };
+            if (inDfg.endNode.marked) {
+                return undefined;
+            };
+        } else {
+            if (inDfg.startNode.marked) {
+                return undefined;
+            };
+            if (!(inDfg.endNode.marked)) {
+                return undefined;
+            };
+        };
+        return true;
+    };
+
+    private checkCutArcsEC(
+        inGraph : Graph, 
+        inDfg : DFG
+    ) : [
+        Arc, 
+        Arc
+    ] | undefined {
         const arcZero : Arc = inGraph.markedArcs[0];
         const arcOne : Arc = inGraph.markedArcs[1];
         if (arcZero.source !== inDfg.startNode) {
@@ -1717,14 +2068,61 @@ export class InductiveMinerService {
         };
     };
 
-    private checkCutArcsSC(
-        inGraph : Graph,
+    private splitArcsEC(
         inDfg : DFG
-    ) : [Arc[], boolean] | undefined {
-        const cutArcs : Arc[] = [];
-        const cutsStartOnMarked : boolean = inGraph.markedArcs[0].source.marked;
+    ) : [
+        Arc[], 
+        Arc[]
+    ] | undefined {
+        const arcSplitMarked : Arc[] = [];
+        const arcSplitUnmarked : Arc[] = [];
         for (const arc of inDfg.arcs) {
-            if (cutsStartOnMarked) {
+            if (arc.marked) {
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        return undefined;
+                    } else {
+                        /* arc is cut --> skip arc */
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        /* arc is cut --> skip arc */
+                    } else {
+                        return undefined;
+                    };
+                };
+            } else {
+                if (arc.source.marked) {
+                    if (arc.target.marked) {
+                        arcSplitMarked.push(arc);
+                    } else {
+                        return undefined;
+                    };
+                } else {
+                    if (arc.target.marked) {
+                        return undefined;
+                    } else {
+                        arcSplitUnmarked.push(arc);
+                    };
+                };
+            };
+        };
+        return [arcSplitMarked, arcSplitUnmarked];
+    };
+
+    private splitArcsSC(
+        inDfg : DFG, 
+        inCutsStartOnMarked : boolean
+    ) : [
+        Arc[], 
+        Arc[], 
+        Arc[]
+    ] | undefined {
+        const cutArcs : Arc[] = [];
+        const arcsBetweenMarked : Arc[] = [];
+        const arcsBetweenUnmarked : Arc[] = [];
+        if (inCutsStartOnMarked) {
+            for (const arc of inDfg.arcs) {
                 if (arc.marked) {
                     if (arc.target.marked) {
                         return undefined;
@@ -1735,16 +2133,23 @@ export class InductiveMinerService {
                     cutArcs.push(arc);
                 } else {
                     if (arc.source.marked) {
-                        if (!(arc.target.marked)) {
+                        if (arc.target.marked) {
+                            arcsBetweenMarked.push(arc);
+                        } else {
                             return undefined;
                         };
                     } else {
-                        if (arc.source.marked) {
+                        if (arc.target.marked) {
                             return undefined;
+                        }else {
+                            arcsBetweenUnmarked.push(arc);
                         };
                     };
                 };
-            } else {
+            };
+            return [cutArcs, arcsBetweenMarked, arcsBetweenUnmarked];
+        } else {
+            for (const arc of inDfg.arcs) {
                 if (arc.marked) {
                     if (arc.source.marked) {
                         return undefined;
@@ -1755,25 +2160,209 @@ export class InductiveMinerService {
                     cutArcs.push(arc);
                 } else {
                     if (arc.source.marked) {
-                        if (!(arc.target.marked)) {
+                        if (arc.target.marked) {
+                            arcsBetweenMarked.push(arc);
+                        } else {
                             return undefined;
                         };
                     } else {
-                        if (arc.source.marked) {
+                        if (arc.target.marked) {
                             return undefined;
+                        }else {
+                            arcsBetweenUnmarked.push(arc);
                         };
                     };
                 };
             };
+            return [cutArcs, arcsBetweenUnmarked, arcsBetweenMarked];
         };
-        return [cutArcs, cutsStartOnMarked]
+    };
+
+    private splitNodesEC(
+        inDfg : DFG
+    ) : [
+        Node[], 
+        Node[]
+    ] | undefined {
+        const nodeSplitMarked : Node[] = [];
+        const nodeSplitUnmarked : Node[] = [];
+        for (const node of inDfg.nodes) {
+            if (node !== inDfg.startNode) {
+                if (node !== inDfg.endNode) {
+                    if (node.marked) {
+                        nodeSplitMarked.push(node);
+                    } else {
+                        nodeSplitUnmarked.push(node);
+                    };
+                } else {
+                    /* skip node */
+                };
+            } else {
+                /* skip node */
+            };
+        };
+        if (nodeSplitMarked.length < 1) {
+            return undefined;
+        };
+        if (nodeSplitUnmarked.length < 1) {
+            return undefined;
+        };
+        return [nodeSplitMarked, nodeSplitUnmarked];
+    };
+
+    private splitNodesSC(
+        inDfg : DFG, 
+        inTopMarked : boolean
+    ) : [
+        Node[], 
+        Node[]
+    ] | undefined {
+        const nodeSplitTop : Node[] = [];
+        const nodeSplitBottom : Node[] = [];
+        if (inTopMarked) {
+            for (const node of inDfg.nodes) {
+                if (node.marked) {
+                    nodeSplitTop.push(node);
+                } else {
+                    nodeSplitBottom.push(node);
+                };
+            };
+        } else {
+            for (const node of inDfg.nodes) {
+                if (node.marked) {
+                    nodeSplitBottom.push(node);
+                } else {
+                    nodeSplitTop.push(node);
+                };
+            };
+        };
+        if (nodeSplitTop.length < 2) {
+            return undefined;
+        };
+        if (nodeSplitBottom.length < 2) {
+            return undefined;
+        };
+        for (const topNode of nodeSplitTop) {
+            const reachable : {[nodeID : number] : boolean} = this.checkReachableNodes(inDfg, topNode);
+            for (const botNode of nodeSplitBottom) {
+                if (reachable[botNode.id] !== true) {
+                    return undefined;
+                };
+            };
+        };
+        for (const botNode of nodeSplitBottom) {
+            const reachable : {[nodeID : number] : boolean} = this.checkReachableNodes(inDfg, botNode);
+            for (const topNode of nodeSplitTop) {
+                if (reachable[topNode.id] === true) {
+                    return undefined;
+                };
+            };
+        };
+        return [nodeSplitTop, nodeSplitBottom];
+    };
+
+    private replaceArc(
+        inOutGraph : Graph, 
+        inReplacedArc : Arc, 
+        inNewArcSourceNode : Node, 
+        inNewArcTargetNode : Node
+    ) : Arc {
+        const arcAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcSourceNode, inNewArcTargetNode, inReplacedArc.weight);
+        if (!(arcAdded[0])) {
+            throw new Error('#srv.mnr.rpa.000: ' + 'replacing cut arc failed - new arc could not be added due to conflict with an existing arc');
+        };
+        const newArc : Arc = arcAdded[2];
+        if (!(inOutGraph.deleteArc(inReplacedArc))) {
+            throw new Error('#srv.mnr.rpa.001: ' + 'replacing cut arc failed - deletion of replaced arc failed');
+        };
+        if (inReplacedArc.marked) {
+            inOutGraph.setElementMarkedFlag(newArc, true);
+        };
+        inOutGraph.setElementChangedFlag(newArc, true);
+        return newArc;
+    };
+
+    private replaceAndAddArc(
+        inOutGraph : Graph, 
+        inReplacedArc : Arc, 
+        inNewArcOneSourceNode : Node, 
+        inNewArcOneTargetNode : Node, 
+        inNewArcTwoSourceNode : Node, 
+        inNewArcTwoTargetNode : Node
+    ) : [
+        boolean, 
+        Arc, 
+        boolean, 
+        Arc
+    ] {
+        const arcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcOneSourceNode, inNewArcOneTargetNode, inReplacedArc.weight);
+        const newArcOne : Arc = arcOneAdded[2];
+        const arcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewArcTwoSourceNode, inNewArcTwoTargetNode, inReplacedArc.weight);
+        const newArcTwo : Arc = arcTwoAdded[2];
+        if (!(inOutGraph.deleteArc(inReplacedArc))) {
+            throw new Error('#srv.mnr.raa.002: ' + 'replacing cut arc failed - deletion of replaced arc failed');
+        };
+        if (inReplacedArc.marked) {
+            inOutGraph.setElementMarkedFlag(newArcOne, true);
+            inOutGraph.setElementMarkedFlag(newArcTwo, true);
+        };
+        inOutGraph.setElementChangedFlag(newArcOne, true);
+        inOutGraph.setElementChangedFlag(newArcTwo, true);
+        return [arcOneAdded[0], newArcOne, arcTwoAdded[0], newArcTwo];
+    };
+
+    private replaceArcInsertNode(
+        inOutGraph : Graph, 
+        inReplacedArc : Arc, 
+        inNewBranchSourceNode : Node, 
+        inNewBranchTargetNode : Node, 
+        inNewNodeType : 'support' | 'place' | 'transition', 
+        inNewNodeLabel : string
+    ) : [
+        Arc, 
+        Node, 
+        Arc
+    ] {
+        const placeX : number = (inNewBranchSourceNode.x + Math.ceil((inNewBranchTargetNode.x - inNewBranchSourceNode.x) / 2));
+        const placeY : number = (inNewBranchSourceNode.y + Math.ceil((inNewBranchTargetNode.y - inNewBranchSourceNode.y) / 2));
+        const placeAdded : [boolean, number, Node] = inOutGraph.addNode(inNewNodeType, inNewNodeLabel, placeX, placeY);
+        if (!(placeAdded[0])) {
+            throw new Error('#srv.mnr.rai.000: ' + 'replacing cut arc failed - new node could not be added due to conflict with an existing node');
+        };
+        const newArcPlace : Node = placeAdded[2];
+        const arcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(inNewBranchSourceNode, newArcPlace, inReplacedArc.weight);
+        if (!(arcOneAdded[0])) {
+            throw new Error('#srv.mnr.rai.001: ' + 'replacing cut arc failed - arc from branch source node to new node could not be added due to conflict with an existing arc');
+        };
+        const newArcOne : Arc = arcOneAdded[2];
+        const arcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(newArcPlace, inNewBranchTargetNode, inReplacedArc.weight);
+        if (!(arcTwoAdded[0])) {
+            throw new Error('#srv.mnr.rai.002: ' + 'replacing cut arc failed - arc from new node to branch target node could not be added due to conflict with an existing arc');
+        };
+        const newArcTwo : Arc = arcTwoAdded[2];
+        if (!(inOutGraph.deleteArc(inReplacedArc))) {
+            throw new Error('#srv.mnr.rai.003: ' + 'replacing cut arc failed - deletion of replaced arc failed');
+        };
+        if (inReplacedArc.marked) {
+            inOutGraph.setElementMarkedFlag(newArcOne, true);
+            // inOutGraph.setElementMarkedFlag(newArcPlace, true);
+            inOutGraph.setElementMarkedFlag(newArcTwo, true);
+        };
+        inOutGraph.setElementNewFlag(newArcOne, true);
+        inOutGraph.setElementNewFlag(newArcPlace, true);
+        inOutGraph.setElementNewFlag(newArcTwo, true);
+        return [newArcOne, newArcPlace, newArcTwo];
     };
 
     private transformStart(
-        inOutGraph : Graph,
-        inStartNode : Node,
+        inOutGraph : Graph, 
+        inStartNode : Node, 
         inArcWeight : number
-    ) : [Node, Node, Node] {
+    ) : [
+        Node, 
+        Node, 
+        Node
+    ] {
         const startPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, (inStartNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(startPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.tsn.000: ' + 'start node transformation failed - first start place could not be added due to conflict with existing node)');
@@ -1789,52 +2378,71 @@ export class InductiveMinerService {
             throw new Error('#srv.mnr.tsn.002: ' + 'start node transformation failed - second start place could not be added due to conflict with existing node)');
         };
         const startPlaceTwo : Node = startPlaceTwoAdded[2];
-        const arcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(startPlaceOne, startTransition, inArcWeight);
-        if (!(arcOneAdded[0])) {
+        const startArcOneAdded : [boolean, number, Arc] = inOutGraph.addArc(startPlaceOne, startTransition, inArcWeight);
+        if (!(startArcOneAdded[0])) {
             throw new Error('#srv.mnr.tsn.003: ' + 'start node transformation failed - arc from first start place to start transition could not be added due to conflict with an existing arc');
         };
-        const startArcOne : Arc = arcOneAdded[2];
-        const arcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(startTransition, startPlaceTwo, inArcWeight);
-        if (!(arcTwoAdded[0])) {
+        const startArcOne : Arc = startArcOneAdded[2];
+        const startArcTwoAdded : [boolean, number, Arc] = inOutGraph.addArc(startTransition, startPlaceTwo, inArcWeight);
+        if (!(startArcTwoAdded[0])) {
             throw new Error('#srv.mnr.tsn.004: ' + 'start node transformation failed - arc from start transition to second start place could not be added due to conflict with an existing arc');
         };
-        const startArcTwo : Arc = arcTwoAdded[2];
+        const startArcTwo : Arc = startArcTwoAdded[2];
         if (inStartNode.marked) {
             inOutGraph.setElementMarkedFlag(startPlaceOne, true);
-            inOutGraph.setElementMarkedFlag(startTransition, true);
-            inOutGraph.setElementMarkedFlag(startPlaceTwo, true);
             // inOutGraph.setElementMarkedFlag(startArcOne, true);
+            inOutGraph.setElementMarkedFlag(startTransition, true);
             // inOutGraph.setElementMarkedFlag(startArcTwo, true);
+            inOutGraph.setElementMarkedFlag(startPlaceTwo, true);
         };
         inOutGraph.setElementNewFlag(startPlaceOne, true);
-        inOutGraph.setElementChangedFlag(startTransition, true);
-        inOutGraph.setElementNewFlag(startPlaceTwo, true);
         inOutGraph.setElementNewFlag(startArcOne, true);
+        inOutGraph.setElementChangedFlag(startTransition, true);
         inOutGraph.setElementNewFlag(startArcTwo, true);
+        inOutGraph.setElementNewFlag(startPlaceTwo, true);
+        startTransition.special = true;
         return [startPlaceOne, startTransition, startPlaceTwo]
     };
 
     private transformMid(
-        inOutGraph : Graph,
+        inOutGraph : Graph, 
         inMidNode : Node
     ) : Node {
-        const midTransitionAdded : [boolean, number, Node] = inOutGraph.addNode('transition', inMidNode.label, inMidNode.x, inMidNode.y);
-        if (!(midTransitionAdded[0])) {
-            throw new Error('#srv.mnr.tmn.001: ' + 'mid node transformation failed - mid transition could not be added due to conflict with existing node)');
+        if ((inMidNode.type === 'support') && (inMidNode.label === 'tau')) {
+            const midTransitionAdded : [boolean, number, Node] = inOutGraph.addNode('transition', '', inMidNode.x, inMidNode.y);
+            if (!(midTransitionAdded[0])) {
+                throw new Error('#srv.mnr.tmn.001: ' + 'mid node transformation failed - mid transition could not be added due to conflict with existing node)');
+            };
+            const midTransition : Node = midTransitionAdded[2];
+            if (inMidNode.marked) {
+                inOutGraph.setElementMarkedFlag(midTransition, true);
+            };
+            inOutGraph.setElementChangedFlag(midTransition, true);
+            midTransition.special = true;
+            return midTransition;
+        } else {
+            const midTransitionAdded : [boolean, number, Node] = inOutGraph.addNode('transition', inMidNode.label, inMidNode.x, inMidNode.y);
+            if (!(midTransitionAdded[0])) {
+                throw new Error('#srv.mnr.tmn.001: ' + 'mid node transformation failed - mid transition could not be added due to conflict with existing node)');
+            };
+            const midTransition : Node = midTransitionAdded[2];
+            if (inMidNode.marked) {
+                inOutGraph.setElementMarkedFlag(midTransition, true);
+            };
+            inOutGraph.setElementChangedFlag(midTransition, true);
+            return midTransition;
         };
-        const midTransition : Node = midTransitionAdded[2];
-        if (inMidNode.marked) {
-            inOutGraph.setElementMarkedFlag(midTransition, true);
-        };
-        inOutGraph.setElementChangedFlag(midTransition, true);
-        return midTransition;
     };
 
     private transformEnd(
-        inOutGraph : Graph,
-        inEndNode : Node,
+        inOutGraph : Graph, 
+        inEndNode : Node, 
         inArcWeight : number
-    ) : [Node, Node, Node] {
+    ) : [
+        Node, 
+        Node, 
+        Node
+    ] {
         const endPlaceOneAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inEndNode.x, (inEndNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2)));
         if (!(endPlaceOneAdded[0])) {
             throw new Error('#srv.mnr.ten.000: ' + 'end node transformation failed - first end place could not be added due to conflict with existing node)');
@@ -1862,25 +2470,32 @@ export class InductiveMinerService {
         const endArcTwo : Arc = endArcTwoAdded[2];
         if (inEndNode.marked) {
             inOutGraph.setElementMarkedFlag(endPlaceOne, true);
-            inOutGraph.setElementMarkedFlag(endTransition, true);
-            inOutGraph.setElementMarkedFlag(endPlaceTwo, true);
             // inOutGraph.setElementMarkedFlag(endArcOne, true);
+            inOutGraph.setElementMarkedFlag(endTransition, true);
             // inOutGraph.setElementMarkedFlag(endArcTwo, true);
+            inOutGraph.setElementMarkedFlag(endPlaceTwo, true);
         };
         inOutGraph.setElementNewFlag(endPlaceOne, true);
-        inOutGraph.setElementChangedFlag(endTransition, true);
-        inOutGraph.setElementNewFlag(endPlaceTwo, true);
         inOutGraph.setElementNewFlag(endArcOne, true);
+        inOutGraph.setElementChangedFlag(endTransition, true);
         inOutGraph.setElementNewFlag(endArcTwo, true);
+        inOutGraph.setElementNewFlag(endPlaceTwo, true);
+        endTransition.special = true;
         return [endPlaceOne, endTransition, endPlaceTwo]
     };
 
     private transformStartEnd(
-        inOutGraph : Graph,
-        inStartNode : Node,
-        inEndNode : Node,
+        inOutGraph : Graph, 
+        inStartNode : Node, 
+        inEndNode : Node, 
         inArc : Arc
-    ) : [Node, Node, Node, Node, Node] {
+    ) : [
+        Node, 
+        Node, 
+        Node, 
+        Node, 
+        Node
+    ] {
         const startY : number = (inStartNode.y - Math.ceil(this._graphicsConfig.defaultNodeRadius / 2));
         const startPlaceAdded : [boolean, number, Node] = inOutGraph.addNode('place', '', inStartNode.x, startY);
         if (!(startPlaceAdded[0])) {
@@ -1935,28 +2550,30 @@ export class InductiveMinerService {
         };
         if (inStartNode.marked) {
             inOutGraph.setElementMarkedFlag(startPlace, true);
-            inOutGraph.setElementMarkedFlag(startTransition, true);
             // inOutGraph.setElementMarkedFlag(startArc, true);
+            inOutGraph.setElementMarkedFlag(startTransition, true);
         };
         if (inEndNode.marked) {
             inOutGraph.setElementMarkedFlag(endTransition, true);
-            inOutGraph.setElementMarkedFlag(endPlace, true);
             // inOutGraph.setElementMarkedFlag(endArc, true);
+            inOutGraph.setElementMarkedFlag(endPlace, true);
         };
         if (inArc.marked) {
             inOutGraph.setElementMarkedFlag(midArcOne, true);
-            inOutGraph.setElementMarkedFlag(midArcTwo, true);
             // inOutGraph.setElementMarkedFlag(midPlace, true);
+            inOutGraph.setElementMarkedFlag(midArcTwo, true);
         };
         inOutGraph.setElementNewFlag(startPlace, true);
-        inOutGraph.setElementChangedFlag(startTransition, true);
-        inOutGraph.setElementNewFlag(midPlace, true);
-        inOutGraph.setElementChangedFlag(endTransition, true);
-        inOutGraph.setElementNewFlag(endPlace, true);
         inOutGraph.setElementNewFlag(startArc, true);
+        inOutGraph.setElementChangedFlag(startTransition, true);
         inOutGraph.setElementChangedFlag(midArcOne, true);
+        inOutGraph.setElementNewFlag(midPlace, true);
         inOutGraph.setElementChangedFlag(midArcTwo, true);
+        inOutGraph.setElementChangedFlag(endTransition, true);
         inOutGraph.setElementNewFlag(endArc, true);
+        inOutGraph.setElementNewFlag(endPlace, true);
+        startTransition.special = true;
+        endTransition.special = true;
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
 

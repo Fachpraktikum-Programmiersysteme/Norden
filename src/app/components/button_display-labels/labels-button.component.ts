@@ -10,9 +10,9 @@ import {DisplayService} from '../../services/display.service';
 import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
 
 @Component({
-    selector: 'weight-button',
-    templateUrl: './weight-button.component.html',
-    styleUrls: ['./weight-button.component.css'],
+    selector: 'labels-button',
+    templateUrl: './labels-button.component.html',
+    styleUrls: ['./labels-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class WeightButtonComponent implements OnDestroy {
+export class LabelsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,7 +29,7 @@ export class WeightButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _weightsDisabled : boolean;
+    private _labelsDisabled : boolean;
 
     /* methods - constructor */
 
@@ -40,7 +40,7 @@ export class WeightButtonComponent implements OnDestroy {
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._weightsDisabled = true;
+        this._labelsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class WeightButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get weightsDisabled() : boolean {
-        return this._weightsDisabled;
+    public get labelsDisabled() : boolean {
+        return this._labelsDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class WeightButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._weightsDisabled) {
-                return 'display arc weights';
+            if (this._labelsDisabled) {
+                return 'display node labels';
             } else {
-                return 'hide arc weights';
+                return 'hide node labels';
             };
         };
     };
@@ -89,13 +89,13 @@ export class WeightButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._weightsDisabled = !(this._weightsDisabled);
-        this._displaySettings.updateState({ arcWeightsDisabled: this._weightsDisabled });
+        this._labelsDisabled = !(this._labelsDisabled);
+        this._displaySettings.updateState({ nodeLabelsDisabled: this._labelsDisabled });
         this._displayService.refreshData();
-        if (this._weightsDisabled) {
-            this._toastService.showToast('arc weights hidden', 'info');
+        if (this._labelsDisabled) {
+            this._toastService.showToast('node labels hidden', 'info');
         } else {
-            this._toastService.showToast('arc weights shown', 'info');
+            this._toastService.showToast('node labels shown', 'info');
         };
     };
 

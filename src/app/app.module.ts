@@ -16,13 +16,15 @@ import {ExampleFileComponent} from './components/example-file/example-file.compo
 import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
 import {EmbedderButtonComponent} from './components/button_toggle-spring-embedder/embedder-button.component';
 import {FooterComponent} from './components/footer/footer.component';
+import {LabelsButtonComponent} from './components/button_display-labels/labels-button.component';
 import {ModeButtonComponent} from './components/button_switch-display-mode/mode-button.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
 import {SubmitButtonComponent} from './components/button_submit-cut/submit-button.component';
+import {SymbolsButtonComponent} from './components/button_display-symbols/symbols-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
 import {ToastComponent} from "./components/toast/toast.component";
-import {WeightButtonComponent} from './components/button_display-weight/weight-button.component';
+import {WeightsButtonComponent} from './components/button_display-weights/weights-button.component';
 
 @NgModule({
     declarations: [
@@ -39,6 +41,7 @@ import {WeightButtonComponent} from './components/button_display-weight/weight-b
     EmbedderButtonComponent,
     ExampleFileComponent,
     InfoButtonComponent,
+    LabelsButtonComponent,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -47,10 +50,11 @@ import {WeightButtonComponent} from './components/button_display-weight/weight-b
     ReactiveFormsModule,
     SaveButtonComponent,
     SubmitButtonComponent,
+    SymbolsButtonComponent,
     TextInputComponent,
     TracesButtonComponent,
-    WeightButtonComponent
-], providers: [
+    WeightsButtonComponent
+    ], providers: [
         {
             provide: APP_BASE_HREF,
             useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),

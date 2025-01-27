@@ -206,8 +206,8 @@ export class Graph {
 
     /* methods : other */
 
-    public checkNode(
-        inType : 'support' | 'event' | 'place' | 'transition',
+    public checkEvent(
+        inType : 'event', 
         inLabel : string
     ) : [
         boolean,
@@ -244,12 +244,12 @@ export class Graph {
         let x : number;
         let y : number;
         if (inX === undefined) {
-            x = (Math.floor(Math.random() * 1700) + 100);
+            x = (Math.floor(Math.random() * 1600) + 100);
         } else {
             x = inX;
         };
         if (inY === undefined) {
-            y = (Math.floor(Math.random() * 200) + 100);
+            y = (Math.floor(Math.random() * 400) + 100);
         } else {
             y = inY;
         };
@@ -295,11 +295,11 @@ export class Graph {
                 return this.appendNode(inType, inLabel, inX, inY);
             }
             case 'event' : {
-                let nodeExists : [boolean, number?, Node?] = this.checkNode(inType, inLabel);
-                if (nodeExists[0]) {
-                    if (nodeExists[1] !== undefined) {
-                        if (nodeExists[2] !== undefined) {
-                            return [false, nodeExists[1], nodeExists[2]];
+                let eventExists : [boolean, number?, Node?] = this.checkEvent(inType, inLabel);
+                if (eventExists[0]) {
+                    if (eventExists[1] !== undefined) {
+                        if (eventExists[2] !== undefined) {
+                            return [false, eventExists[1], eventExists[2]];
                         } else {
                             throw new Error('#cls.grp.adn.000: ' + 'node addition failed - impossible error')
                         };
@@ -382,6 +382,32 @@ export class Graph {
             };
         };
         return [false];
+    };
+
+    public updateArcWeight(
+        inArc : Arc, 
+        inWeight : number
+    ) : boolean {
+        if (inWeight > 0) {
+            for (const arc of this._arcs) {
+                if (arc === inArc) {
+                    const weightDifference : number = (inWeight - arc.weight)
+                    if (weightDifference !== 0) {
+                        arc.weight = arc.weight + weightDifference;
+                        this._arcCount = this._arcCount + weightDifference;
+                        if (this._initialState) {
+                            this._initialState = false;
+                        };
+                    };
+                    return true;
+                };
+            };
+            return false;
+        } else if (inWeight === 0) {
+            return this.deleteArc(inArc);
+        } else {
+            throw new Error('#cls.grp.uaw.000: ' + 'updating arc weight failed - cannot set arc weight to negative value');
+        };
     };
 
     public addArc(

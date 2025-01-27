@@ -1,5 +1,5 @@
 import {Component, EventEmitter, OnDestroy, Output} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, NgForm} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {MatTooltipModule} from '@angular/material/tooltip';
@@ -7,7 +7,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 
 import {Subscription} from 'rxjs';
 
-import {DisplayService} from '../../services/display.service';
+import {DisplaySettingsSingleton} from 'src/app/classes/display/display-settings.singleton';
 
 @Component({
     selector: 'text-input',
@@ -30,15 +30,25 @@ export class TextInputComponent implements OnDestroy {
 
     /* attributes */
 
-    private _inputText: string;
+    private _sub : Subscription;
+
+    private _inputText : string;
 
     /* methods - constructor */
 
     public constructor(
-        private _displayService: DisplayService,
+        private _displaySettings : DisplaySettingsSingleton
     ) {
         this.textData = new EventEmitter<[string, string]>();
         this._inputText = '';
+        this._sub = this._displaySettings.state$.subscribe(
+            state => {
+                if (state.resetInputForm) {
+                    this._inputText = '';
+                    this._displaySettings.updateState({ resetInputForm : false });
+                };
+            }
+        );
     };
 
     /* methods - on destroy */
@@ -59,10 +69,9 @@ export class TextInputComponent implements OnDestroy {
         this._inputText = inString;
     };
 
-
     /* methods - other */
 
-    processFormSubmit(inEvent : SubmitEvent) : void {
+   public processFormSubmit(inEvent : SubmitEvent) : void {
         inEvent.preventDefault();
         this.emitTextData(this._inputText);
         /* to be removed - start */

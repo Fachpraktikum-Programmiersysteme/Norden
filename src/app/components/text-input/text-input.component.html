@@ -1,6 +1,7 @@
 <form 
+    #inputForm="ngForm" 
     class="form" 
-    (submit)="processFormSubmit($event)"
+    (ngSubmit)="processFormSubmit($event)"
 >
     <mat-form-field 
         class="full-width" 
