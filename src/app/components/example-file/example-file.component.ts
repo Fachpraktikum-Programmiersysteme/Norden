@@ -36,7 +36,7 @@ export class ExampleFileComponent {
         if (this.dragInProgress) {
             return '';
         } else {
-            return 'drag and drop onto canvas to display graph';
+            return 'drag and drop onto canvas';
         };
     };
 
