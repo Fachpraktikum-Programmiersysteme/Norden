@@ -79,13 +79,13 @@ export class TextParserService {
                 startNode = startNodeAdded[2];
                 graph.startNode = startNode;
             } else {
-                throw new Error('#srv.tps.prs.000: ' + 'reading from text file failed - addition of start node failed');
+                throw new Error('#srv.tps.prs.000: ' + 'parsing text failed - addition of start node failed');
             };
             if (endNodeAdded[0]) {
                 endNode = endNodeAdded[2];
                 graph.endNode = endNode;
             } else {
-                throw new Error('#srv.tps.prs.001: ' + 'reading from text file failed - addition of end node failed');
+                throw new Error('#srv.tps.prs.001: ' + 'parsing text failed - addition of end node failed');
             };
     
             dfgArray.push(startNode);

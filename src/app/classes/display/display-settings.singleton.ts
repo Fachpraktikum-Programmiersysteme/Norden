@@ -4,8 +4,11 @@ import {BehaviorSubject, Observable} from 'rxjs';
 
 export interface DisplaySettings {
     mode: 'dfg' | 'changes';
+    resetInputForm: boolean;
+    nodeInfosDisabled: boolean;
+    nodeLabelsDisabled: boolean;
+    nodeSymbolsDisabled: boolean;
     arcWeightsDisabled: boolean;
-    infoOverrideDisabled: boolean;
     springEmbedderDisabled: boolean;
     traceAnimationsDisabled: boolean;
 }
@@ -17,8 +20,11 @@ export class DisplaySettingsSingleton {
 
     private stateSubject = new BehaviorSubject<DisplaySettings>({
         mode: 'dfg',
+        resetInputForm: false,
+        nodeInfosDisabled: true,
+        nodeLabelsDisabled: true,
+        nodeSymbolsDisabled: true,
         arcWeightsDisabled: true,
-        infoOverrideDisabled: true,
         springEmbedderDisabled: true,
         traceAnimationsDisabled: true,
     });
@@ -29,12 +35,12 @@ export class DisplaySettingsSingleton {
     
     get currentState(): DisplaySettings {
         return this.stateSubject.getValue();
-    }
+    };
 
     /* methods - other */
 
     updateState(newState: Partial<DisplaySettings>): void {
         const updatedState = { ...this.currentState, ...newState };
         this.stateSubject.next(updatedState);
-    }
-}
+    };
+};

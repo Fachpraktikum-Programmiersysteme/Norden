@@ -39,7 +39,7 @@ export class AppComponent implements OnDestroy {
         private _xesParserService : XesParserService,
         private _txtParserService : TextParserService,
         private _displayService : DisplayService,
-        private toastService: ToastService
+        private _toastService : ToastService
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
@@ -52,10 +52,11 @@ export class AppComponent implements OnDestroy {
                 this.logArray = GraphLogService.generateOutputLogArray(graph);
             }
         );
-        this.toastService.toast$.subscribe(toast => {
+        this._toastService.toast$.subscribe(toast => {
             this.toastMessages.push(toast);
             setTimeout(() => {
-                this.toastMessages.shift(); //removes oldest toast
+                /* removes oldest toast */
+                this.toastMessages.shift();
             }, toast.duration);
         });
     };

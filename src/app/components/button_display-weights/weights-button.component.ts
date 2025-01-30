@@ -10,9 +10,9 @@ import {DisplayService} from '../../services/display.service';
 import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
 
 @Component({
-    selector: 'info-button',
-    templateUrl: './info-button.component.html',
-    styleUrls: ['./info-button.component.css'],
+    selector: 'weights-button',
+    templateUrl: './weights-button.component.html',
+    styleUrls: ['./weights-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class InfoButtonComponent implements OnDestroy {
+export class WeightsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,7 +29,7 @@ export class InfoButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _overrideDisabled : boolean;
+    private _weightsDisabled : boolean;
 
     /* methods - constructor */
 
@@ -40,7 +40,7 @@ export class InfoButtonComponent implements OnDestroy {
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._overrideDisabled = true;
+        this._weightsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class InfoButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get overrideDisabled() : boolean {
-        return this._overrideDisabled;
+    public get weightsDisabled() : boolean {
+        return this._weightsDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class InfoButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._overrideDisabled) {
-                return 'display all node information';
+            if (this._weightsDisabled) {
+                return 'display arc weights';
             } else {
-                return 'hide all node information';
+                return 'hide arc weights';
             };
         };
     };
@@ -89,13 +89,13 @@ export class InfoButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._overrideDisabled = !(this._overrideDisabled);
-        this._displaySettings.updateState({ nodeInfosDisabled: this._overrideDisabled });
+        this._weightsDisabled = !(this._weightsDisabled);
+        this._displaySettings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
-        if (this._overrideDisabled) {
-            this._toastService.showToast('node information hidden', 'info');
+        if (this._weightsDisabled) {
+            this._toastService.showToast('arc weights hidden', 'info');
         } else {
-            this._toastService.showToast('node information shown', 'info');
+            this._toastService.showToast('arc weights shown', 'info');
         };
     };
 

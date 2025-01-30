@@ -89,16 +89,6 @@ export class DisplayComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processDropEvent(inEvent: DragEvent) : void {
-        inEvent.preventDefault();
-        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
-        if (fileLocation) {
-            this.fetchFile(fileLocation);
-        } else {
-            this.readFile(inEvent.dataTransfer?.files);
-        }
-    };
-
     private getNode(inId : number) : Node {
         const node : Node |undefined = this._graph.nodes[inId];
         if (node !== undefined) {
@@ -145,7 +135,7 @@ export class DisplayComponent implements OnDestroy {
                 this.infoActive = true;
                 inNode.hoverActive = false;
                 inNode.hoverCancelled = false;
-                this.redraw();
+                this.update();
             }
         } else {
         }
@@ -153,7 +143,6 @@ export class DisplayComponent implements OnDestroy {
 
     public processMouseEvent(inEvent : MouseEvent) : void {
         inEvent.preventDefault();
-        this.redraw();
     };
 
     public processMouseEnter(inEvent : MouseEvent) {
@@ -292,7 +281,7 @@ export class DisplayComponent implements OnDestroy {
             }
         };
         if (redrawNeeded) {
-            this.redraw();
+            this.update();
         };
         if (!(this.nodeHeld || this.arcHeld)) {
             this.cutActive = true;
@@ -479,7 +468,7 @@ export class DisplayComponent implements OnDestroy {
             };
         };
         if (redrawNeeded) {
-            this.redraw();
+            this.update();
         };
     };
 
@@ -498,7 +487,7 @@ export class DisplayComponent implements OnDestroy {
             };
             this.heldNode = undefined;
             this.nodeHeld = false;
-            this.redraw();
+            this.update();
         } else if (this.arcHeld) {
             if (this.heldArc !== undefined) {
                 this._graph.setElementMarkedFlag(this.heldArc, (!(this.heldArc.marked)))
@@ -506,7 +495,7 @@ export class DisplayComponent implements OnDestroy {
                 throw new Error('#cmp.dsp.pmu.001: ' + 'click of arc failed - clicked arc is undefined');
             };
             this.heldArc.overrideMarking = true;
-            this.redraw();
+            this.update();
             this.heldArc.overrideMarking = false;
             this.heldArc = undefined;
             this.arcHeld = false;
@@ -549,7 +538,7 @@ export class DisplayComponent implements OnDestroy {
             };
             this.activeNode = undefined;
             this.nodeActive = false;
-            this.redraw();
+            this.update();
         };
         if (this.cutActive) {
             this.endCut(inEvent);
@@ -562,7 +551,8 @@ export class DisplayComponent implements OnDestroy {
         if ((inEvent.key === 'i') || (inEvent.key === 'I')) {
             if (this.nodeActive) {
                 if (this.activeNode !== undefined) {
-                    this.activeNode.infoOverride = (!(this.activeNode.infoOverride))
+                    this.activeNode.infoOverride = (!(this.activeNode.infoOverride));
+                    this.update();
                 } else {
                     throw new Error('#cmp.dsp.pkp.000: ' + 'inversion of node info override failed - active node is undefined');
                 };
@@ -570,8 +560,19 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
+    public processDropEvent(inEvent: DragEvent) : void {
+        inEvent.preventDefault();
+        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
+        if (fileLocation) {
+            this.fetchFile(fileLocation);
+        } else {
+            this.readFile(inEvent.dataTransfer?.files);
+        };
+        this._displaySettings.updateState({ resetInputForm : true });
+    };
+
     public prevent(inEvent: DragEvent): void {
-        // dragover must be prevented for drop to work
+        /* dragover must be prevented for drop to work */
         inEvent.preventDefault();
     };
 
@@ -614,7 +615,7 @@ export class DisplayComponent implements OnDestroy {
                         };
                     }
                 );
-                this.redraw();
+                this.update();
             };
             this.activeCut.removeCutSvgs(this.drawingArea?.nativeElement)
             this.activeCut = undefined;
@@ -668,7 +669,7 @@ export class DisplayComponent implements OnDestroy {
         this.fileData.emit([inFileType, inFileContent]);
     };
 
-    private redraw() : void {
+    private update() : void {
         this._displayService.updateData(this._graph);
     };
 
@@ -684,30 +685,22 @@ export class DisplayComponent implements OnDestroy {
             this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
         };
         this.clearDrawingArea();
-        const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
-        for (const arc of arcs) {
-            this.drawingArea.nativeElement.appendChild(arc);
+        const svgLayers : [SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
+        const layerOne : SVGElement[] = svgLayers[0];
+        const layerTwo : SVGElement[] = svgLayers[1];
+        for (const svg of layerOne) {
+            this.drawingArea.nativeElement.appendChild(svg);
         };
-        const weights: SVGElement[] = this._svgService.createSvgWeights(this._graph);
-        for (const weight of weights) {
-            this.drawingArea.nativeElement.appendChild(weight);
+        for (const svg of layerTwo) {
+            this.drawingArea.nativeElement.appendChild(svg);
         };
-        const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
-        for (const node of nodes) {
-            this.drawingArea.nativeElement.appendChild(node);
-        };
-        const infos: SVGElement[] = this._svgService.createSvgInfos(this._graph);
-        for (const info of infos) {
-            this.drawingArea.nativeElement.appendChild(info);
-        };
-        if (!(this.dragInProgress) && !(this._displaySettings.currentState.traceAnimationsDisabled)) {
-            const traces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
-            for (const trace of traces) {
-                this.drawingArea.nativeElement.appendChild(trace);
+        if (!(this.dragInProgress)) {
+            const svgTraces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
+            for (const svg of svgTraces) {
+                this.drawingArea.nativeElement.appendChild(svg);
             };
         };
     };
-
 
     private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
@@ -720,38 +713,39 @@ export class DisplayComponent implements OnDestroy {
     };
 
     private resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
-        const margin = 20; // Margin around the graph
+        /* Margin around the graph */
+        const margin = 20;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-        // Calculate bounding box of the graph
-        graph.nodes.forEach((node) => {
-            if (node) {
-                minX = Math.min(minX, node.x);
-                minY = Math.min(minY, node.y);
-                maxX = Math.max(maxX, node.x);
-                maxY = Math.max(maxY, node.y);
-            };
-        });
-
+        /* Calculate bounding box of the graph */
+        graph.nodes.forEach(
+            (node) => {
+                if (node) {
+                    minX = Math.min(minX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxX = Math.max(maxX, node.x);
+                    maxY = Math.max(maxY, node.y);
+                };
+            }
+        );
         const graphWidth = maxX - minX;
         const graphHeight = maxY - minY;
-
-        // Calculate scaling factors to fit graph within canvas
+        /* Calculate scaling factors to fit graph within canvas */
         const scaleX = (canvasWidth - margin * 2) / graphWidth;
         const scaleY = (canvasHeight - margin * 2) / graphHeight;
-        const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
-
-        // Calculate offsets to center the graph in the canvas
+        /* Maintain aspect ratio */
+        const scale = Math.min(scaleX, scaleY);
+        /* Calculate offsets to center the graph in the canvas */
         const offsetX = (canvasWidth - graphWidth * scale) / 2 - minX * scale;
         const offsetY = (canvasHeight - graphHeight * scale) / 2 - minY * scale;
-
-        // Apply scaling and centering
-        graph.nodes.forEach((node) => {
-            if (node) {
-                node.x = node.x * scale + offsetX;
-                node.y = node.y * scale + offsetY;
-            };
-        });
+        /* Apply scaling and centering */
+        graph.nodes.forEach(
+            (node) => {
+                if (node) {
+                    node.x = Math.floor(node.x * scale + offsetX);
+                    node.y = Math.floor(node.y * scale + offsetY);
+                };
+            }
+        );
     };
 
 };

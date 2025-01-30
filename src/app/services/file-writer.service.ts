@@ -30,6 +30,7 @@ export class FileWriterService {
             labels: {}, 
             layout: {}, 
             dfgs: {}, 
+            special: {}, 
             marked: [{}, {}]
         };
         let nodeId : string;
@@ -63,6 +64,7 @@ export class FileWriterService {
         jsonGraph.arcs = {};
         jsonGraph.layout = {};
         jsonGraph.dfgs = {};
+        jsonGraph.special = {};
         jsonGraph.marked = [{}, {}];
         for (const dfg of inGraph.dfgArray) {
             dfgCount++;
@@ -102,6 +104,9 @@ export class FileWriterService {
                         jsonGraph.transitions.push(nodeId);
                         if (!(node.label.includes('undefined_transition_label__'))) {
                             jsonGraph.labels[nodeId] = node.label;
+                        };
+                        if (node.special) {
+                            jsonGraph.special[nodeId] = true;
                         };
                         break;
                     };
@@ -176,7 +181,7 @@ export class FileWriterService {
             for (const trace of dfg.log) {
                 const traceArray : string[] = [];
                 for (let eventID = 0; eventID < trace.length; eventID++) {
-                    traceArray.push(nodeIds[eventID]);
+                    traceArray.push(nodeIds[trace[eventID].id]);
                 };
                 jsonGraph.dfgs[dfgID][4].push(traceArray);
             };

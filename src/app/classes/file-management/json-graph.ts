@@ -32,6 +32,10 @@ export interface JsonGraph {
         [dfgID: string]: [string, string, Array<string>, Array<string>, Array<Array<string>>]
     },
 
+    special?: {
+        [nodeID: string]: boolean
+    },
+
     marked?: [
         {
             [nodeID: string]: boolean
