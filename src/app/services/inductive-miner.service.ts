@@ -146,7 +146,7 @@ export class InductiveMinerService {
             };
         };
         if (!inputAccepted) {
-            const checkLC : [boolean, undefined | []] = this.checkLoopCut(inOutGraph);
+            const checkLC: [boolean, undefined | [DFG, Node[], Node[], Node[], Node[]]] = this.checkLoopCut(inOutGraph);
             inputAccepted = checkLC[0];
             if (inputAccepted) {
                 /* TODO - part to be modified - start */
@@ -154,7 +154,7 @@ export class InductiveMinerService {
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 /* TODO - part to be modified - end */
                 if (checkLC[1] !== undefined) {
-                    this.executeLoopCut(inOutGraph);
+                    this.executeLoopCut(inOutGraph, checkLC[1][0], checkLC[1][1], checkLC[1][2], checkLC[1][3], checkLC[1][4]);
                     this._displayService.refreshData();
                     /* TODO - part to be modified - start */
                     this._toastService.showToast('LC executed, 4s until reset of marked flags', 'info');
@@ -170,7 +170,7 @@ export class InductiveMinerService {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 /* TODO - part to be modified - end */
             };
-        };
+          };
         if (!inputAccepted) {
             const checkBC : [boolean, undefined | [DFG, Node | undefined]] = this.checkBaseCase(inOutGraph);
             inputAccepted = checkBC[0];
@@ -605,12 +605,85 @@ export class InductiveMinerService {
         return [true, [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]]];
     };
 
-    private checkLoopCut(inOutGraph : Graph) : [
+    private checkLoopCut(inOutGraph: Graph): [
         boolean,
-        undefined | []
-    ] {
+        undefined | [DFG, Node[], Node[], Node[], Node[]]
+      ] {
+        let cutDFG: number | undefined = this.checkMarkedDFG(inOutGraph);
+        if (cutDFG === undefined) {
+          return [false, undefined];
+        };
+        const dfgPos: number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
+        if (dfgPos === undefined) {
+          return [false, undefined];
+        };
+        const dfg: DFG = inOutGraph.dfgArray[dfgPos];
+        const A2: Node[] = inOutGraph.markedNodes;
+        if (A2.length == 0) {
+          return [false, undefined];
+        }
+        const A1: Node[] = dfg.nodes.filter(node => !inOutGraph.markedNodes.some(markedNode => markedNode.id == node.id));
+        if (A1.length == 0) {
+          return [false, undefined];
+        }
+        let checkLoop = this.checkLoopInternal(inOutGraph, A1, A2, dfg);
+        if (checkLoop.isLoop) {
+          return [true, [dfg, A1, A2, checkLoop.A2_play, checkLoop.A2_stop]];
+        }
+        checkLoop = this.checkLoopInternal(inOutGraph, A2, A1, dfg);
+        if (checkLoop.isLoop) {
+          return [true, [dfg, A2, A1, checkLoop.A2_play, checkLoop.A2_stop]];
+        }
         return [false, undefined];
-    };
+      };
+                
+     private checkLoopInternal(
+        inOutGraph: Graph,
+        A1: Node[],
+        A2: Node[],
+        dfg: DFG
+      ): { isLoop: boolean, A2_play: Node[], A2_stop: Node[] } {
+        if (A2.some(A2Node => A2Node.type !== 'event')) {
+          return { isLoop: false, A2_play: [], A2_stop: [] };
+        }
+        if (A1.some(A1Node => A2.some(A2Node => A1Node.id === A2Node?.id))) {
+          return { isLoop: false, A2_play: [], A2_stop: [] };
+        }
+        const A1_play = A1.filter(a1 => dfg.arcs.some(arc => arc.target.id == a1.id && !A1.some(a1 => arc.source.id == a1.id)));
+        const A1_stop = A1.filter(a1 => dfg.arcs.some(arc => arc.source.id == a1.id && !A1.some(a1 => arc.target.id == a1.id)));
+        const A2_play = A2.filter(a2 => dfg.arcs.some(arc => arc.target.id == a2?.id && !A2.some(a2 => arc.source.id == a2.id)));
+        const A2_stop = A2.filter(a2 => dfg.arcs.some(arc => arc.source.id == a2?.id && !A2.some(a2 => arc.target.id == a2.id)));
+
+        const arcsToCut = inOutGraph.arcs.filter(arc =>
+            A2_play.some(a2_play => a2_play?.id === arc.target.id) && !A2.some(a2 => a2?.id === arc.source.id) ||
+            A2_stop.some(a2_stop => a2_stop?.id === arc.source.id) && !A2.some(a2 => a2?.id === arc.target.id)
+        );
+
+        if (!this.areArcsArraysEqual(arcsToCut, inOutGraph.markedArcs)) {
+            return { isLoop: false, A2_play: [], A2_stop: [] };
+        }
+          if (!dfg.arcs.some(arc => arc.source.type == "support" && arc.source.label == 'play' && A1_play.every(a1_play => arc.target.id == a1_play.id))) {
+          return { isLoop: false, A2_play: [], A2_stop: [] };
+        }
+        if (!dfg.arcs.some(arc => arc.target.type == "support" && arc.target.label == 'stop' && A1_stop.every(a1_play => arc.source.id == a1_play.id))) {
+          return { isLoop: false, A2_play: [], A2_stop: [] };
+        }
+        for (const A2_activity of A2_stop) {
+          for (const A1_activity of A1_play) {
+            if (!dfg.arcs.some(arc => arc.source.id == A2_activity.id && arc.target.id == A1_activity.id)) {
+              return { isLoop: false, A2_play: [], A2_stop: [] };
+            }
+          }
+        }
+        for (const A1_activity of A1_stop) {
+          for (const A2_activity of A2_play) {
+            if (!dfg.arcs.some(arc => arc.source.id == A1_activity.id && arc.target.id == A2_activity.id)) {
+              return { isLoop: false, A2_play: [], A2_stop: [] };
+            }
+          }
+        }
+        return { isLoop: true, A2_play, A2_stop };
+      }
 
     private checkBaseCase(
         inOutGraph : Graph
@@ -1508,15 +1581,257 @@ export class InductiveMinerService {
     };
 
     private executeLoopCut(
-        inOutGraph : Graph
-    ) : void {
-        /* deciding which of the subgraphs to cut out as a new dfg, and which to keep as the rest of the old dfg */
-        /* checking if the cut DFG starts at the global start of the graph or ends at the global end */
+        inOutGraph: Graph,
+        inSplitDfg: DFG,
+        A1: Node[],
+        A2: Node[],
+        A2_play: Node[],
+        A2_stop: Node[]
+    ): void {
+        const inEndpointsMarked = inSplitDfg.startNode.marked && inSplitDfg.endNode.marked;
+        const inCutStartArc: Arc = inSplitDfg.arcs.find(arc => arc.source.id === inSplitDfg.startNode.id) ?? inSplitDfg.arcs[0];
+        const inCutEndArc: Arc = inSplitDfg.arcs.find(arc => arc.target.id === inSplitDfg.endNode.id) ?? inSplitDfg.arcs[inSplitDfg.arcs.length - 1];
+        const startOfGraph: boolean = this.checkGraphStart(inOutGraph, inCutStartArc.source);
+        const endOfGraph: boolean = this.checkGraphEnd(inOutGraph, inCutEndArc.target);
+        const restSubgraph: [Node[], Arc[]] = [[], []];
+        const cutSubgraph: [Node[], Arc[]] = [[], []];
+        const arcsToDelete = inOutGraph.arcs.filter(arc =>
+            A2_play.some(a2_play => a2_play?.id === arc.target.id) && !A2.some(a2 => a2?.id === arc.source.id) ||
+            A2_stop.some(a2_stop => a2_stop?.id === arc.source.id) && !A2.some(a2 => a2?.id === arc.target.id)
+        );
+        debugger
+        for (const arc of arcsToDelete) {
+            inOutGraph.deleteArc(arc);
+        }
+
+        restSubgraph[0] = [...A1];
+        cutSubgraph[0] = [...A2];
+
         /* generating new start and end nodes and matching arcs */
-        /* splitting the dfg event log between the cut part and the rest part */
+        const globalPlayNodeArray: Node[] = [];
+        const globalStopNodeArray: Node[] = [];
+        let restSubgraphPlay: Node = inSplitDfg.startNode;
+        let restSubgraphStop: Node = inSplitDfg.endNode;
+        let cutSubgraphPlay: Node;
+        let cutSubgraphStop: Node;
+        let startArcWeight = inCutStartArc.weight;
+        let endArcWeight = inCutEndArc.weight;
+        const cutSubLog: Node[][] = [];
+        const restSubLog: Node[][] = [];
+        const cutStopX: number = Math.floor((A2_play[0].x / 2) + (inCutStartArc.source.x / 2));
+        const cutStopY: number = Math.floor((A2_play[0].y / 2) + (inCutStartArc.source.y / 2));
+        const cutStopAdded: [boolean, number, Node] = inOutGraph.addNode('support', 'stop', cutStopX, cutStopY);
+        const cutPlayX: number = Math.floor((A2_stop[0].x / 2) + (inCutEndArc.target.x / 2));
+        const cutPlayY: number = Math.floor((A2_stop[0].y / 2) + (inCutEndArc.target.y / 2));
+        const cutPlayAdded: [boolean, number, Node] = inOutGraph.addNode('support', 'play', cutPlayX, cutPlayY);
+        cutSubgraphPlay = cutPlayAdded[2];
+        cutSubgraphStop = cutStopAdded[2];
+        const NodeBeforeCurrentStart = inOutGraph.arcs.find(arc => arc.target.id === inSplitDfg.startNode?.id)?.source ?? inSplitDfg.nodes[0];
+        const NodeAfterCurrentStop = inOutGraph.arcs.find(arc => arc.source.id === inSplitDfg.endNode?.id)?.target ?? inSplitDfg.nodes[0];
+        if (startOfGraph) {
+            const globalPlayNodes: [Node, Node, Node] = this.transformStart(inOutGraph, inSplitDfg.startNode, startArcWeight);
+            globalPlayNodeArray.push(...globalPlayNodes);
+            if (endOfGraph) {
+                const globalStopNodes: [Node, Node, Node] = this.transformEnd(inOutGraph, inSplitDfg.endNode, endArcWeight);
+                globalStopNodeArray.push(...globalStopNodes);
+                inOutGraph.addArc(globalStopNodes[0], cutSubgraphPlay, 1);
+                inOutGraph.addArc(cutSubgraphStop, globalPlayNodes[2], 1);
+                inOutGraph.addArc(inSplitDfg.endNode, globalStopNodes[0], endArcWeight);
+                inOutGraph.addArc(globalPlayNodes[2], inSplitDfg.startNode, startArcWeight);
+            } else {
+                const NodeAfterCurrentStop = inOutGraph.arcs.find(arc => arc.source.id === inSplitDfg.endNode?.id)?.target ?? inSplitDfg.nodes[0];
+                inOutGraph.addArc(NodeAfterCurrentStop, cutSubgraphPlay, 1);
+                inOutGraph.addArc(cutSubgraphStop, globalPlayNodes[2], 1);
+                inOutGraph.addArc(inSplitDfg.endNode, NodeAfterCurrentStop, endArcWeight);
+                inOutGraph.addArc(globalPlayNodes[2], inSplitDfg.startNode, startArcWeight);
+            }
+        } else {
+            if (endOfGraph) {
+                const globalStopNodes: [Node, Node, Node] = this.transformEnd(inOutGraph, inSplitDfg.endNode, endArcWeight);
+                globalStopNodeArray.push(...globalStopNodes);
+                inOutGraph.addArc(globalStopNodes[0], cutSubgraphPlay, 1);
+                inOutGraph.addArc(cutSubgraphStop, NodeBeforeCurrentStart, 1);
+                inOutGraph.addArc(inSplitDfg.endNode, globalStopNodes[0], endArcWeight);
+                inOutGraph.addArc(NodeBeforeCurrentStart, inSplitDfg.startNode, startArcWeight);
+            } else {
+                inOutGraph.addArc(NodeAfterCurrentStop, cutSubgraphPlay, 1);
+                inOutGraph.addArc(cutSubgraphStop, NodeBeforeCurrentStart, 1);
+                inOutGraph.addArc(inSplitDfg.endNode, NodeAfterCurrentStop, endArcWeight);
+                inOutGraph.addArc(NodeBeforeCurrentStart, inSplitDfg.startNode, startArcWeight);
+            }
+        }
+
+        A2_play.forEach(a2_play => {
+            inOutGraph.addArc(cutSubgraphPlay, a2_play, 1);
+        });
+        A2_stop.forEach(a2_stop => {
+            inOutGraph.addArc(a2_stop, cutSubgraphStop, 1);
+        })
+        restSubgraph[1] = inOutGraph.arcs.filter(arc => restSubgraph[0].some(node => node.type === 'event' && (node.id === arc.source.id || node.id === arc.target.id)));
+        cutSubgraph[1] = inOutGraph.arcs.filter(arc => cutSubgraph[0].some(node => node.type === 'event' && (node.id === arc.source.id || node.id === arc.target.id)));
+        for (const trace of inSplitDfg.log) {
+            const cutTrace: Node[] = [cutSubgraphPlay];
+            const restTrace: Node[] = [inSplitDfg.startNode];
+            for (let eventIdx = 1; eventIdx < trace.length - 1; eventIdx++) {
+                if (A2.some(A2Node => A2Node?.id === trace[eventIdx].id)) {
+                    cutTrace.push(trace[eventIdx]);
+                } else {
+                    restTrace.push(trace[eventIdx]);
+                }
+                if (cutTrace.length > 1) {
+                    restTrace.length = 0;
+                }
+            };
+            cutTrace.push(cutSubgraphStop);
+            restTrace.push(inSplitDfg.endNode);
+            if (cutTrace.length > 2) {
+                cutSubLog.push(cutTrace);
+            }
+            const containsA2Object = restTrace.some(node => A2.some(A2Node => A2Node?.id === node.id));
+            if (restTrace.length > 2 && !containsA2Object) {
+                restSubLog.push(restTrace);
+            }
+        };
+
         /* updating the graph event log */
-        /* updating dfgs */
+        if (startOfGraph) {
+            if (globalPlayNodeArray.length !== 3) {
+                throw new Error('#srv.mnr.eec.018: ' + 'loop cut execution failed - newly transformed global play nodes were not assigned properly');
+            };
+            if (endOfGraph) {
+                for (const dfgTrace of inSplitDfg.log) {
+                    const index = inOutGraph.logArray.findIndex(inOutLog => this.areArraysEqualById(inOutLog, dfgTrace));
+                    inOutGraph.logArray.splice(index, 1);
+                };
+                inOutGraph.logArray.push(...restSubLog, ...cutSubLog);
+                if (globalStopNodeArray.length !== 3) {
+                    throw new Error('#srv.mnr.eec.019: ' + 'loop cut execution failed - newly transformed global stop nodes were not assigned properly');
+                };
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, ...globalPlayNodeArray, restSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            }
+                        };
+                        if (trace[evIdx] === cutSubgraphPlay) {
+                            trace.splice(evIdx, 1, ...globalStopNodeArray, cutSubgraphPlay);
+                            evIdx = (evIdx + 3);
+                        }
+
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, restSubgraphStop, ...globalStopNodeArray);
+                                evIdx = (evIdx + 3);
+                            }
+                        };
+                        if (trace[evIdx] === cutSubgraphStop) {
+                            trace.splice(evIdx, 1, cutSubgraphStop, ...globalPlayNodeArray);
+                            evIdx = (evIdx + 3);
+                        }
+                    };
+                };
+            } else {
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === inCutStartArc.source) {
+                            if (trace[evIdx + 1] === inCutStartArc.target) {
+                                trace.splice(evIdx, 1, ...globalPlayNodeArray, restSubgraphPlay);
+                                evIdx = (evIdx + 3);
+                            }
+                        };
+
+                        if (trace[evIdx] === cutSubgraphStop) {
+                            trace.splice(evIdx, 1, cutSubgraphStop, ...globalPlayNodeArray);
+                            evIdx = (evIdx + 3);
+                        }
+                    };
+                    const containsA2Object = trace.some(node => A2.some(A2Node => A2Node?.id === node.id));
+                    if (containsA2Object) {
+                        for (const log of inSplitDfg.log) {
+                            const startIndex = this.findSubArray(trace, log);
+                            if (startIndex !== null) {
+                                cutSubLog.forEach(subLog => {
+                                    trace.splice(startIndex, log.length, ...subLog.slice().reverse());
+                                })
+                            }
+                        }
+                    }
+                };
+            };
+        } else {
+            if (endOfGraph) {
+                for (const trace of inOutGraph.logArray) {
+                    for (let evIdx = 0; evIdx < trace.length; evIdx++) {
+                        if (trace[evIdx] === cutSubgraphPlay) {
+                            trace.splice(evIdx, 1, ...globalStopNodeArray, cutSubgraphPlay);
+                            evIdx = (evIdx + 3);
+                        }
+
+                        if (trace[evIdx] === inCutEndArc.target) {
+                            if (trace[evIdx - 1] === inCutEndArc.source) {
+                                trace.splice(evIdx, 1, restSubgraphStop, ...globalStopNodeArray);
+                                evIdx = (evIdx + 3);
+                            }
+                        };
+                    };
+                    const containsA2Object = trace.some(node => A2.some(A2Node => A2Node?.id === node.id));
+                    if (containsA2Object) {
+                        for (const log of inSplitDfg.log) {
+                            const startIndex = this.findSubArray(trace, log);
+                            if (startIndex !== null) {
+                                cutSubLog.forEach(subLog => {
+                                    trace.splice(startIndex, log.length, ...subLog.slice().reverse());
+                                })
+                            }
+                        }
+                    }
+                };
+            } else {
+                for (const trace of inOutGraph.logArray) {
+                    const containsA2Object = trace.some(node => A2.some(A2Node => A2Node?.id === node.id));
+                    if (containsA2Object) {
+                        for (const log of inSplitDfg.log) {
+                            const startIndex = this.findSubArray(trace, log);
+                            if (startIndex !== null) {
+                                cutSubLog.forEach(subLog => {
+                                    trace.splice(startIndex, log.length, ...subLog.slice().reverse());
+                                })
+                            }
+                        }
+                    }
+                };
+            };
+        };
+        //updating DFGs
+        cutSubgraph[0].push(cutSubgraphPlay);
+        cutSubgraph[0].push(cutSubgraphStop);
+
+        if (inEndpointsMarked) {
+            inSplitDfg.update(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
+            inOutGraph.appendDFG(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
+        } else {
+            inSplitDfg.update(restSubgraphPlay, restSubgraphStop, restSubgraph[0], restSubgraph[1], restSubLog);
+            inOutGraph.appendDFG(cutSubgraphPlay, cutSubgraphStop, cutSubgraph[0], cutSubgraph[1], cutSubLog);
+        };
         /* deleting replaced endpoints and updating references */
+        if (startOfGraph) {
+            const transformedGlobalPlay: Node | undefined = inOutGraph.startNode;
+            if (transformedGlobalPlay !== undefined) {
+                inOutGraph.startNode = globalPlayNodeArray[0];
+            } else {
+                throw new Error('#srv.mnr.eec.022: ' + 'loop cut execution failed - the global start node within the graph is undefined');
+            };
+        };
+        if (endOfGraph) {
+            const transformedGlobalStop: Node | undefined = inOutGraph.endNode;
+            if (transformedGlobalStop !== undefined) {
+                inOutGraph.endNode = globalStopNodeArray[2];
+            } else {
+                throw new Error('#srv.mnr.eec.024: ' + 'loop cut execution failed - the global end node within the graph is undefined');
+            };
+        };
     };
 
     private executeBaseCase(
@@ -1796,7 +2111,7 @@ export class InductiveMinerService {
 
     private checkGraphStart(
         inGraph : Graph, 
-        inNode : Node
+        inNode : Node |undefined
     ) : boolean {
         if (inGraph.startNode !== undefined) {
             if (inNode !== inGraph.startNode) {
@@ -1811,7 +2126,7 @@ export class InductiveMinerService {
 
     private checkGraphEnd(
         inGraph : Graph, 
-        inNode : Node
+        inNode : Node|undefined
     ) : boolean {
         if (inGraph.endNode !== undefined) {
             if (inNode !== inGraph.endNode) {
@@ -2577,4 +2892,39 @@ export class InductiveMinerService {
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
 
+    
+    private areArraysEqualById(arrayOne: Node[], arrayTwo: Node[]): boolean {
+        if (arrayOne.length !== arrayTwo.length) {
+            return false;
+        }
+        const sortedArrayOne = arrayOne.map(obj => obj.id).sort();
+        const sortedArrayTwo = arrayTwo.map(obj => obj.id).sort();
+        return sortedArrayOne.every((id, index) => id === sortedArrayTwo[index]);
+    }
+
+    private areArcsArraysEqual(arrayOne: Arc[], arrayTwo: Arc[]): boolean {
+        if (arrayOne.length !== arrayTwo.length) {
+            return false;
+        } return arrayOne.every((obj, index) => {
+            const obj2 = arrayTwo[index];
+            return obj.source.id === obj2.source.id && obj.target.id === obj2.target.id;
+        });
+    }
+
+    private findSubArray(mainArray: Node[], subArray: Node[]): number | null { 
+        const mainLength = mainArray.length; const subLength = subArray.length; 
+       
+        for (let i = 0; i <= mainLength - subLength; i++) { let match = true;
+            for (let j = 0; j < subLength; j++) { 
+                if (mainArray[i + j].id !== subArray[j].id) { 
+                    match = false; 
+                    break; 
+                }
+             }
+             if (match) { 
+                return i; 
+            } 
+        } 
+         return null
+    }
 };
