@@ -120,7 +120,7 @@ export class InductiveMinerService {
         };
         if (!inputAccepted) {
             //const checkPC : [boolean, undefined | []] = this.checkParallelCut(inOutGraph);
-            const checkPC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc[], Arc[]]] = this.checkParallelCut(inOutGraph);
+            const checkPC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkParallelCut(inOutGraph);
             inputAccepted = checkPC[0];
             if (inputAccepted) {
                 /* TODO - part to be modified - start */
@@ -462,7 +462,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc[], Arc[]]
+        undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]
     ] {
         /* to be removed - start */
         console.log('im_service started check of parallel cut');
@@ -492,7 +492,7 @@ export class InductiveMinerService {
         }
 
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
-        const cutArcs : [Arc[], Arc[]] | undefined = this.checkCutArcsPC(inOutGraph, dfg);
+        const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsPC(inOutGraph, dfg);
         if (cutArcs === undefined) {
             /* to be removed - start */
             console.log('cut rejected on check 4');
@@ -556,7 +556,7 @@ export class InductiveMinerService {
                 )
                 if(!connected){
                     /* to be removed - start */
-                    console.log ('cut rejected because not all marked nodes are connted to unmarked nodes')
+                    console.log ('cut rejected because not all marked nodes are connected to unmarked nodes')
                     return [false, undefined]
                     /* to be removed - end */
                 }
@@ -586,8 +586,8 @@ export class InductiveMinerService {
                 const nodeA = splitM[0][i];
                 const nodeB = splitM[0][j];
                 const connected = dfg.arcs.some(
-                    arc => (arc.source === nodeA && arc.target ===nodeB)
-                        || (arc.source === nodeB && arc.target ===nodeA)
+                    arc => (arc.source === nodeA && arc.target ===nodeB && !arc.marked)
+                        || (arc.source === nodeB && arc.target ===nodeA && !arc.marked)
                 )
                 if(!connected){
                     console.log('cut rejected because not all marked nodes in dfg are connected to each other')
@@ -595,21 +595,21 @@ export class InductiveMinerService {
                 }
             }
         }
-        //check unmarked
-        for (let i = 0; i < splitU[0].length; i++){
-            for (let j = i+1 ; j < splitU[0].length; j++){
-                const nodeA = splitU[0][i];
-                const nodeB = splitU[0][j];
-                const connected = dfg.arcs.some(
-                    arc => (arc.source === nodeA && arc.target ===nodeB)
-                        || (arc.source === nodeB && arc.target ===nodeA)
-                )
-                if(!connected){
-                    console.log('cut rejected because not all unmarked nodes in dfg are connected to each other')
-                    return [false, undefined]
-                }
-            }
-        }
+        // //check unmarked
+        // for (let i = 0; i < splitU[0].length; i++){
+        //     for (let j = i+1 ; j < splitU[0].length; j++){
+        //         const nodeA = splitU[0][i];
+        //         const nodeB = splitU[0][j];
+        //         const connected = dfg.arcs.some(
+        //             arc => (arc.source === nodeA && arc.target ===nodeB && !arc.marked)
+        //                 || (arc.source === nodeB && arc.target ===nodeA && !arc.marked)
+        //         )
+        //         if(!connected){
+        //             console.log('cut rejected because not all unmarked nodes in dfg are connected to each other')
+        //             return [false, undefined]
+        //         }
+        //     }
+        // }
 
         if ((splitM[1].length) < (splitM[0].length - 1)) {
             /* to be removed - start */
@@ -2379,13 +2379,13 @@ export class InductiveMinerService {
         return [newArcOne, newArcPlace, newArcTwo];
     };
 
-    private checkCutArcsPC( inOutGraph: Graph, inDfg: DFG): [Arc[], Arc[]] | undefined{
+    private checkCutArcsPC( inOutGraph: Graph, inDfg: DFG): [Arc, Arc] | undefined{
         const startNodeArcs: Arc[] = []
         const endNodeArcs: Arc[] = []
 
         //loop through marked arcs
         for(const arc of inOutGraph.markedArcs){
-            if(arc.source === inDfg.startNode) {
+            if(arc.source === inDfg.startNode && startNodeArcs.length < 1) {
                 startNodeArcs.push(arc)
             }
 
@@ -2393,9 +2393,10 @@ export class InductiveMinerService {
                 endNodeArcs.push(arc)
             }
         }
-
-        if(startNodeArcs.length > 0 && endNodeArcs.length > 0){
-            return [startNodeArcs, endNodeArcs]
+        if(startNodeArcs.length > 1 || endNodeArcs.length > 1){
+            return undefined
+        }else if(startNodeArcs.length > 0 && endNodeArcs.length > 0){
+            return [startNodeArcs[0], endNodeArcs[0]]
         }
         return undefined
     }
@@ -2623,68 +2624,74 @@ export class InductiveMinerService {
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
 
+    public hasExclusiveCut(inDfg: DFG): boolean{
+        const startNode = inDfg.startNode;
+        const startExclusiveCut = new Set<Node>();
 
-    private generateCombinations(inDfg: DFG, inoutGraph: Graph): boolean {
-        const nodes = inDfg.nodes;
-        const arcs = inDfg.arcs;
-
-        // Generiere alle möglichen Kombinationen von markierten Knoten
-        for (let i = 0; i < (1 << nodes.length); i++) {
-            for (let j = 0; j < nodes.length; j++) {
-                //nodes[j].marked = (i & (1 << j)) !== 0;
-                nodes[j].marked = Math.random()>=0.5
-            }
-
-            // Generiere alle möglichen Kombinationen von markierten Kanten
-            for (let k = 0; k < (1 << arcs.length); k++) {
-                for (let l = 0; l < arcs.length; l++) {
-                    //arcs[l].marked = (k & (1 << l)) !== 0;
-                    arcs[l].marked = Math.random()>=0.5
-                }
-
-                // Überprüfe die aktuelle Kombination
-                let result= this.checkCuts(inDfg, inoutGraph)
-                if (result) {
-                    return result;
-                }
+        // Füge alle Nachbarknoten des Startknotens in die Menge startExclusiveCut hinzu
+        for (const arc of inDfg.arcs) {
+            if (arc.source === startNode) {
+                startExclusiveCut.add(arc.target);
             }
         }
-        return false
+
+        // Erstelle eine Liste von Mengen visitedNodes
+        const visitedNodesList: Set<Node>[] = [];
+        for (const node of startExclusiveCut) {
+            const visitedNodes = new Set<Node>();
+            visitedNodes.add(startNode);
+            visitedNodes.add(node);
+            visitedNodesList.push(visitedNodes);
+        }
+
+        // Durchlaufe jede Menge visitedNodes
+        for (const visitedNodes of visitedNodesList) {
+            const nodesToVisit = new Set<Node>(visitedNodes)
+
+            while (nodesToVisit.size > 0) {
+                const currentNode = nodesToVisit.values().next().value;
+                nodesToVisit.delete(currentNode)
+                if(currentNode === inDfg.startNode){
+                    continue
+                }
+
+                for (const arc of inDfg.arcs) {
+                    if (arc.source === currentNode && !visitedNodes.has(arc.target) && currentNode !== inDfg.endNode){
+                        visitedNodes.add(arc.target)
+                        nodesToVisit.add(arc.target)
+                    }else if(arc.target === currentNode && !visitedNodes.has(arc.source) && currentNode !== inDfg.endNode){
+                        nodesToVisit.add(arc.source)
+                        visitedNodes.add(arc.source)
+                    }
+                }
+            }
+
+            // Überprüfe, ob alle Knoten im DFG erreicht wurden
+            const allNodesVisited = inDfg.nodes.every(node => visitedNodes.has(node));
+            if (allNodesVisited) {
+                return false;
+            }
+        }
+        return true;
     }
-    public checkAllCuts(inGraph: Graph): boolean {
+
+    public checkForExistingExclusiveCut(inGraph: Graph): boolean {
         let result: boolean = false
+        //iterate through all dfg in graph
         for (const dfg of inGraph.dfgArray) {
-             result = this.generateCombinations(dfg, inGraph);
+            result = this.hasExclusiveCut(dfg)
+            if (result){
+                return result
+            }
         }
         return result
     }
 
-    private checkCuts(inDfg: DFG, inOutGraph: Graph): boolean {
-        const check : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] =
-            this.checkExclusiveCut(inOutGraph)
-        if (check[0]) {
-            return true;
-        }
-        // if (this.checkSequenceCut(inOutGraph)) {
-        //     return true;
-        // }
-        // if (this.checkParallelCut(inOutGraph)) {
-        //     return true;
-        // }
-        // if (this.checkLoopCut(inOutGraph)) {
-        //     return true;
-        // }
-        // if (this.checkBaseCase(inOutGraph)) {
-        //     return true;
-        // }
-        return false;
-    }
-
     public checkCutsAndSave(inGraph: Graph){
-        if (!this.checkAllCuts(inGraph)){
+        if (!this.checkForExistingExclusiveCut(inGraph)){
             this._toastService.showToast('No more cuts possible', 'info')
         }else{
-            this._toastService.showToast('Cuts are still possible', 'success')
+            this._toastService.showToast('Exclusive Cut still possible', 'info')
         }
     }
-};
+}
