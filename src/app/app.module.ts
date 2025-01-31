@@ -25,6 +25,7 @@ import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
 import {ToastComponent} from "./components/toast/toast.component";
 import {WeightsButtonComponent} from './components/button_display-weights/weights-button.component';
+import {NoCutPossibleButtonComponent} from "./components/button_no-more-cut-possible/no-cut-possible-button.component";
 
 @NgModule({
     declarations: [
@@ -35,25 +36,26 @@ import {WeightsButtonComponent} from './components/button_display-weights/weight
     ],bootstrap: [
         AppComponent
     ], imports: [
-    BrowserAnimationsModule,
-    BrowserModule,
-    DeleteButtonComponent,
-    EmbedderButtonComponent,
-    ExampleFileComponent,
-    InfoButtonComponent,
-    LabelsButtonComponent,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    ModeButtonComponent,
-    ReactiveFormsModule,
-    SaveButtonComponent,
-    SubmitButtonComponent,
-    SymbolsButtonComponent,
-    TextInputComponent,
-    TracesButtonComponent,
-    WeightsButtonComponent
+        BrowserAnimationsModule,
+        BrowserModule,
+        DeleteButtonComponent,
+        EmbedderButtonComponent,
+        ExampleFileComponent,
+        InfoButtonComponent,
+        LabelsButtonComponent,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        ModeButtonComponent,
+        ReactiveFormsModule,
+        SaveButtonComponent,
+        SubmitButtonComponent,
+        SymbolsButtonComponent,
+        TextInputComponent,
+        TracesButtonComponent,
+        WeightsButtonComponent,
+        NoCutPossibleButtonComponent
     ], providers: [
         {
             provide: APP_BASE_HREF,
