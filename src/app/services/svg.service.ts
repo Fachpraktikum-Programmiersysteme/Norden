@@ -69,7 +69,7 @@ export class SvgService implements OnDestroy {
             if (arc !== undefined) {
                 svgLayerOne.push(this.createSvgArc(arc, arcId));
                 if (this._weights) {
-                    svgLayerTwo.push(this.createSvgWeight(arc));
+                    svgLayerTwo.push(this.createSvgWeight(arc, arcId));
                 };
             };
             arcId++;
@@ -135,14 +135,16 @@ export class SvgService implements OnDestroy {
 
     public createSvgWeights(inGraph : Graph) : Array<SVGElement> {
         const weightSvgArray: Array<SVGElement> = [];
+        let arcId : number = 0;
         if (this._weights) {
             for (const arc of inGraph.arcs) {
                 if (arc !== undefined) {
-                    weightSvgArray.push(this.createSvgWeight(arc));
+                    weightSvgArray.push(this.createSvgWeight(arc, arcId));
                 } else {
                     /* skip undefined arc */
                 };
             };
+            arcId++;
         };
         return weightSvgArray;
     };
@@ -156,8 +158,13 @@ export class SvgService implements OnDestroy {
                     maxTraceLength = trace.length;
                 };
             };
-            const duration =  (maxTraceLength * 2);
-            const interval = (duration / (inGraph.logArray.length));
+            let duration : number = (maxTraceLength * 2);
+            let interval : number;
+            if (inGraph.logArray.length > 0) {
+                interval = (duration / (inGraph.logArray.length));
+            } else {
+                interval = 0;
+            };
             let delay : number = 0;
             for (const trace of inGraph.logArray) {
                 if (trace.length > 0) {
@@ -279,7 +286,8 @@ export class SvgService implements OnDestroy {
         const svg = this.createSvgElement('svg');
         const symbol = this.createSvgElement('text');
         const background = this.createSvgElement('text');
-        symbol.setAttribute('customType', 'node-symbol');
+        svg.setAttribute('customType', 'node-symbol');
+        svg.setAttribute('id', `${inNode.type}_${inNode.id}`);
         symbol.setAttribute('id', `${inNode.type}_${inNode.id}`);
         symbol.setAttribute('x', `${inNode.x - this.graphicsConfig.defaultNodeSymbolOffset}`);
         symbol.setAttribute('y', `${inNode.y + this.graphicsConfig.defaultNodeSymbolOffset}`);
@@ -411,6 +419,7 @@ export class SvgService implements OnDestroy {
         const text4 = this.createSvgElement('text');
         const text5 = this.createSvgElement('text');
         svg.setAttribute('customType', 'node-info-panel');
+        svg.setAttribute('id', `${inNode.type}_${inNode.id}`);
         rect.setAttribute('id', `${inNode.type}_${inNode.id}`);
         rect.setAttribute('x', `${x}`);
         rect.setAttribute('y', `${y}`);
@@ -420,6 +429,7 @@ export class SvgService implements OnDestroy {
         rect.setAttribute('stroke', this.graphicsConfig.defaultTextBoxStroke);
         rect.setAttribute('stroke-width', '2');
         rect.setAttribute('rx', '10');
+        cont.setAttribute('id', `${inNode.type}_${inNode.id}`);
         cont.setAttribute('x', `${x}`);
         cont.setAttribute('y', `${y}`);
         cont.setAttribute('width', `${this.graphicsConfig.defaultTextBoxWidth}`);
@@ -506,7 +516,12 @@ export class SvgService implements OnDestroy {
         const arcVectorX : number = ((inArc.target.x) - (inArc.source.x));
         const arcVectorY : number = ((inArc.target.y) - (inArc.source.y));
         const arcVectorLength : number = (Math.sqrt((arcVectorX * arcVectorX) + (arcVectorY * arcVectorY)));
-        const offVectorLength : number = ((this.graphicsConfig.defaultNodeRadius / 4) / arcVectorLength);
+        let offVectorLength : number;
+        if (arcVectorLength !== 0) {
+            offVectorLength = ((this.graphicsConfig.defaultNodeRadius / 4) / arcVectorLength);
+        } else {
+            offVectorLength = 0;
+        };
         const offsetX : number = (Math.floor(offVectorLength * arcVectorY * (-1)));
         const offsetY : number = (Math.floor(offVectorLength * arcVectorX));
         if (inArc.reverseExists) {
@@ -583,18 +598,29 @@ export class SvgService implements OnDestroy {
     //     return svg;
     // };
 
-    private createSvgWeight(inArc : Arc) : SVGElement {
+    private createSvgWeight(inArc : Arc, inArcId: number) : SVGElement {
         const svg: SVGElement = this.createSvgElement('text');
+        svg.setAttribute('customType', 'arc-weight');
+        svg.setAttribute('id', ('arc_' + inArcId));
+        svg.textContent = (`[${inArc.weight}]`);
         const arcVectorX : number = ((inArc.target.x) - (inArc.source.x));
         const arcVectorY : number = ((inArc.target.y) - (inArc.source.y));
         const halfVectorX : number = ((arcVectorX) / (2));
         const halfVectorY : number = ((arcVectorY) / (2));
-        const svgX : number = (Math.floor((inArc.source.x) + (halfVectorX) - (0)));
-        const svgY : number = (Math.floor((inArc.source.y) + (halfVectorY) + (0)));
+        const arcVectorLength : number = (Math.sqrt((arcVectorX * arcVectorX) + (arcVectorY * arcVectorY)));
+        let offVectorLength : number;
+        if (arcVectorLength !== 0) {
+            offVectorLength = ((this.graphicsConfig.defaultNodeRadius / 2) / arcVectorLength);
+        } else {
+            offVectorLength = 0;
+        };
+        const offsetX : number = (Math.floor(offVectorLength * arcVectorY * (-1)));
+        const offsetY : number = (Math.floor(offVectorLength * arcVectorX));
+        const svgX : number = (Math.floor((inArc.source.x) + (halfVectorX) + (offsetX) - (svg.textContent.length * 3)));
+        const svgY : number = (Math.floor((inArc.source.y) + (halfVectorY) + (offsetY)));
         svg.setAttribute('x', `${svgX}`);
         svg.setAttribute('y', `${svgY}`);
         svg.setAttribute('fill', 'Black');
-        svg.textContent = (`[${inArc.weight}]`);
         return svg;
     };
 

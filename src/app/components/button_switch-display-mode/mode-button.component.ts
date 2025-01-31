@@ -43,9 +43,9 @@ export class ModeButtonComponent {
 
     public get tooltip() : string {
         if (this._mode === 'dfg') {
-            return 'switch display mode to highlight the latest cut\'s changes' + '\n' + '(currently highlighting DFG\'s)';
+            return 'switch display mode to highlight the latest cut\'s changes';
         } else {
-            return 'switch display mode to highlighting DFG\'s' + '\n' + '(currently highlighting the latest cut\'s changes)';
+            return 'switch display mode to highlight DFG\'s';
         }
     };
 

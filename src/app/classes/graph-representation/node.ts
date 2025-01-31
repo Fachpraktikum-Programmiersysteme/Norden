@@ -111,10 +111,6 @@ export class Node {
         return this._marked;
     };
 
-    public get unmarked() : boolean {
-        return !this._marked;
-    };
-
     public get active() : boolean {
         return this._active;
     };

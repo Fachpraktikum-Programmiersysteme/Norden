@@ -117,9 +117,8 @@ export class Graph {
     };
 
     public get unmarkedNodes(): Array<Node>{
-        return this._nodes.filter(node => node !== undefined && node.unmarked) as Array<Node>
+        return this._nodes.filter(node => ((node !== undefined) && (!(node.marked)))) as Array<Node>
     }
-
 
     public get markedArcs() : Array<Arc> {
         return this._markedArcs;
