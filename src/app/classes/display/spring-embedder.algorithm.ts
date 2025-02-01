@@ -95,7 +95,12 @@ export class SpringEmbedderAlgorithm {
 
             iteration++;
         }
-
+        graph.nodes.forEach(node => {
+            if (node) {
+                node.x = Math.round(node.x);
+                node.y = Math.round(node.y);
+            }
+        })
         return graph;
     }
 
