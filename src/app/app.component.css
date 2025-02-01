@@ -19,7 +19,7 @@
 }
 
 .container_log {
-    width : 80%; 
+    width : 80%;
 }
 
 .container_out {
@@ -52,6 +52,12 @@
     flex-direction : row;
     justify-content : space-evenly;
     align-items : flex-start;
+}
+
+.scrollable{
+    max-height: 400px;
+    overflow-y: auto;
+    padding-top: 4px;
 }
 
 .gap_h_30px {
