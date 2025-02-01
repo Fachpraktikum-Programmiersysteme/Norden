@@ -9,10 +9,10 @@ import {Arc} from '../graph-representation/arc';
     providedIn: 'root', // Makes it available application-wide
 })
 export class SpringEmbedderAlgorithm {
-    private readonly SPRING_CONSTANT = 0.01;
-    private readonly REPULSION_CONSTANT = 100;
+    private readonly SPRING_CONSTANT = 0.004;
+    private readonly REPULSION_CONSTANT = 50;
     private readonly DAMPING_FACTOR = 0.9;
-    private readonly MAX_ITERATIONS = 1000;
+    private readonly MAX_ITERATIONS = 20000;
 
     public constructor(
         private graphicsConfig: GraphGraphicsConfig
@@ -23,7 +23,7 @@ export class SpringEmbedderAlgorithm {
         let iteration = 0;
         let maxMovement = Infinity;
 
-        this.initializeNodePositions(graph, this.graphicsConfig.canvasWidth, this.graphicsConfig.canvasHeight)
+        // this.initializeNodePositions(graph, this.graphicsConfig.canvasWidth, this.graphicsConfig.canvasHeight)
 
         while (iteration < this.MAX_ITERATIONS && maxMovement > 0.1) {
             const forces: Map<Node, { x: number; y: number }> = new Map();
@@ -80,9 +80,14 @@ export class SpringEmbedderAlgorithm {
 
                 const dx = force.x * this.DAMPING_FACTOR;
                 const dy = force.y * this.DAMPING_FACTOR;
-
-                node.x += dx;
-                node.y += dy;
+                const newX = node.x + dx;
+                const newY = node.y + dy;
+                if ((newX > node.x || newX > 20) && (newX < node.x || newX < this.graphicsConfig.canvasWidth - 22)) {
+                    node.x  = newX;
+                }
+                if ((newY > node.y || newY > 22) && (newY < node.y || newY < this.graphicsConfig.canvasHeight - 22)){
+                    node.y = newY;
+                }
 
                 const movement = Math.sqrt(dx * dx + dy * dy);
                 if (movement > maxMovement) maxMovement = movement;

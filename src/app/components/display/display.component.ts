@@ -682,7 +682,7 @@ export class DisplayComponent implements OnDestroy {
             this._graph = this._renderAlgorithm.applyLayout(this._graph);
             const canvasWidth = this.drawingArea.nativeElement.clientWidth;
             const canvasHeight = this.drawingArea.nativeElement.clientHeight;
-            this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
+            //this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
         };
         this.clearDrawingArea();
         const svgLayers : [SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
