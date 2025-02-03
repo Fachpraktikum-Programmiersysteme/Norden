@@ -744,7 +744,7 @@ export class InductiveMinerService {
         }
         return [false, undefined];
       };
-                
+
      private checkLoopInternal(
         inOutGraph: Graph,
         A1: Node[],
@@ -5715,7 +5715,7 @@ export class InductiveMinerService {
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
 
-    
+
     private areArraysEqualById(arrayOne: Node[], arrayTwo: Node[]): boolean {
         if (arrayOne.length !== arrayTwo.length) {
             return false;
@@ -5734,20 +5734,20 @@ export class InductiveMinerService {
         });
     }
 
-    private findSubArray(mainArray: Node[], subArray: Node[]): number | null { 
-        const mainLength = mainArray.length; const subLength = subArray.length; 
-       
+    private findSubArray(mainArray: Node[], subArray: Node[]): number | null {
+        const mainLength = mainArray.length; const subLength = subArray.length;
+
         for (let i = 0; i <= mainLength - subLength; i++) { let match = true;
-            for (let j = 0; j < subLength; j++) { 
-                if (mainArray[i + j].id !== subArray[j].id) { 
-                    match = false; 
-                    break; 
+            for (let j = 0; j < subLength; j++) {
+                if (mainArray[i + j].id !== subArray[j].id) {
+                    match = false;
+                    break;
                 }
              }
-             if (match) { 
-                return i; 
-            } 
-        } 
+             if (match) {
+                return i;
+            }
+        }
          return null
     }
 
@@ -5803,6 +5803,7 @@ export class InductiveMinerService {
         }
         return true;
     }
+
     public hasParallelCut(inDfg: DFG): boolean{
         const startNode = inDfg.startNode;
         const endNode = inDfg.endNode;
@@ -5949,6 +5950,72 @@ export class InductiveMinerService {
         return true;
     }
 
+    public hasLoopCut(inGraph: Graph, inDfg: DFG): boolean{
+        const startNode = inDfg.startNode;
+        const endNode = inDfg.endNode;
+        const arcs = inDfg.arcs;
+
+        const redoSet = this.findNodesBetweenDuplicatesInArrays(inDfg.log)
+        console.log(redoSet)
+        //mark nodes of redo part
+        for (let node of inDfg.nodes){
+            if(redoSet.has(node)){
+                node.marked = true
+                inGraph.markedNodes.push(node)
+            }
+        }
+        //mark arcs to and from redo part
+        this.markArcsOfRedoPart(redoSet, inDfg.arcs, inGraph)
+        const checkLC: [boolean, undefined | [DFG, Node[], Node[], Node[], Node[]]] = this.checkLoopCut(inGraph)
+        return checkLC[0]
+    }
+
+    private markArcsOfRedoPart(redoSet: Set<Node>, arcs: Arc[], inGraph: Graph): void{
+        arcs.filter(arc => {
+            const isRelevant = redoSet.has(arc.source) || redoSet.has(arc.target)
+            if(isRelevant){
+                arc.marked = true
+                inGraph.markedArcs.push(arc)
+            }
+        })
+    }
+
+    private findNodesBetweenDuplicatesInArrays<Nodes>(nodesLog: Nodes[][]): Set<Nodes> {
+        const resultSet = new Set<Nodes>();
+
+        nodesLog.forEach(nodes => {
+            const nodeCounts = new Map<Nodes,number>();
+
+            nodes.forEach(node => {
+                nodeCounts.set(node,(nodeCounts.get(node) || 0) + 1)
+            })
+
+
+            const seenElements = new Map<Nodes, number>();
+            const elementsToExclude = new Set<Nodes>()
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                if (nodeCounts.get(node)! > 1) {
+                    if (seenElements.has(node)) {
+                        const startIndex = seenElements.get(node)!;
+                        for (let j = startIndex + 1; j < i; j++) {
+                            if (nodeCounts.get(nodes[j]) === 1) {
+                                resultSet.add(nodes[j])
+                            }
+                        }
+                    }
+                    seenElements.set(node, i)
+                }
+            }
+        })
+
+        return resultSet;
+    }
+
+
+
+
     public checkForExistingExclusiveCut(inGraph: Graph): boolean {
         let result: boolean = false
         //iterate through all dfg in graph
@@ -5973,15 +6040,29 @@ export class InductiveMinerService {
         return result
     }
 
+    public checkForExistingLoopCut(inGraph: Graph): boolean {
+        let result: boolean = false
+        //iterate through all dfg in graph
+        for (const dfg of inGraph.dfgArray) {
+            result = this.hasLoopCut(inGraph, dfg)
+            if (result){
+                return result
+            }
+        }
+        return result
+    }
+
     public checkCutsAndSave(inGraph: Graph){
-        // if (this.checkForExistingExclusiveCut(inGraph)){
-        //     this._toastService.showToast('Exclusive cut is still possible', 'info')
-        //     return
-        // }
-        if (!this.checkForExistingParallelCut(inGraph)){
-            this._toastService.showToast('Parallel cut is not possible', 'info')
-        }else{
+        if (this.checkForExistingExclusiveCut(inGraph)){
+            this._toastService.showToast('Exclusive cut is still possible', 'info')
+            return
+        }
+        if (this.checkForExistingParallelCut(inGraph)){
             this._toastService.showToast('Parallel cut is still possible', 'info')
+            return
+        }
+        if (this.checkForExistingLoopCut(inGraph)){
+            this._toastService.showToast('Loop cut is still possible', 'info')
             return
         }
 
