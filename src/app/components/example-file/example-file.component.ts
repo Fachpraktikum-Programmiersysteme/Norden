@@ -53,25 +53,25 @@ export class ExampleFileComponent {
     private prevent(inEvent: Event) {
         inEvent.preventDefault();
         inEvent.stopPropagation();
-    }
+    };
 
     public processMouseEnter(inEvent: MouseEvent) {
         this.prevent(inEvent);
         this.dragInProgress = false;
         const target = (inEvent.target as HTMLElement);
         target.classList.add('mouse-hover');
-    }
+    };
 
     public processMouseLeave(inEvent: MouseEvent) {
         this.prevent(inEvent);
         const target = (inEvent.target as HTMLElement);
         target.classList.remove('mouse-hover');
-    }
+    };
 
     public processDragEvent(inEvent: DragEvent) {
         this.dragInProgress = true;
         inEvent.dataTransfer!.effectAllowed = 'link';
         inEvent.dataTransfer!.setData(ExampleFileComponent.META_DATA_CODE, this.link);
-    }
+    };
 
-}
+};

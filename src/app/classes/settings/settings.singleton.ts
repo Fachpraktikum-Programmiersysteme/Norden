@@ -2,8 +2,10 @@ import {Injectable} from '@angular/core';
 
 import {BehaviorSubject, Observable} from 'rxjs';
 
-export interface DisplaySettings {
-    mode: 'dfg' | 'changes';
+export interface Settings {
+    displayMode: 'dfg' | 'changes';
+    checkMode: 'ec' | 'sc' | 'pc' | 'lc' | 'bc' | 'ft';
+    basecaseMode: 'auto' | 'manual';
     resetInputForm: boolean;
     nodeInfosDisabled: boolean;
     nodeLabelsDisabled: boolean;
@@ -14,12 +16,14 @@ export interface DisplaySettings {
 }
 
 @Injectable({ providedIn: 'root' })
-export class DisplaySettingsSingleton {
+export class SettingsSingleton {
 
     /* attributes */
 
-    private stateSubject = new BehaviorSubject<DisplaySettings>({
-        mode: 'dfg',
+    private stateSubject = new BehaviorSubject<Settings>({
+        displayMode: 'dfg',
+        checkMode: 'ec',
+        basecaseMode: 'auto',
         resetInputForm: false,
         nodeInfosDisabled: true,
         nodeLabelsDisabled: true,
@@ -29,18 +33,19 @@ export class DisplaySettingsSingleton {
         traceAnimationsDisabled: true,
     });
 
-    public state$: Observable<DisplaySettings> = this.stateSubject.asObservable();
+    public state$: Observable<Settings> = this.stateSubject.asObservable();
 
     /* methods - getters */
     
-    get currentState(): DisplaySettings {
+    get currentState(): Settings {
         return this.stateSubject.getValue();
     };
 
     /* methods - other */
 
-    updateState(newState: Partial<DisplaySettings>): void {
+    updateState(newState: Partial<Settings>): void {
         const updatedState = { ...this.currentState, ...newState };
         this.stateSubject.next(updatedState);
     };
+    
 };

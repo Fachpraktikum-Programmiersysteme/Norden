@@ -131,4 +131,5 @@ export class GraphGraphicsConfig {
             return 'Black'
         };
     };
-}
+
+};

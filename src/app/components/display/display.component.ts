@@ -10,7 +10,7 @@ import {SvgService} from '../../services/svg.service';
 import {ExampleFileComponent} from "../example-file/example-file.component";
 
 import {SpringEmbedderAlgorithm} from "../../classes/display/spring-embedder.algorithm";
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 import {Graph} from '../../classes/graph-representation/graph';
 import {Node} from '../../classes/graph-representation/node';
 import {Arc} from '../../classes/graph-representation/arc';
@@ -68,7 +68,7 @@ export class DisplayComponent implements OnDestroy {
         private _displayService: DisplayService,
         private _fileReaderService: FileReaderService,
         private _renderAlgorithm: SpringEmbedderAlgorithm,
-        private _displaySettings: DisplaySettingsSingleton,
+        private _settings: SettingsSingleton,
         private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
@@ -568,7 +568,7 @@ export class DisplayComponent implements OnDestroy {
         } else {
             this.readFile(inEvent.dataTransfer?.files);
         };
-        this._displaySettings.updateState({ resetInputForm : true });
+        this._settings.updateState({ resetInputForm : true });
     };
 
     public prevent(inEvent: DragEvent): void {
@@ -678,7 +678,7 @@ export class DisplayComponent implements OnDestroy {
             console.debug('drawing area not ready yet');
             return;
         };
-        if (!(this._displaySettings.currentState.springEmbedderDisabled)) {
+        if (!(this._settings.currentState.springEmbedderDisabled)) {
             this._graph = this._renderAlgorithm.applyLayout(this._graph);
             const canvasWidth = this.drawingArea.nativeElement.clientWidth;
             const canvasHeight = this.drawingArea.nativeElement.clientHeight;

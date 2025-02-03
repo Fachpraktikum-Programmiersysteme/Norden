@@ -7,7 +7,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 
 import {Subscription} from 'rxjs';
 
-import {DisplaySettingsSingleton} from 'src/app/classes/display/display-settings.singleton';
+import {SettingsSingleton} from 'src/app/classes/settings/settings.singleton';
 
 @Component({
     selector: 'text-input',
@@ -37,15 +37,15 @@ export class TextInputComponent implements OnDestroy {
     /* methods - constructor */
 
     public constructor(
-        private _displaySettings : DisplaySettingsSingleton
+        private _settings : SettingsSingleton
     ) {
         this.textData = new EventEmitter<[string, string]>();
         this._inputText = '';
-        this._sub = this._displaySettings.state$.subscribe(
+        this._sub = this._settings.state$.subscribe(
             state => {
                 if (state.resetInputForm) {
                     this._inputText = '';
-                    this._displaySettings.updateState({ resetInputForm : false });
+                    this._settings.updateState({ resetInputForm : false });
                 };
             }
         );
@@ -71,7 +71,7 @@ export class TextInputComponent implements OnDestroy {
 
     /* methods - other */
 
-   public processFormSubmit(inEvent : SubmitEvent) : void {
+    public processFormSubmit(inEvent : SubmitEvent) : void {
         inEvent.preventDefault();
         this.emitTextData(this._inputText);
         /* to be removed - start */

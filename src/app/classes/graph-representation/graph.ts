@@ -25,7 +25,6 @@ export class Graph {
     private _dfgMax : number;
 
     private _markedNodes : Array<Node>;
-    private _unmarkedNodes: Array<Node>
     private _markedArcs : Array<Arc>;
 
     private _changedNodes : Array<Node>;
@@ -53,7 +52,6 @@ export class Graph {
         this._dfgCount = 0;
         this._dfgMax = 0;
         this._markedNodes = [];
-        this._unmarkedNodes = [];
         this._markedArcs = [];
         this._changedNodes = [];
         this._changedArcs = [];

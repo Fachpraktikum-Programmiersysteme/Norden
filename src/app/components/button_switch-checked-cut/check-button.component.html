@@ -1,0 +1,43 @@
+<mat-button-toggle-group
+    name="CheckMode" 
+    aria-label="Switch Checked Mode" 
+    value="ec" 
+    [matTooltip]="tooltip"
+>
+    <mat-button-toggle 
+        value="ec" 
+        (click)="processMouseClickA($event)"
+    >
+        EC
+    </mat-button-toggle>
+    <mat-button-toggle 
+        value="sc" 
+        (click)="processMouseClickB($event)"
+    >
+        SC
+    </mat-button-toggle>
+    <mat-button-toggle 
+        value="pc" 
+        (click)="processMouseClickC($event)"
+    >
+        PC
+    </mat-button-toggle>
+    <mat-button-toggle 
+        value="lc" 
+        (click)="processMouseClickD($event)"
+    >
+        LC
+    </mat-button-toggle>
+    <mat-button-toggle 
+        value="bc" 
+        (click)="processMouseClickE($event)"
+    >
+        BC
+    </mat-button-toggle>
+    <mat-button-toggle 
+        value="ft" 
+        (click)="processMouseClickF($event)"
+    >
+        FT
+    </mat-button-toggle>
+</mat-button-toggle-group>

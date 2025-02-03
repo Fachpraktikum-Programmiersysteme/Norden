@@ -7,12 +7,12 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'labels-button',
-    templateUrl: './labels-button.component.html',
-    styleUrls: ['./labels-button.component.css'],
+    selector: 'weights-button',
+    templateUrl: './weights-button.component.html',
+    styleUrls: ['./weights-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class LabelsButtonComponent implements OnDestroy {
+export class WeightsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,18 +29,18 @@ export class LabelsButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _labelsDisabled : boolean;
+    private _weightsDisabled : boolean;
 
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._labelsDisabled = true;
+        this._weightsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class LabelsButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get labelsDisabled() : boolean {
-        return this._labelsDisabled;
+    public get weightsDisabled() : boolean {
+        return this._weightsDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class LabelsButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._labelsDisabled) {
-                return 'display node labels';
+            if (this._weightsDisabled) {
+                return 'display arc weights';
             } else {
-                return 'hide node labels';
+                return 'hide arc weights';
             };
         };
     };
@@ -89,13 +89,13 @@ export class LabelsButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._labelsDisabled = !(this._labelsDisabled);
-        this._displaySettings.updateState({ nodeLabelsDisabled: this._labelsDisabled });
+        this._weightsDisabled = !(this._weightsDisabled);
+        this._settings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
-        if (this._labelsDisabled) {
-            this._toastService.showToast('node labels hidden', 'info');
+        if (this._weightsDisabled) {
+            this._toastService.showToast('arc weights hidden', 'info');
         } else {
-            this._toastService.showToast('node labels shown', 'info');
+            this._toastService.showToast('arc weights shown', 'info');
         };
     };
 

@@ -1,26 +1,25 @@
 import {Component, OnDestroy} from '@angular/core';
-// import {MatFabButton} from "@angular/material/button";
+//import {MatFabButton} from "@angular/material/button";
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
 
-import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {InductiveMinerService} from '../../services/inductive-miner.service';
 
 @Component({
-    selector: 'info-button',
-    templateUrl: './info-button.component.html',
-    styleUrls: ['./info-button.component.css'],
+    selector: 'search-button',
+    templateUrl: './search-button.component.html',
+    styleUrls: ['./search-button.component.css'],
     standalone: true,
     imports: [
-        // MatFabButton,
+        //MatFabButton,
         MatIconModule,
         MatTooltipModule
     ]
 })
-export class InfoButtonComponent implements OnDestroy {
+export class SearchButtonComponent implements OnDestroy{
 
     /* attributes */
 
@@ -28,33 +27,35 @@ export class InfoButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
     private _graphEmpty : boolean;
-
-    private _overrideDisabled : boolean;
+    private _minerTerminated : boolean;
 
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _minerService : InductiveMinerService,
         private _displayService : DisplayService,
-        private _toastService : ToastService,
-    ) {
+    ){
         this._disabled = true;
         this._graphEmpty = false;
-        this._overrideDisabled = true;
+        this._minerTerminated = false
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
                     this._graphEmpty = true;
+                    this._minerTerminated = false;
+                } else if (this._minerService.checkTermination(graph)) {
+                    this._disabled = true;
+                    this._graphEmpty = false;
+                    this._minerTerminated = true;
                 } else {
                     this._disabled = false;
                     this._graphEmpty = false;
+                    this._minerTerminated = false;
                 }
             }
         );
     };
-
-    /* methods - on destroy */
 
     ngOnDestroy(): void {
         this._sub.unsubscribe();
@@ -66,37 +67,24 @@ export class InfoButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get overrideDisabled() : boolean {
-        return this._overrideDisabled;
-    };
-
     public get tooltip() : string {
         if (this._disabled) {
             if (this._graphEmpty) {
                 return '[disabled] - (graph empty)';
+            } else if (this._minerTerminated) {
+                return '[disabled] - (miner terminated)';
             } else {
                 return '[currently disabled]';
             };
         } else {
-            if (this._overrideDisabled) {
-                return 'display all node information';
-            } else {
-                return 'hide all node information';
-            };
+            return 'search for cuts';
         };
     };
 
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._overrideDisabled = !(this._overrideDisabled);
-        this._displaySettings.updateState({ nodeInfosDisabled: this._overrideDisabled });
-        this._displayService.refreshData();
-        if (this._overrideDisabled) {
-            this._toastService.showToast('node information hidden', 'info');
-        } else {
-            this._toastService.showToast('node information shown', 'info');
-        };
+        this._minerService.testCutSearch(this._displayService.graph);
     };
 
 };

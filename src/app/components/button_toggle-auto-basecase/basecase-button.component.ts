@@ -7,12 +7,12 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'weights-button',
-    templateUrl: './weights-button.component.html',
-    styleUrls: ['./weights-button.component.css'],
+    selector: 'basecase-button',
+    templateUrl: './basecase-button.component.html',
+    styleUrls: ['./basecase-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class WeightsButtonComponent implements OnDestroy {
+export class BaseCaseButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,18 +29,18 @@ export class WeightsButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _weightsDisabled : boolean;
+    private _automationDisabled : boolean;
 
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._weightsDisabled = true;
+        this._automationDisabled = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class WeightsButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get weightsDisabled() : boolean {
-        return this._weightsDisabled;
+    public get automationDisabled() : boolean {
+        return this._automationDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class WeightsButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._weightsDisabled) {
-                return 'display arc weights';
+            if (this._automationDisabled) {
+                return 'automatically convert Base Cases';
             } else {
-                return 'hide arc weights';
+                return 'disable automatic Base Case conversion';
             };
         };
     };
@@ -89,13 +89,17 @@ export class WeightsButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._weightsDisabled = !(this._weightsDisabled);
-        this._displaySettings.updateState({ arcWeightsDisabled: this._weightsDisabled });
-        this._displayService.refreshData();
-        if (this._weightsDisabled) {
-            this._toastService.showToast('arc weights hidden', 'info');
+        this._automationDisabled = !(this._automationDisabled);
+        if (this._automationDisabled) {
+            this._settings.updateState({ basecaseMode: 'manual' });
         } else {
-            this._toastService.showToast('arc weights shown', 'info');
+            this._settings.updateState({ basecaseMode: 'auto' });
+        };
+        this._displayService.refreshData();
+        if (this._automationDisabled) {
+            this._toastService.showToast('automatic Base Case conversion disabled', 'info');
+        } else {
+            this._toastService.showToast('automatic Base Case conversion enabled', 'info');
         };
     };
 
