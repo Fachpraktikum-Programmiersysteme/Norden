@@ -9,22 +9,26 @@ export class GraphGraphicsConfig {
 
     /* attributes */
 
-    /* canvas dimensions */
+    /* dimensions of the canvas */
     readonly canvasWidth: number = 1800;
     readonly canvasHeight: number = 600;
 
-    /* node and arc dimensions */
+    /* dimensions of nodes, arcs, arrowheads & animated trace objects */
     readonly defaultNodeRadius: number = 20;
-    readonly defaultArrowRadius: number = 2;
-    readonly defaultTraceRadius: number = 7;
-    readonly defaultStrokeWidth: number = 5;
 
-    /* textbox dimensions */
+    readonly defaultStrokeWidth: number = 5;
+    
+    readonly defaultArrowRadius: number = 2;
+
+    readonly defaultTraceRadius: number = 7;
+
+    /* dimensions of nodeinfo-textboxes */
     readonly defaultTextBoxWidth: number = 400;
     readonly defaultTextBoxHeight: number = 90;
-    readonly defaultMaxTextWidth: number = Math.floor(
-        Math.ceil(this.defaultTextBoxWidth - this.defaultTextBoxWidth / 10) / 10
-    );
+    readonly defaultMaxTextWidth: number = Math.floor(Math.ceil(this.defaultTextBoxWidth - (this.defaultTextBoxWidth / 10)) / 10);
+
+    /* offset for symbols displayed directly on top of node objects */
+    readonly defaultNodeSymbolOffset: number = (0.3 * this.defaultNodeRadius);
 
     /* default delay between animations */
     // readonly defaultAnimationDelay : number = 2;
@@ -127,4 +131,5 @@ export class GraphGraphicsConfig {
             return 'Black'
         };
     };
-}
+
+};

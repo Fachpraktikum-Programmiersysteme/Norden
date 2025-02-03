@@ -10,9 +10,9 @@ import {DisplayService} from '../../services/display.service';
 import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'embedder-button',
-    templateUrl: './embedder-button.component.html',
-    styleUrls: ['./embedder-button.component.css'],
+    selector: 'labels-button',
+    templateUrl: './labels-button.component.html',
+    styleUrls: ['./labels-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {SettingsSingleton} from "../../classes/settings/settings.singleton";
         MatTooltipModule
     ]
 })
-export class EmbedderButtonComponent implements OnDestroy {
+export class LabelsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,7 +29,7 @@ export class EmbedderButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _embedderDisabled : boolean;
+    private _labelsDisabled : boolean;
 
     /* methods - constructor */
 
@@ -40,7 +40,7 @@ export class EmbedderButtonComponent implements OnDestroy {
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._embedderDisabled = true;
+        this._labelsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class EmbedderButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get embedderDisabled() : boolean {
-        return this._embedderDisabled;
+    public get labelsDisabled() : boolean {
+        return this._labelsDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class EmbedderButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._embedderDisabled) {
-                return 'automatically arrange graph';
+            if (this._labelsDisabled) {
+                return 'display node labels';
             } else {
-                return 'disable graph arrangement';
+                return 'hide node labels';
             };
         };
     };
@@ -89,13 +89,13 @@ export class EmbedderButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._embedderDisabled = !(this._embedderDisabled);
-        this._settings.updateState({ springEmbedderDisabled: this._embedderDisabled });
+        this._labelsDisabled = !(this._labelsDisabled);
+        this._settings.updateState({ nodeLabelsDisabled: this._labelsDisabled });
         this._displayService.refreshData();
-        if (this._embedderDisabled) {
-            this._toastService.showToast('automatic graph arrangement disabled', 'info');
+        if (this._labelsDisabled) {
+            this._toastService.showToast('node labels hidden', 'info');
         } else {
-            this._toastService.showToast('automatic graph arrangement enabled', 'info');
+            this._toastService.showToast('node labels shown', 'info');
         };
     };
 

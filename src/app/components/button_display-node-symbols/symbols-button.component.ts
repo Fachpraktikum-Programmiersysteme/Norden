@@ -7,12 +7,12 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'info-button',
-    templateUrl: './info-button.component.html',
-    styleUrls: ['./info-button.component.css'],
+    selector: 'symbols-button',
+    templateUrl: './symbols-button.component.html',
+    styleUrls: ['./symbols-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class InfoButtonComponent implements OnDestroy {
+export class SymbolsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,18 +29,18 @@ export class InfoButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _overrideDisabled : boolean;
+    private _symbolsDisabled : boolean;
 
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._overrideDisabled = true;
+        this._symbolsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class InfoButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get overrideDisabled() : boolean {
-        return this._overrideDisabled;
+    public get symbolsDisabled() : boolean {
+        return this._symbolsDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class InfoButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._overrideDisabled) {
-                return 'display all node information';
+            if (this._symbolsDisabled) {
+                return 'display node symbols';
             } else {
-                return 'hide all node information';
+                return 'hide node symbols';
             };
         };
     };
@@ -89,13 +89,13 @@ export class InfoButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._overrideDisabled = !(this._overrideDisabled);
-        this._displaySettings.updateState({ infoOverrideDisabled: this._overrideDisabled });
+        this._symbolsDisabled = !(this._symbolsDisabled);
+        this._settings.updateState({ nodeSymbolsDisabled: this._symbolsDisabled });
         this._displayService.refreshData();
-        if (this._overrideDisabled) {
-            this._toastService.showToast('node information hidden', 'info');
+        if (this._symbolsDisabled) {
+            this._toastService.showToast('node symbols hidden', 'info');
         } else {
-            this._toastService.showToast('node information shown', 'info');
+            this._toastService.showToast('node symbols shown', 'info');
         };
     };
 

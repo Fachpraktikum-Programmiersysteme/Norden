@@ -11,212 +11,223 @@
         Matthäus Müller, Alexander Reuter, Senai Tesfamicael & Florian Vossler
     </h2>
 
-    <!--    Main content    -->
-    <!-- Toast -->
+    <!--    Main Content    -->
+
+    <!-- toast -->
     <div *ngFor="let toast of toastMessages">
-        <app-toast [message]="toast.message" [type]="toast.type" [duration]="toast.duration"></app-toast>
+        <app-toast [message]="toast.message" [type]="toast.type" [duration]="toast.duration">
+        </app-toast>
     </div>
+
+    <!-- canvas -->
     <app-display
         id="canvas"
         class="padding full-size"
         (fileData)="processSourceChange($event)"
     >
     </app-display>
+
+    <!-- vertical gap of 60 px -->
     <div
-    class="gap_30px_v"
+        class="gap_v_60px"
     >
     </div>
+
+    <!-- display controls, text input, draggable example & log view -->
     <div
-        class="flexRowAlignSpaceEvenlyStart"
+        class="flexRowAlignSpaceBetweenStart"
     >
-        <mat-form-field
-            appearance="outline"
-            class="logContainer"
-        >
-            <mat-label>
-                Event Log (detailed view)
-            </mat-label>
-            <div
-                appearance="outline"
-                class="logContainer"
-            >
-                <textarea
-                    matInput
-                    cdkTextareaAutosize
-                >
-                </textarea>
-                @for (trace of logArray; track trace.id) {
-                    @if ($last) {
-                        <li>
-                        @for (event of trace.events; track event.id) {
-                            @if ($first) {
-                                "<font color={{event.color}}>{{event.label}}</font>"
-                            } @else {
-                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
-                            }
-                        }
-                        </li>
-                    } @else {
-                        <li>
-                            @for (event of trace.events; track event.id) {
-                                @if ($first) {
-                                    "<font color={{event.color}}>{{event.label}}</font>"
-                                } @else {
-                                    <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
-                                }
-                            }
-                            <font> + </font>
-                        </li>
-                    }
-                } @empty {
-                    (no log available)
-                }
-                <textarea
-                    matInput
-                    cdkTextareaAutosize
-                >
-                </textarea>
-            </div>
-        </mat-form-field>
-        <text-input
-            class="inputConatiner"
-            (textData)="processSourceChange($event)"
-        >
-        </text-input>
         <div
-            class="flexColumnAlignStartStretch"
+            class="container_inout"
         >
             <div
-                class="flexRowAlignSpaceEvenlyStart"
+                class="flexRowAlignSpaceBetweenStart"
+            >
+                <app-example-file
+                    title="An example Event Log of Teleclaims processes, stored as a .xes file."
+                    label="Teleclaims Event Log"
+                    link="assets/example-files/logs__Teleclaims_Example_(modified).xes"
+                >
+                </app-example-file>
+                <app-example-file
+                    title="An example Event Log of Workshop processes, stored as a .xes file."
+                    label="Workshop Event Log"
+                    link="assets/example-files/logs__Workshop_Organisation_(6.1.2).xes"
+                >
+                </app-example-file>
+                <app-example-file
+                    title="An example Graph containing an Exclusive Cut, stored as a .json file."
+                    label="Exclusive Cut"
+                    link="assets/example-files/cuts__Exclusive_Cut.json"
+                >
+                </app-example-file>
+                <app-example-file
+                    title="An example Graph containing a Sequence Cut, stored as a .json file."
+                    label="Sequence Cut"
+                    link="assets/example-files/cuts__Sequence_Cut.json"
+                >
+                </app-example-file>
+                <app-example-file
+                    title="An example Graph containing a Parallel Cut, stored as a .json file."
+                    label="Parallel Cut"
+                    link="assets/example-files/cuts__Parallel_Cut.json"
+                >
+                </app-example-file>
+                <app-example-file
+                    title="An example Graph containing a Loop Cut, stored as a .json file."
+                    label="Loop Cut"
+                    link="assets/example-files/cuts__Loop_Cut.json"
+                >
+                </app-example-file>
+            </div>
+            <div
+                class="gap_v_40px"
+            >
+            </div>
+            <div
+                class="flexRowAlignSpaceBetweenStart"
+            >
+                <mat-form-field
+                    appearance="outline"
+                    class="container_log"
+                >
+                    <mat-label>
+                        Event Log (detailed view)
+                    </mat-label>
+                    <div
+                        appearance="outline"
+                        class="container_log"
+                    >
+                        <textarea
+                            matInput
+                            cdkTextareaAutosize
+                        >
+                        </textarea>
+                        @for (trace of logArray; track trace.id) {
+                            @if ($last) {
+                                <li>
+                                @for (event of trace.events; track event.id) {
+                                    @if ($first) {
+                                        "<font color={{event.color}}>{{event.label}}</font>"
+                                    } @else {
+                                        <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                    }
+                                }
+                                </li>
+                            } @else {
+                                <li>
+                                    @for (event of trace.events; track event.id) {
+                                        @if ($first) {
+                                            "<font color={{event.color}}>{{event.label}}</font>"
+                                        } @else {
+                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                        }
+                                    }
+                                    <font> + </font>
+                                </li>
+                            }
+                        } @empty {
+                            (no log available)
+                        }
+                        <textarea
+                            matInput
+                            cdkTextareaAutosize
+                        >
+                        </textarea>
+                    </div>
+                </mat-form-field>
+                <text-input
+                    class="container_in"
+                    (textData)="processSourceChange($event)"
+                >
+                </text-input>
+            </div>
+        </div>
+        <div
+            class="container_controls"
+        >
+            <check-button>
+            </check-button>
+            <div
+                class="gap_v_40px"
+            >
+            </div>
+            <div
+                class="flexRowAlignSpaceBetweenStart"
             >
                 <save-button>
                 </save-button>
                 <delete-button>
                 </delete-button>
                 <div
-                class="gap_40px_h"
+                    class="gap_h_40px"
                 >
                 </div>
+                <div
+                    class="gap_h_40px"
+                >
+                </div>
+                <div
+                    class="gap_h_40px"
+                >
+                </div>
+                <search-button>
+                </search-button>
+                <basecase-button>
+                </basecase-button>
                 <submit-button>
                 </submit-button>
             </div>
             <div
-                class="gap_40px_v"
+                class="gap_v_60px"
             >
             </div>
             <div
-                class="flexRowAlignSpaceEvenlyStart"
+                class="flexRowAlignSpaceBetweenEnd"
             >
-                <embedder-button>
-                </embedder-button>
-                <traces-button>
-                </traces-button>
-                <info-button>
-                </info-button>
-                <weight-button>
-                </weight-button>
+                <div
+                    class="flexColumnAlignStartStretch"
+                >
+                    <div
+                        class="flexRowAlignStartStart"
+                    >
+                        <embedder-button>
+                        </embedder-button>
+                        <traces-button>
+                        </traces-button>
+                    </div>
+                    <div
+                        class="flexRowAlignStartStart"
+                    >
+                        <symbols-button>
+                        </symbols-button>
+                        <labels-button>
+                        </labels-button>
+                        <weights-button>
+                        </weights-button>
+                    </div>
+                </div>
+                <div
+                    class="gap_h_15px"
+                >
+                </div>
+                <display-button>
+                </display-button>
             </div>
-            <div
-                class="gap_40px_v"
-            >
-            </div>
-            <mode-button>
-            </mode-button>
         </div>
     </div>
+    
+    <!-- vertical gap of 40 px -->
     <div
-        class="gap_30px_v"
+        class="gap_v_40px"
     >
-    </div>
-    <div
-        class="flexRowAlignSpaceEvenlyStart"
-    >
-        <app-example-file
-            title="An empty .xes file."
-            label=".xes File I (empty)"
-            link="assets/files-in/empty.xes"
-        >
-        </app-example-file>
-        <app-example-file
-            title="A very short Event Log in .xes format."
-            label=".xes File II (small)"
-            link="assets/files-in/teleclaimsShortest.xes"
-        >
-        </app-example-file>
-        <app-example-file
-            title="A large example Event Log in .xes format."
-            label=".xes File III (large)"
-            link="assets/files-in/teleclaimsExample.xes"
-        >
-        </app-example-file>
-        <app-example-file
-            title="An empty .json file."
-            label=".json File I (empty)"
-            link="assets/files-in/empty.json"
-        >
-        </app-example-file>
-        <app-example-file
-            title="A Petri Net in .json format."
-            label=".json File II (default)"
-            link="assets/files-in/example.json"
-        >
-        </app-example-file>
-        <app-example-file
-            title="A previously exported Graph in .json format."
-            label=".json File III (test)"
-            link="assets/files-in/exclusive-cut.json"
-        >
-        </app-example-file>
-    </div>
-    <div
-        class="gap_30px_v"
-    >
-    </div>
-    <hr>
-    <div
-        class="gap_30px_v"
-    >
-    </div>
-    <div
-    class="flexRowAlignSpaceEvenlyStart"
-    >
-        <mat-form-field
-            appearance="outline"
-            class="outputContainer"
-        >
-            <mat-label>
-                File Content
-            </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="30"
-                [formControl]="fileAreaFc"
-            >
-            </textarea>
-        </mat-form-field>
-        <mat-form-field
-            appearance="outline"
-            class="outputContainer"
-        >
-            <mat-label>
-                Event Log
-            </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                contenteditable="true"
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="30"
-                [formControl]="logAreaFc"
-            >
-            </textarea>
-        </mat-form-field>
     </div>
 
     <!--  Footer  -->
     <hr>
     <app-footer></app-footer>
+
+    <!-- vertical gap of 30 px -->
+    <div class="gap_v_30px"></div>
 
 </div>

@@ -10,9 +10,9 @@ import {DisplayService} from '../../services/display.service';
 import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'embedder-button',
-    templateUrl: './embedder-button.component.html',
-    styleUrls: ['./embedder-button.component.css'],
+    selector: 'basecase-button',
+    templateUrl: './basecase-button.component.html',
+    styleUrls: ['./basecase-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {SettingsSingleton} from "../../classes/settings/settings.singleton";
         MatTooltipModule
     ]
 })
-export class EmbedderButtonComponent implements OnDestroy {
+export class BaseCaseButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -29,7 +29,7 @@ export class EmbedderButtonComponent implements OnDestroy {
     private _disabled : boolean;
     private _graphEmpty : boolean;
 
-    private _embedderDisabled : boolean;
+    private _automationDisabled : boolean;
 
     /* methods - constructor */
 
@@ -40,7 +40,7 @@ export class EmbedderButtonComponent implements OnDestroy {
     ) {
         this._disabled = true;
         this._graphEmpty = false;
-        this._embedderDisabled = true;
+        this._automationDisabled = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
@@ -66,8 +66,8 @@ export class EmbedderButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get embedderDisabled() : boolean {
-        return this._embedderDisabled;
+    public get automationDisabled() : boolean {
+        return this._automationDisabled;
     };
 
     public get tooltip() : string {
@@ -78,10 +78,10 @@ export class EmbedderButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            if (this._embedderDisabled) {
-                return 'automatically arrange graph';
+            if (this._automationDisabled) {
+                return 'automatically convert Base Cases';
             } else {
-                return 'disable graph arrangement';
+                return 'disable automatic Base Case conversion';
             };
         };
     };
@@ -89,13 +89,17 @@ export class EmbedderButtonComponent implements OnDestroy {
     /* methods - other */
 
     public processMouseClick(inEvent: MouseEvent) {
-        this._embedderDisabled = !(this._embedderDisabled);
-        this._settings.updateState({ springEmbedderDisabled: this._embedderDisabled });
-        this._displayService.refreshData();
-        if (this._embedderDisabled) {
-            this._toastService.showToast('automatic graph arrangement disabled', 'info');
+        this._automationDisabled = !(this._automationDisabled);
+        if (this._automationDisabled) {
+            this._settings.updateState({ basecaseMode: 'manual' });
         } else {
-            this._toastService.showToast('automatic graph arrangement enabled', 'info');
+            this._settings.updateState({ basecaseMode: 'auto' });
+        };
+        this._displayService.refreshData();
+        if (this._automationDisabled) {
+            this._toastService.showToast('automatic Base Case conversion disabled', 'info');
+        } else {
+            this._toastService.showToast('automatic Base Case conversion enabled', 'info');
         };
     };
 

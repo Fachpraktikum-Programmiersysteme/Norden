@@ -7,12 +7,12 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'weight-button',
-    templateUrl: './weight-button.component.html',
-    styleUrls: ['./weight-button.component.css'],
+    selector: 'weights-button',
+    templateUrl: './weights-button.component.html',
+    styleUrls: ['./weights-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,7 +20,7 @@ import {DisplaySettingsSingleton} from "../../classes/display/display-settings.s
         MatTooltipModule
     ]
 })
-export class WeightButtonComponent implements OnDestroy {
+export class WeightsButtonComponent implements OnDestroy {
 
     /* attributes */
 
@@ -34,7 +34,7 @@ export class WeightButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
@@ -90,7 +90,7 @@ export class WeightButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         this._weightsDisabled = !(this._weightsDisabled);
-        this._displaySettings.updateState({ arcWeightsDisabled: this._weightsDisabled });
+        this._settings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
         if (this._weightsDisabled) {
             this._toastService.showToast('arc weights hidden', 'info');
