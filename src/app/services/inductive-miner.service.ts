@@ -5956,7 +5956,7 @@ export class InductiveMinerService {
         const arcs = inDfg.arcs;
 
         const redoSet = this.findNodesBetweenDuplicatesInArrays(inDfg.log)
-        console.log(redoSet)
+
         //mark nodes of redo part
         for (let node of inDfg.nodes){
             if(redoSet.has(node)){
@@ -5967,7 +5967,15 @@ export class InductiveMinerService {
         //mark arcs to and from redo part
         this.markArcsOfRedoPart(redoSet, inDfg.arcs, inGraph)
         const checkLC: [boolean, undefined | [DFG, Node[], Node[], Node[], Node[]]] = this.checkLoopCut(inGraph)
+        this.initNodesAndArcs(inDfg, inGraph)
         return checkLC[0]
+    }
+
+    private initNodesAndArcs(inDfg: DFG, inGraph: Graph){
+        inDfg.arcs.forEach(arc => arc.marked = false)
+        inDfg.nodes.forEach(node => node.marked = false)
+        inGraph.markedNodes = []
+        inGraph.markedArcs = []
     }
 
     private markArcsOfRedoPart(redoSet: Set<Node>, arcs: Arc[], inGraph: Graph): void{
@@ -5982,21 +5990,22 @@ export class InductiveMinerService {
 
     private findNodesBetweenDuplicatesInArrays<Nodes>(nodesLog: Nodes[][]): Set<Nodes> {
         const resultSet = new Set<Nodes>();
+        const duplicateNodes = new Set<Nodes>();
 
         nodesLog.forEach(nodes => {
             const nodeCounts = new Map<Nodes,number>();
 
+            //count occurrences of each node
             nodes.forEach(node => {
                 nodeCounts.set(node,(nodeCounts.get(node) || 0) + 1)
             })
 
-
             const seenElements = new Map<Nodes, number>();
-            const elementsToExclude = new Set<Nodes>()
 
             for (let i = 0; i < nodes.length; i++) {
                 const node = nodes[i];
                 if (nodeCounts.get(node)! > 1) {
+                    duplicateNodes.add(node)
                     if (seenElements.has(node)) {
                         const startIndex = seenElements.get(node)!;
                         for (let j = startIndex + 1; j < i; j++) {
@@ -6009,12 +6018,9 @@ export class InductiveMinerService {
                 }
             }
         })
-
+        duplicateNodes.forEach(node => resultSet.delete(node))
         return resultSet;
     }
-
-
-
 
     public checkForExistingExclusiveCut(inGraph: Graph): boolean {
         let result: boolean = false
@@ -6065,6 +6071,6 @@ export class InductiveMinerService {
             this._toastService.showToast('Loop cut is still possible', 'info')
             return
         }
-
+        this._toastService.showToast('No cut is possible. Fall Through', 'info')
     }
 }
