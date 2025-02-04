@@ -9,6 +9,9 @@ export class Node {
     private _x_coordinate : number;
     private _y_coordinate : number;
 
+    private _x_velocity: number = 0;
+    private _y_velocity: number = 0;
+
     private _incomingArcs : number;
     private _outgoingArcs : number;
 
@@ -29,6 +32,9 @@ export class Node {
     private _infoActive : boolean;
     private _hoverActive : boolean;
     private _hoverCancelled : boolean;
+
+    private _isBeingDragged: boolean = false;
+
 
     /* methods : constructor */
 
@@ -83,8 +89,20 @@ export class Node {
         return this._y_coordinate;
     };
 
+    public get x_velocity() : number {
+        return this._x_velocity;
+    };
+
+    public get y_velocity() : number {
+        return this._y_velocity
+    };
+
     public get coordinates() : [number, number] {
         return [this._x_coordinate, this._y_coordinate];
+    };
+
+    public get velocities() : [number, number] {
+        return [this._x_velocity, this._y_velocity];
     };
 
     public get inArcs() : number {
@@ -147,6 +165,10 @@ export class Node {
         return this._hoverCancelled;
     };
 
+    public get isBeingDragged() : boolean {
+        return this._isBeingDragged;
+    };
+
     /* methods : setters */
 
     public set x(inX : number) {
@@ -155,6 +177,14 @@ export class Node {
 
     public set y(inY : number) {
         this._y_coordinate = inY;
+    };
+
+    public set x_velocity(x_velocity: number) {
+        this._x_velocity = x_velocity;
+    };
+
+    public set y_velocity(y_velocity: number) {
+        this._y_velocity = y_velocity;
     };
 
     public set coordinates(inCoords : [number, number]) {
@@ -212,6 +242,10 @@ export class Node {
 
     public set hoverCancelled(inValue : boolean) {
         this._hoverCancelled = inValue;
+    };
+
+    public set isBeingDragged(isBeingDragged : boolean) {
+        this._isBeingDragged = isBeingDragged;
     };
 
     /* methods : other */
