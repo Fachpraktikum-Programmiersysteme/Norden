@@ -20,207 +20,132 @@
     </div>
 
     <!-- canvas -->
-    <app-display
-        id="canvas"
-        class="padding full-size"
-        (fileData)="processSourceChange($event)"
-    >
+    <app-display id="canvas" class="padding full-size" (fileData)="processSourceChange($event)">
     </app-display>
 
     <!-- vertical gap of 60 px -->
-    <div
-        class="gap_v_60px"
-    >
+    <div class="gap_v_30px">
     </div>
 
     <!-- display controls, text input, draggable example & log view -->
-    <div
-        class="flexRowAlignSpaceBetweenStart"
-    >
-        <div
-            class="container_inout"
-        >
-            <div
-                class="flexRowAlignSpaceBetweenStart"
-            >
-                <app-example-file
-                    title="An example Event Log of Teleclaims processes, stored as a .xes file."
-                    label="Teleclaims Event Log"
-                    link="assets/example-files/logs__Teleclaims_Example_(modified).xes"
-                >
+    <div class="flexRowAlignSpaceBetweenStart">
+        <div class="container_inout">
+            <div class="flexRowAlignSpaceBetweenStart">
+                <app-example-file title="An example Event Log of Teleclaims processes, stored as a .xes file."
+                    label="Teleclaims Event Log" link="assets/example-files/logs__Teleclaims_Example_(modified).xes">
                 </app-example-file>
-                <app-example-file
-                    title="An example Event Log of Workshop processes, stored as a .xes file."
-                    label="Workshop Event Log"
-                    link="assets/example-files/logs__Workshop_Organisation_(6.1.2).xes"
-                >
+                <app-example-file title="An example Event Log of Workshop processes, stored as a .xes file."
+                    label="Workshop Event Log" link="assets/example-files/logs__Workshop_Organisation_(6.1.2).xes">
                 </app-example-file>
-                <app-example-file
-                    title="An example Graph containing an Exclusive Cut, stored as a .json file."
-                    label="Exclusive Cut"
-                    link="assets/example-files/cuts__Exclusive_Cut.json"
-                >
+                <app-example-file title="An example Graph containing an Exclusive Cut, stored as a .json file."
+                    label="Exclusive Cut" link="assets/example-files/cuts__Exclusive_Cut.json">
                 </app-example-file>
-                <app-example-file
-                    title="An example Graph containing a Sequence Cut, stored as a .json file."
-                    label="Sequence Cut"
-                    link="assets/example-files/cuts__Sequence_Cut.json"
-                >
+                <app-example-file title="An example Graph containing a Sequence Cut, stored as a .json file."
+                    label="Sequence Cut" link="assets/example-files/cuts__Sequence_Cut.json">
                 </app-example-file>
-                <app-example-file
-                    title="An example Graph containing a Parallel Cut, stored as a .json file."
-                    label="Parallel Cut"
-                    link="assets/example-files/cuts__Parallel_Cut.json"
-                >
+                <app-example-file title="An example Graph containing a Parallel Cut, stored as a .json file."
+                    label="Parallel Cut" link="assets/example-files/cuts__Parallel_Cut.json">
                 </app-example-file>
-                <app-example-file
-                    title="An example Graph containing a Loop Cut, stored as a .json file."
-                    label="Loop Cut"
-                    link="assets/example-files/cuts__Loop_Cut.json"
-                >
+                <app-example-file title="An example Graph containing a Loop Cut, stored as a .json file."
+                    label="Loop Cut" link="assets/example-files/cuts__Loop_Cut.json">
                 </app-example-file>
             </div>
-            <div
-                class="gap_v_40px"
-            >
+            <div class="gap_v_40px">
             </div>
-            <div
-                class="flexRowAlignSpaceBetweenStart"
-            >
-                <mat-form-field
-                    appearance="outline"
-                    class="container_log"
-                >
+            <div class="flexRowAlignSpaceBetweenStart">
+                <mat-form-field appearance="outline" class="container_log">
                     <mat-label>
                         Event Log (detailed view)
                     </mat-label>
-                    <div
-                        appearance="outline"
-                        class="container_log"
-                    >
-                        <textarea
-                            matInput
-                            cdkTextareaAutosize
-                        >
+                    <div appearance="outline" class="scrollerForLog">
+                        <textarea readonly matInput cdkTextareaAutosize>
                         </textarea>
-                        @for (trace of logArray; track trace.id) {
+                        <div class="eventLogList">
+                            @for (trace of logArray; track trace.id) {
                             @if ($last) {
-                                <li>
+                            <li>
                                 @for (event of trace.events; track event.id) {
-                                    @if ($first) {
-                                        "<font color={{event.color}}>{{event.label}}</font>"
-                                    } @else {
-                                        <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
-                                    }
+                                @if ($first) {
+                                "<font color={{event.color}}>{{event.label}}</font>"
+                                } @else {
+                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
                                 }
-                                </li>
+                                }
+                            </li>
                             } @else {
-                                <li>
-                                    @for (event of trace.events; track event.id) {
-                                        @if ($first) {
-                                            "<font color={{event.color}}>{{event.label}}</font>"
-                                        } @else {
-                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
-                                        }
-                                    }
-                                    <font> + </font>
-                                </li>
+                            <li>
+                                @for (event of trace.events; track event.id) {
+                                @if ($first) {
+                                "<font color={{event.color}}>{{event.label}}</font>"
+                                } @else {
+                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                }
+                                }
+                                <font> + </font>
+                            </li>
                             }
-                        } @empty {
-                            (no log available)
-                        }
-                        <textarea
-                            matInput
-                            cdkTextareaAutosize
-                        >
-                        </textarea>
+                            } @empty {
+                            <div class="noLogDisplay">
+                                (no log available)
+                            </div>
+                            }
+                        </div>
                     </div>
                 </mat-form-field>
-                <text-input
-                    class="container_in"
-                    (textData)="processSourceChange($event)"
-                >
+                <text-input class="container_in" (textData)="processSourceChange($event)">
                 </text-input>
             </div>
         </div>
-        <div
-            class="container_controls"
-        >
+        <div class="container_controls">
             <check-button>
             </check-button>
-            <div
-                class="gap_v_40px"
-            >
+            <div class="gap_v_40px">
             </div>
-            <div
-                class="flexRowAlignSpaceBetweenStart"
-            >
-                <save-button>
-                </save-button>
-                <delete-button>
-                </delete-button>
-                <div
-                    class="gap_h_40px"
-                >
+            <div class="flexRowAlignSpaceBetweenStart">
+                <div>
+                    <div class="flexGap2px">
+                        <save-button>
+                        </save-button>
+                        <delete-button>
+                        </delete-button>
+                    </div>
+                    <div class="flexGap2px" style="padding-top: 39px;">
+                        <div>
+                            <embedder-button>
+                            </embedder-button>
+                        </div>
+                        <div>
+                            <symbols-button>
+                            </symbols-button>
+                        </div>
+                    </div>
                 </div>
-                <div
-                    class="gap_h_40px"
-                >
+                <div>
+                    <basecase-button>
+                    </basecase-button>
+                    
                 </div>
-                <div
-                    class="gap_h_40px"
-                >
-                </div>
-                <search-button>
-                </search-button>
-                <basecase-button>
-                </basecase-button>
                 <submit-button>
                 </submit-button>
             </div>
-            <div
-                class="gap_v_60px"
-            >
-            </div>
-            <div
-                class="flexRowAlignSpaceBetweenEnd"
-            >
-                <div
-                    class="flexColumnAlignStartStretch"
-                >
-                    <div
-                        class="flexRowAlignStartStart"
-                    >
-                        <embedder-button>
-                        </embedder-button>
-                        <traces-button>
-                        </traces-button>
-                    </div>
-                    <div
-                        class="flexRowAlignStartStart"
-                    >
-                        <symbols-button>
-                        </symbols-button>
-                        <labels-button>
-                        </labels-button>
-                        <weights-button>
-                        </weights-button>
-                    </div>
-                </div>
-                <div
-                    class="gap_h_15px"
-                >
-                </div>
+
+
+            <div class="flexGap2px" style="padding-top: 2px; padding-bottom: 2px;">
+                <traces-button>
+                </traces-button>
+                <labels-button>
+                </labels-button>
+                <weights-button>
+                </weights-button>
                 <display-button>
                 </display-button>
             </div>
+
         </div>
     </div>
-    
+
     <!-- vertical gap of 40 px -->
-    <div
-        class="gap_v_40px"
-    >
+    <div>
     </div>
 
     <!--  Footer  -->

@@ -1,12 +1,14 @@
 <mat-button-toggle-group
     name="CheckMode" 
-    aria-label="Switch Checked Mode" 
+    aria-label="Switch Checked Mode"
+    
     value="ec" 
     [matTooltip]="tooltip"
 >
     <mat-button-toggle 
         value="ec" 
         (click)="processMouseClickA($event)"
+        selected-state-text-color="green"
     >
         EC
     </mat-button-toggle>

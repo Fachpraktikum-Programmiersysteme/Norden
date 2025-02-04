@@ -14,3 +14,9 @@
 .mat-tooltip {
     white-space: pre-line;
 }
+
+.logInput {
+    height: 110px;
+    resize: none;
+}
+
