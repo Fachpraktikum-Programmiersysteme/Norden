@@ -115,6 +115,9 @@ export class SpringEmbedderAlgorithm implements LayoutAlgorithmInterface {
             // Integrate to get new position
             node.x += node.x_velocity;
             node.y += node.y_velocity;
+
+            // Ensure the node stays within canvas bounds
+            this.keepNodeWithinBounds(node);
         }
     }
 
@@ -173,5 +176,27 @@ export class SpringEmbedderAlgorithm implements LayoutAlgorithmInterface {
             node.x_velocity = 0;
             node.y_velocity = 0;
         });
+    }
+
+    private keepNodeWithinBounds(node: Node): void {
+        const minX = 20;
+        const minY = 22;
+        const maxX = this.graphicsConfig.canvasWidth - 22;
+        const maxY = this.graphicsConfig.canvasHeight - 22;
+
+        const newX = node.x + node.x_velocity;
+        const newY = node.y + node.y_velocity;
+
+        if ((newX > node.x || newX > minX) && (newX < node.x || newX < maxX)) {
+            node.x = newX;
+        } else {
+            node.x_velocity *= -0.5;
+        }
+
+        if ((newY > node.y || newY > minY) && (newY < node.y || newY < maxY)) {
+            node.y = newY;
+        } else {
+            node.y_velocity *= -0.5;
+        }
     }
 }

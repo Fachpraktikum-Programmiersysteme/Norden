@@ -5,8 +5,8 @@ import { Graph } from '../graph-representation/graph';
 @Injectable({
     providedIn: 'root'
 })
-export class NoLayoutAlgorithm implements LayoutAlgorithmInterface {
-
+export class NoLayoutAlgorithm implements LayoutAlgorithmInterface
+{
     public applyLayout(graph: Graph): Graph {
         return graph;
     }
