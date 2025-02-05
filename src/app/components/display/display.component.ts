@@ -60,7 +60,7 @@ export class DisplayComponent implements OnDestroy {
 
     private cutActive: boolean = false;
     private activeCut: Cut | undefined;
-
+ 
     /* methods - constructor */
 
     public constructor(
@@ -296,8 +296,10 @@ export class DisplayComponent implements OnDestroy {
             this.dragInProgress = true;
             this.draggedNode = this.heldNode;
             if (this.draggedNode !== undefined) {
-                this.draggedNode.x = inEvent.offsetX;
-                this.draggedNode.y = inEvent.offsetY;
+                const svgElement = this.drawingArea?.nativeElement as SVGSVGElement;
+                const { x, y } = this.getMousePositionInSvg(inEvent, svgElement);
+                this.draggedNode.x = x;
+                this.draggedNode.y = y;
                 //
                 /* do not remove - alternative implementation */
                 //
@@ -577,16 +579,20 @@ export class DisplayComponent implements OnDestroy {
     };
 
     public startCut(inEvent: MouseEvent): void {
-        this.activeCut = new Cut(inEvent.offsetX, inEvent.offsetY, true);
+        const svgElement = this.drawingArea?.nativeElement as SVGSVGElement;
+        const { x, y } = this.getMousePositionInSvg(inEvent, svgElement);
+        this.activeCut = new Cut(x, y, true);
     };
 
     public drawCut(inEvent: MouseEvent): void {
         if (!this.activeCut?.isDrawing) return;
-        const cutLine = this._svgService.createSvgCut(this.activeCut.tempX, this.activeCut.tempY, inEvent.offsetX, inEvent.offsetY);
-        this.activeCut.tempCutLines.push({ x1: this.activeCut.tempX, y1: this.activeCut.tempY, x2: inEvent.offsetX, y2: inEvent.offsetY });
+        const svgElement = this.drawingArea?.nativeElement as SVGSVGElement;
+        const { x, y } = this.getMousePositionInSvg(inEvent, svgElement);
+        const cutLine = this._svgService.createSvgCut(this.activeCut.tempX, this.activeCut.tempY, x, y);
+        this.activeCut.tempCutLines.push({ x1: this.activeCut.tempX, y1: this.activeCut.tempY, x2: x, y2: y });
         this.drawingArea?.nativeElement.appendChild(cutLine);
-        this.activeCut.tempX = inEvent.offsetX;
-        this.activeCut.tempY = inEvent.offsetY;
+        this.activeCut.tempX = x;
+        this.activeCut.tempY = y;
     };
 
     public endCut(inEvent: MouseEvent): void {
@@ -751,5 +757,18 @@ export class DisplayComponent implements OnDestroy {
             }
         );
     };
+    private getMousePositionInSvg(evt: MouseEvent, svgElement: SVGSVGElement): { x: number, y: number } {
+        const svgPoint = svgElement.createSVGPoint();
+        svgPoint.x = evt.clientX;
+        svgPoint.y = evt.clientY;
 
+        const matrix = svgElement.getScreenCTM();
+        if (!matrix) {
+            return { x: evt.clientX, y: evt.clientY };
+        }
+        const inverseMatrix = matrix.inverse();
+
+        const transformedPoint = svgPoint.matrixTransform(inverseMatrix);
+        return { x: transformedPoint.x, y: transformedPoint.y };
+    }
 };
