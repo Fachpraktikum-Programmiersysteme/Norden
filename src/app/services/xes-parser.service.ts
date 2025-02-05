@@ -348,20 +348,6 @@ export class XesParserService {
                 };
             };
 
-            /* to be removed - start*/
-            console.log(' >> parsing of input xes finished');
-            console.log('    >> found ' + graph.nodeCount + ' nodes (' + graph.nodes.length + ' in array) {{' + graph.supportCount + ' supports, ' + graph.eventCount + ' events, ' + graph.placeCount + ' places, ' + graph.transitionCount + ' transitions}} and ' + graph.arcCount + ' arcs (' + graph.arcs.length + ' in array)');
-            console.log('    >> length of logArray : ' + graphLogArray.length);
-            let maxLength = 0;
-            for (const trace of graphLogArray) {
-                if (trace.length > maxLength) {
-                    maxLength = trace.length;
-                };
-            };
-            console.log('    >> max length of eventArray : ' + maxLength);
-            console.log('    >> found ' + emptyTraceCount + ' empty traces');
-            /* to be removed - end*/
-
             if (traceCount > 0) {
                 if (emptyTraceCount === 0) {
                     if (graph.nodes.length !== dfgNodesArray.length) {

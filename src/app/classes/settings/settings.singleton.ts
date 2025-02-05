@@ -6,6 +6,7 @@ export interface Settings {
     displayMode: 'dfg' | 'changes';
     checkMode: 'ec' | 'sc' | 'pc' | 'lc' | 'bc' | 'ft';
     basecaseMode: 'auto' | 'manual';
+    falseInputStage: number;
     resetInputForm: boolean;
     nodeInfosDisabled: boolean;
     nodeLabelsDisabled: boolean;
@@ -24,6 +25,7 @@ export class SettingsSingleton {
         displayMode: 'dfg',
         checkMode: 'ec',
         basecaseMode: 'auto',
+        falseInputStage: 0,
         resetInputForm: false,
         nodeInfosDisabled: true,
         nodeLabelsDisabled: true,

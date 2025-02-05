@@ -79,7 +79,7 @@ export class SaveButtonComponent implements OnDestroy {
 
     /* methods - other */
     
-    processMouseClick(inEvent: MouseEvent) {
+    processMouseClick() {
         const currentGraph = this._displayService.graph;
         const isPN : boolean = this._fileWriterService.isPetriNet(currentGraph);
         let fileName : string = 'saved_graph_' + this._outId;

@@ -629,7 +629,7 @@ export class DisplayComponent implements OnDestroy {
         ).pipe(
             catchError(
                 error => {
-                    console.error('Error while fetching file from link', inLink, error);
+                    console.error('error occurred while fetching file from link', inLink, error);
                     return of(undefined);
                 }
             ),

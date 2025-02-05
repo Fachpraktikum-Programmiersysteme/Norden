@@ -13,7 +13,7 @@ export class FileReaderService {
         const reader = new FileReader();
         const result = new ReplaySubject<string>(1);
         reader.onerror = (error) => {
-            console.error('Error while reading file content - ' + error + file);
+            console.error('error occurred while reading file content - ' + error + file);
             result.complete();
         };
         reader.onloadend = () => {

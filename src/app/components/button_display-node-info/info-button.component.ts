@@ -88,7 +88,7 @@ export class InfoButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._overrideDisabled = !(this._overrideDisabled);
         this._settings.updateState({ nodeInfosDisabled: this._overrideDisabled });
         this._displayService.refreshData();

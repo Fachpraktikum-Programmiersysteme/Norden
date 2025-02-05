@@ -115,10 +115,6 @@ export class FileWriterService {
                 if (node.marked) {
                     jsonGraph.marked[0][nodeId] = true;
                 };
-                /* TODO - if the service works as intended, remove the following comments */
-                // if (node.dfg !== undefined) {
-                //     jsonGraph.dfgs[0][nodeId] = dfgIds[node.dfg];
-                // };
                 nodeIds[node.id] = nodeId;
                 nodeCount++;
             } else {
@@ -150,10 +146,6 @@ export class FileWriterService {
             if (arc.marked) {
                 jsonGraph.marked[1][arcId] = true;
             };
-            /* TODO - if the service works as intended, remove the following comments */
-            // if (arc.dfg !== undefined) {
-            //     jsonGraph.dfgs[1][arcId] = dfgIds[arc.dfg];
-            // };
             arcIds[arcPos] = arcId;
             arcPos++;
             arcCount = arcCount + arc.weight;
@@ -233,8 +225,8 @@ export class FileWriterService {
                         jpnPlaces.push(nodeId);
                         /* place labels are not part of the original definition of a JsonPetriNet */
                         // if (!(node.label.includes('undefined_place_label__'))) {
-                            // jpnLabels[nodeId] = node.label;
-                            // labelFound = true;
+                        //     jpnLabels[nodeId] = node.label;
+                        //     labelFound = true;
                         // };
                         jpnLayout[nodeId] = {x: node.x, y: node.y};
                         nodeIds[node.id] = nodeId;
@@ -423,14 +415,7 @@ export class FileWriterService {
     };
 
     public writeFile(inFileName : string, inGraph : Graph) : void {
-        /* to be removed - start */
-        console.log();
-        console.log(' >> starting to write to file');
-        /* to be removed - end*/
         if (this.isPetriNet(inGraph)) {
-            /* to be removed - start */
-            console.log('    >> given graph is a petri net');
-            /* to be removed - end*/
             const jsonPetriNet : JsonPetriNet = this.netToJSON(inGraph);
             const jsonString : string = JSON.stringify(jsonPetriNet, null, 4);
             const jsonName : string = (inFileName + '.json');
@@ -449,9 +434,6 @@ export class FileWriterService {
             pnmlLink.click();
             pnmlLink.remove();
         } else {
-            /* to be removed - start */
-            console.log('    >> given graph is not a petri net');
-            /* to be removed - end*/
             const jsonGraph : JsonGraph = this.graphToJSON(inGraph);
             const jsonString : string = JSON.stringify(jsonGraph, null, 4);
             const jsonName : string = (inFileName + '.json');
@@ -462,10 +444,6 @@ export class FileWriterService {
             jsonLink.click();
             jsonLink.remove();
         };
-        /* to be removed - start */
-        console.log(' >> writing to .json file complete');
-        console.log();
-        /* to be removed - end*/
     };
 
 };
