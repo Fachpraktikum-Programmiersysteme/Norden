@@ -10,22 +10,24 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 
 import {AppComponent} from './app.component';
+import {BaseCaseButtonComponent} from './components/button_toggle-auto-basecase/basecase-button.component';
+import {CheckButtonComponent} from './components/button_switch-checked-cut/check-button.component';
 import {DisplayComponent} from './components/display/display.component';
 import {DeleteButtonComponent} from './components/button_delete-graph/delete-button.component';
+import {DisplayButtonComponent} from './components/button_switch-display-mode/display-button.component';
 import {ExampleFileComponent} from './components/example-file/example-file.component';
-import {InfoButtonComponent} from "./components/button_display-info/info-button.component";
+import {InfoButtonComponent} from "./components/button_display-node-info/info-button.component";
 import {EmbedderButtonComponent} from './components/button_toggle-spring-embedder/embedder-button.component';
 import {FooterComponent} from './components/footer/footer.component';
-import {LabelsButtonComponent} from './components/button_display-labels/labels-button.component';
-import {ModeButtonComponent} from './components/button_switch-display-mode/mode-button.component';
+import {LabelsButtonComponent} from './components/button_display-node-labels/labels-button.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
+import {SearchButtonComponent} from "./components/button_search-cut/search-button.component";
 import {SubmitButtonComponent} from './components/button_submit-cut/submit-button.component';
-import {SymbolsButtonComponent} from './components/button_display-symbols/symbols-button.component';
+import {SymbolsButtonComponent} from './components/button_display-node-symbols/symbols-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TracesButtonComponent} from "./components/button_display-traces/traces-button.component";
 import {ToastComponent} from "./components/toast/toast.component";
-import {WeightsButtonComponent} from './components/button_display-weights/weights-button.component';
-import {NoCutPossibleButtonComponent} from "./components/button_no-more-cut-possible/no-cut-possible-button.component";
+import {WeightsButtonComponent} from './components/button_display-arc-weights/weights-button.component';
 
 @NgModule({
     declarations: [
@@ -36,9 +38,12 @@ import {NoCutPossibleButtonComponent} from "./components/button_no-more-cut-poss
     ],bootstrap: [
         AppComponent
     ], imports: [
+        BaseCaseButtonComponent,
         BrowserAnimationsModule,
         BrowserModule,
+        CheckButtonComponent,
         DeleteButtonComponent,
+        DisplayButtonComponent,
         EmbedderButtonComponent,
         ExampleFileComponent,
         InfoButtonComponent,
@@ -47,15 +52,14 @@ import {NoCutPossibleButtonComponent} from "./components/button_no-more-cut-poss
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
-        ModeButtonComponent,
         ReactiveFormsModule,
         SaveButtonComponent,
+        SearchButtonComponent,
         SubmitButtonComponent,
         SymbolsButtonComponent,
         TextInputComponent,
         TracesButtonComponent,
-        WeightsButtonComponent,
-        NoCutPossibleButtonComponent
+        WeightsButtonComponent
     ], providers: [
         {
             provide: APP_BASE_HREF,
@@ -65,5 +69,4 @@ import {NoCutPossibleButtonComponent} from "./components/button_no-more-cut-poss
         provideHttpClient(withInterceptorsFromDi())
     ]
 })
-export class AppModule {
-}
+export class AppModule {}

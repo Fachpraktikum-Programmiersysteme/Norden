@@ -1,5 +1,5 @@
 .container_controls {
-    width : 250px;
+    width : 350px;
     display : flex;
     flex-direction : column;
     justify-content : flex-start;
@@ -7,7 +7,7 @@
 }
 
 .container_inout {
-    width : 1500px;
+    width : 1450px;
     display : flex;
     flex-direction : column;
     justify-content : flex-start;
@@ -40,6 +40,13 @@
     align-items : center;
 }
 
+.flexRowAlignSpaceBetweenEnd {
+    display : flex;
+    flex-direction : row;
+    justify-content : space-between;
+    align-items : flex-end;
+}
+
 .flexRowAlignSpaceBetweenStart {
     display : flex;
     flex-direction : row;
@@ -52,6 +59,18 @@
     flex-direction : row;
     justify-content : space-evenly;
     align-items : flex-start;
+}
+
+.flexRowAlignStartStart {
+    display : flex;
+    flex-direction : row;
+    justify-content : flex-start;
+    align-items : flex-start;
+}
+
+.gap_h_15px {
+    width : 15px;
+    height : 100%;
 }
 
 .gap_h_30px {

@@ -7,7 +7,7 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {DisplaySettingsSingleton} from "../../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
     selector: 'traces-button',
@@ -34,7 +34,7 @@ export class TracesButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
-        private _displaySettings : DisplaySettingsSingleton,
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
@@ -90,7 +90,7 @@ export class TracesButtonComponent implements OnDestroy {
 
     public processMouseClick(inEvent: MouseEvent) {
         this._animationsDisabled = !(this._animationsDisabled);
-        this._displaySettings.updateState({ traceAnimationsDisabled: this._animationsDisabled });
+        this._settings.updateState({ traceAnimationsDisabled: this._animationsDisabled });
         this._displayService.refreshData();
         if (this._animationsDisabled) {
             this._toastService.showToast('animated traces hidden', 'info');

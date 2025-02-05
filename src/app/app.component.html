@@ -146,112 +146,81 @@
         <div
             class="container_controls"
         >
-            <mode-button>
-            </mode-button>
+            <check-button>
+            </check-button>
             <div
                 class="gap_v_40px"
             >
             </div>
             <div
-                class="flexRowAlignSpaceEvenlyStart"
+                class="flexRowAlignSpaceBetweenStart"
             >
                 <save-button>
                 </save-button>
                 <delete-button>
                 </delete-button>
                 <div
-                class="gap_h_40px"
+                    class="gap_h_40px"
                 >
                 </div>
                 <div
-                class="gap_h_30px"
+                    class="gap_h_40px"
                 >
                 </div>
                 <div
-                class="gap_h_40px"
+                    class="gap_h_40px"
                 >
                 </div>
+                <search-button>
+                </search-button>
+                <basecase-button>
+                </basecase-button>
                 <submit-button>
                 </submit-button>
-                <no-cut-possible-button>
-                </no-cut-possible-button>
-
             </div>
             <div
-                class="gap_v_40px"
+                class="gap_v_60px"
             >
             </div>
             <div
-                class="flexRowAlignSpaceEvenlyStart"
+                class="flexRowAlignSpaceBetweenEnd"
             >
-                <embedder-button>
-                </embedder-button>
-                <traces-button>
-                </traces-button>
-                <info-button>
-                </info-button>
-                <symbols-button>
-                </symbols-button>
-                <labels-button>
-                </labels-button>
-                <weights-button>
-                </weights-button>
+                <div
+                    class="flexColumnAlignStartStretch"
+                >
+                    <div
+                        class="flexRowAlignStartStart"
+                    >
+                        <embedder-button>
+                        </embedder-button>
+                        <traces-button>
+                        </traces-button>
+                    </div>
+                    <div
+                        class="flexRowAlignStartStart"
+                    >
+                        <symbols-button>
+                        </symbols-button>
+                        <labels-button>
+                        </labels-button>
+                        <weights-button>
+                        </weights-button>
+                    </div>
+                </div>
+                <div
+                    class="gap_h_15px"
+                >
+                </div>
+                <display-button>
+                </display-button>
             </div>
         </div>
     </div>
     
-    <!-- vertical gap of 30 px -->
+    <!-- vertical gap of 40 px -->
     <div
-        class="gap_v_30px"
+        class="gap_v_40px"
     >
-    </div>
-    
-    <!-- horizontal line -->
-    <hr>
-
-    <!-- vertical gap of 30 px -->
-    <div
-        class="gap_v_30px"
-    >
-    </div>
-
-    <!-- file & log output -->
-    <div
-    class="flexRowAlignSpaceEvenlyStart"
-    >
-        <mat-form-field
-            appearance="outline"
-            class="container_out"
-        >
-            <mat-label>
-                File Content
-            </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="30"
-                [formControl]="fileAreaFc"
-            >
-            </textarea>
-        </mat-form-field>
-        <mat-form-field
-            appearance="outline"
-            class="container_out"
-        >
-            <mat-label>
-                Event Log
-            </mat-label>
-            <textarea
-                matInput
-                cdkTextareaAutosize
-                contenteditable="true"
-                cdkAutosizeMinRows="3"
-                cdkAutosizeMaxRows="30"
-                [formControl]="logAreaFc"
-            >
-            </textarea>
-        </mat-form-field>
     </div>
 
     <!--  Footer  -->

@@ -1,4 +1,5 @@
 import {Component, OnDestroy} from '@angular/core';
+// import {MatFabButton} from "@angular/material/button";
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
@@ -79,4 +80,4 @@ export class DeleteButtonComponent implements OnDestroy {
         this._toastService.showToast('graph deleted', 'info');
     };
 
-}
+};

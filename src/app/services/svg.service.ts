@@ -2,7 +2,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 
 import {Subscription} from 'rxjs';
 
-import {DisplaySettingsSingleton} from "../classes/display/display-settings.singleton";
+import {SettingsSingleton} from "../classes/settings/settings.singleton";
 import {GraphGraphicsConfig} from "../classes/display/graph-graphics.config";
 import {Graph} from '../classes/graph-representation/graph';
 import {Node} from '../classes/graph-representation/node';
@@ -30,14 +30,14 @@ export class SvgService implements OnDestroy {
     /* methods - constructor */
 
     public constructor(
-        private displaySettings: DisplaySettingsSingleton,
+        private settings: SettingsSingleton,
         private graphicsConfig: GraphGraphicsConfig
     ) {
         this.initArrow();
         this.initInfos();
-        this._sub = this.displaySettings.state$.subscribe(
+        this._sub = this.settings.state$.subscribe(
             (state) => {
-                this._displayMode = state.mode;
+                this._displayMode = state.displayMode;
                 this._infos = !(state.nodeInfosDisabled);
                 this._labels = !(state.nodeLabelsDisabled);
                 this._symbols = !(state.nodeSymbolsDisabled);
