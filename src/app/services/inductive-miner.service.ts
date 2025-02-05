@@ -397,12 +397,12 @@ export class InductiveMinerService {
                 this._toastService.showToast(('Sequence Cut found in DFG ' + dfg.id.toString()), 'info');
                 return;
             };
-            cutFound = this.searchParallelCut(dfg)
+            cutFound = this.searchParallelCut(dfg, inGraph)
             if (cutFound) {
                 this._toastService.showToast(('Parallel Cut found in DFG ' + dfg.id.toString()), 'info');
                 return;
             };
-            cutFound = this.searchLoopCut(dfg)
+            cutFound = this.searchLoopCut(dfg, inGraph)
             if (cutFound) {
                 this._toastService.showToast(('Loop Cut found in DFG ' + dfg.id.toString()), 'info');
                 return;
@@ -459,7 +459,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]
+            undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]
     ] {
         /* to be removed - start */
         console.log('im_service started check of exclusive cut');
@@ -547,7 +547,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean]
+            undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean]
     ] {
         if (inOutGraph.markedArcs.length < 1) {
             /* to be removed - start */
@@ -622,7 +622,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc]
+            undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc]
     ] {
         /* to be removed - start */
         console.log('im_service started check of parallel cut');
@@ -872,7 +872,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, Node[], Node[], Node[], Node[], boolean]
+            undefined | [DFG, Node[], Node[], Node[], Node[], boolean]
     ] {
         /* to be removed - start */
         console.log('im_service started check of loop cut');
@@ -949,7 +949,7 @@ export class InductiveMinerService {
         inOutGraph : Graph
     ) : [
         boolean,
-        undefined | [DFG, Node | undefined]
+            undefined | [DFG, Node | undefined]
     ] {
         /* to be removed - start */
         console.log('im_service started check of base case');
@@ -3044,7 +3044,7 @@ export class InductiveMinerService {
             };
         };
     };
-    
+
     /* do not remove - alternative implementation */
     //
     // private executeParallelCut(
@@ -5261,7 +5261,7 @@ export class InductiveMinerService {
     //                             } else if (loopRedoPlay[currentNode.id] === true) {
 
 
-    
+
     //                                 let foundArc : Arc | undefined = undefined;
     //                                 for (const arc of doSubgraph[1]) {
     //                                     if (arc.source === lastNode) {
@@ -5718,15 +5718,193 @@ export class InductiveMinerService {
     };
 
     private searchParallelCut(
-        inDfg: DFG
+        inDfg: DFG,
+        inGraph: Graph
     ) : boolean {
-        return false;
+        const startNode = inDfg.startNode;
+        const endNode = inDfg.endNode;
+        const arcs = inDfg.arcs;
+
+        const A1 = new Set<Node>();
+        const A2 = new Set<Node>();
+
+        // Helper function to check if two nodes are mutually reachable
+        const areNodesMutuallyReachable = (nodeA: Node, nodeB: Node): boolean => {
+            return arcs.some(arc => arc.source === nodeA && arc.target === nodeB) &&
+                arcs.some(arc => arc.source === nodeB && arc.target === nodeA);
+        };
+
+        // Helper function to check if two nodes are only unilateral reachable
+        const areNodesUnilateralReachable = (neighbors: Set <Node>, arcs: Arc[]): boolean =>{
+            for (const nodeA of neighbors){
+                for (const nodeB of neighbors) {
+                    if(nodeA !== nodeB && arcs.some(arc => arc.source === nodeA && arc.target === nodeB)){
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        // Helper function to check if there is a path from startNode to endNode using only nodes in a set
+        // and visiting the explicit node
+        const doesPathExist = (set: Set<Node>, nodeToVisit: Node): boolean => {
+            const visited = new Set<Node>();
+            const stack = [startNode];
+            const processedNodes = new Set<Node>();
+            let nodeVisited = false;
+
+            while (stack.length > 0) {
+                const currentNode = stack.pop();
+                if(currentNode === nodeToVisit){
+                    nodeVisited = true
+                }
+                if (currentNode === endNode && nodeVisited) {
+                    return true;
+                }
+                //handle startNode
+                if (currentNode && ((set.has(currentNode) && !visited.has(currentNode))
+                    || (currentNode === startNode && !visited.has(currentNode)))) {
+                    visited.add(currentNode);
+                    for (const arc of arcs) {
+                        //handle endNode
+                        if (arc.source === currentNode && ((set.has(arc.target))
+                            || arc.target === endNode)) {
+                            stack.push(arc.target);
+                        }
+                    }
+                }
+            }
+            return false;
+        };
+
+        // Step 0: Get all neighbors of the start node
+        const neighbors = new Set<Node>();
+        for (const arc of arcs) {
+            if (arc.source === startNode) {
+                neighbors.add(arc.target);
+            }
+        }
+
+        //Step 0.1: Check pairs of neighbors for unilateral reachability
+        if(!areNodesUnilateralReachable(neighbors, arcs)){
+            return false
+        }
+
+        // Step 1: Check pairs of neighbors for mutual reachability
+        for (const nodeA of neighbors) {
+            for (const nodeB of neighbors) {
+                if ((nodeA !== nodeB && areNodesMutuallyReachable(nodeA, nodeB))
+                    &&!(A2.has(nodeA) && A1.has(nodeB))) {
+                    A1.add(nodeA);
+                    A2.add(nodeB);
+                }
+            }
+        }
+
+        // Step 2: Check neighbors of A1 and A2 for mutual relationships
+        const expandSets = (setA: Set<Node>, setB: Set<Node>): boolean => {
+            const nodesToVisit = new Set<Node>(setA);
+            while (nodesToVisit.size > 0) {
+                const currentNode = nodesToVisit.values().next().value;
+                nodesToVisit.delete(currentNode);
+
+                for (const arc of arcs) {
+                    if (arc.source === currentNode && !setA.has(arc.target) && !setB.has(arc.target)
+                        && arc.target !==endNode) {
+                        const allMutuallyReachable = Array.from(setA).every(aNode=>
+                            areNodesMutuallyReachable(aNode, arc.target));
+                        if (allMutuallyReachable) {
+                            setB.add(arc.target);
+                        } else{
+                            setA.add(arc.target);
+                        }
+                        nodesToVisit.add(arc.target);
+                    }
+                }
+            }
+            return true;
+        };
+
+        if (!expandSets(A1, A2) || !expandSets(A2, A1)) {
+            return false;
+        }
+
+        // Step 2.1: Still mutuall reachable elements in A1 to A2?
+        const allMutuallyReachable = Array.from(A1).every(a1Node =>
+            Array.from(A2).every(a2Node => areNodesMutuallyReachable(a1Node, a2Node)))
+        if(!allMutuallyReachable){
+            return false
+        }
+
+
+        // Step 3: Check paths for nodes in A1
+        for (const node of A1) {
+            if (!doesPathExist(A1, node)) {
+                return false;
+            }
+        }
+
+        // Step 3.1: Check paths for nodes in A2
+        for (const node of A2) {
+            if (!doesPathExist(A2, node)) {
+                return false;
+            }
+        }
+        //mark arcs between sets A1 and A2
+        const markArcsBetweenSets = () =>{
+            for (const arc of arcs){
+                if ((A1.has(arc.source) && A2.has(arc.target))
+                    ||(A1.has(arc.target) && A2.has(arc.source))){
+                    arc.marked = true
+                    inGraph.markedArcs.push(arc)
+                }
+            }
+        }
+        //mark nodes of set A1
+        for (let node of inDfg.nodes){
+            if(A1.has(node)){
+                node.marked = true
+                inGraph.markedNodes.push(node)
+            }
+        }
+        markArcsBetweenSets()
+        arcs.forEach(arc => {
+            if((arc.source === startNode && A1.has(arc.target)) ||
+                (arc.target === endNode && A1.has(arc.source))){
+                arc.marked = true
+                inGraph.markedArcs.push(arc)
+            }
+        })
+
+        return true;
     };
 
     private searchLoopCut(
-        inDfg: DFG
+        inDfg: DFG,
+        inGraph: Graph
     ) : boolean {
-        return false;
+    const startNode = inDfg.startNode;
+    const endNode = inDfg.endNode;
+    const arcs = inDfg.arcs;
+
+    const redoSet = this.findNodesBetweenDuplicatesInArrays(inDfg.log)
+
+    //mark nodes of redo part
+    for (let node of inDfg.nodes){
+        if(redoSet.has(node)){
+        node.marked = true
+        inGraph.markedNodes.push(node)
+        }
+    }
+    //mark arcs to and from redo part
+    this.markArcsOfRedoPart(redoSet, inDfg.arcs, inGraph)
+    const checkLC: [boolean, undefined | [DFG, Node[], Node[], Node[], Node[], boolean]] = this.checkLoopCut(inGraph)
+    if(!checkLC[0]){
+        //this.initNodesAndArcs(inDfg, inGraph)
+        inGraph.resetAllMarked()
+    }
+    return checkLC[0]
     };
 
     private checkGraphStart(
@@ -5900,8 +6078,8 @@ export class InductiveMinerService {
         A2: Node[],
         dfg: DFG
     ) : {
-        isLoop: boolean, 
-        A2_play: Node[], 
+        isLoop: boolean,
+        A2_play: Node[],
         A2_stop: Node[]
     } {
         // if (A2.some(A2Node => A2Node.type !== 'event')) {
@@ -5921,7 +6099,7 @@ export class InductiveMinerService {
         if (!this.areArcsArraysEqual(arcsToCut, inOutGraph.markedArcs)) {
             return { isLoop: false, A2_play: [], A2_stop: [] };
         };
-            if (!dfg.arcs.some(arc => arc.source.type === "support" && arc.source.label == 'play' && A1_play.every(a1_play => arc.target.id === a1_play.id))) {
+        if (!dfg.arcs.some(arc => arc.source.type === "support" && arc.source.label == 'play' && A1_play.every(a1_play => arc.target.id === a1_play.id))) {
             return { isLoop: false, A2_play: [], A2_stop: [] };
         };
         if (!dfg.arcs.some(arc => arc.target.type === "support" && arc.target.label == 'stop' && A1_stop.every(a1_play => arc.source.id === a1_play.id))) {
@@ -5945,7 +6123,7 @@ export class InductiveMinerService {
     };
 
     private areArraysEqualById(
-        arrayOne: Node[], 
+        arrayOne: Node[],
         arrayTwo: Node[]
     ) : boolean {
         if (arrayOne.length !== arrayTwo.length) {
@@ -5961,7 +6139,7 @@ export class InductiveMinerService {
     };
 
     private areArcsArraysEqual(
-        arrayOne: Arc[], 
+        arrayOne: Arc[],
         arrayTwo: Arc[]
     ) : boolean {
         if (arrayOne.length !== arrayTwo.length) {
@@ -5975,20 +6153,20 @@ export class InductiveMinerService {
     };
 
     private findSubArray(
-        mainArray: Node[], 
+        mainArray: Node[],
         subArray: Node[]
-    ) : number | null { 
+    ) : number | null {
         const mainLength = mainArray.length;
-        const subLength = subArray.length; 
+        const subLength = subArray.length;
         for (let i = 0; i <= mainLength - subLength; i++) { let match = true;
-            for (let j = 0; j < subLength; j++) { 
-                if (mainArray[i + j].id !== subArray[j].id) { 
-                    match = false; 
-                    break; 
+            for (let j = 0; j < subLength; j++) {
+                if (mainArray[i + j].id !== subArray[j].id) {
+                    match = false;
+                    break;
                 };
             };
-            if (match) { 
-                return i; 
+            if (match) {
+                return i;
             };
         };
         return null;
@@ -6915,5 +7093,56 @@ export class InductiveMinerService {
         endTransition.special = true;
         return [startPlace, startTransition, midPlace, endTransition, endPlace];
     };
+
+    private initNodesAndArcs(inDfg: DFG, inGraph: Graph){
+        inDfg.arcs.forEach(arc => arc.marked = false)
+        inDfg.nodes.forEach(node => node.marked = false)
+        inGraph.markedNodes = []
+        inGraph.markedArcs = []
+    }
+
+    private markArcsOfRedoPart(redoSet: Set<Node>, arcs: Arc[], inGraph: Graph): void{
+        arcs.filter(arc => {
+            const isRelevant = redoSet.has(arc.source) || redoSet.has(arc.target)
+            if(isRelevant){
+                arc.marked = true
+                inGraph.markedArcs.push(arc)
+            }
+        })
+    }
+
+    private findNodesBetweenDuplicatesInArrays<Nodes>(nodesLog: Nodes[][]): Set<Nodes> {
+        const resultSet = new Set<Nodes>();
+        const duplicateNodes = new Set<Nodes>();
+
+        nodesLog.forEach(nodes => {
+            const nodeCounts = new Map<Nodes,number>();
+
+            //count occurrences of each node
+            nodes.forEach(node => {
+                nodeCounts.set(node,(nodeCounts.get(node) || 0) + 1)
+            })
+
+            const seenElements = new Map<Nodes, number>();
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                if (nodeCounts.get(node)! > 1) {
+                    duplicateNodes.add(node)
+                    if (seenElements.has(node)) {
+                        const startIndex = seenElements.get(node)!;
+                        for (let j = startIndex + 1; j < i; j++) {
+                            if (nodeCounts.get(nodes[j]) === 1) {
+                                resultSet.add(nodes[j])
+                            }
+                        }
+                    }
+                    seenElements.set(node, i)
+                }
+            }
+        })
+        duplicateNodes.forEach(node => resultSet.delete(node))
+        return resultSet;
+    }
 
 };
