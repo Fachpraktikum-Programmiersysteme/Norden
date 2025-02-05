@@ -88,7 +88,7 @@ export class LabelsButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._labelsDisabled = !(this._labelsDisabled);
         this._settings.updateState({ nodeLabelsDisabled: this._labelsDisabled });
         this._displayService.refreshData();

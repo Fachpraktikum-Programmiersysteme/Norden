@@ -75,7 +75,7 @@ export class DeleteButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._displayService.deleteData();
         this._toastService.showToast('graph deleted', 'info');
     };

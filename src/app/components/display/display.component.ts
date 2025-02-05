@@ -629,7 +629,7 @@ export class DisplayComponent implements OnDestroy {
         ).pipe(
             catchError(
                 error => {
-                    console.error('Error while fetching file from link', inLink, error);
+                    console.error('error occurred while fetching file from link', inLink, error);
                     return of(undefined);
                 }
             ),
@@ -685,13 +685,17 @@ export class DisplayComponent implements OnDestroy {
             this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
         };
         this.clearDrawingArea();
-        const svgLayers : [SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
+        const svgLayers : [SVGElement[], SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
         const layerOne : SVGElement[] = svgLayers[0];
         const layerTwo : SVGElement[] = svgLayers[1];
+        const layerThr : SVGElement[] = svgLayers[2];
         for (const svg of layerOne) {
             this.drawingArea.nativeElement.appendChild(svg);
         };
         for (const svg of layerTwo) {
+            this.drawingArea.nativeElement.appendChild(svg);
+        };
+        for (const svg of layerThr) {
             this.drawingArea.nativeElement.appendChild(svg);
         };
         if (!(this.dragInProgress)) {

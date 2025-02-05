@@ -83,7 +83,7 @@ export class SearchButtonComponent implements OnDestroy{
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._minerService.testCutSearch(this._displayService.graph);
     };
 

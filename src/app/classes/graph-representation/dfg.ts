@@ -74,7 +74,7 @@ export class DFG {
 
     /* methods : getters */
 
-     public get id() : number {
+    public get id() : number {
         return this._id;
     };
 
@@ -122,7 +122,7 @@ export class DFG {
 
     /* methods : other */
 
-    public  update(
+    public update(
         inStartNode: Node,
         inEndNode: Node,
         inNodes: Node[],

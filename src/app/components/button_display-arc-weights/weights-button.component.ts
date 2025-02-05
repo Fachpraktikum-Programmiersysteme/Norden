@@ -88,7 +88,7 @@ export class WeightsButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._weightsDisabled = !(this._weightsDisabled);
         this._settings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
