@@ -82,12 +82,12 @@ export class SpringEmbedderAlgorithm {
                 const dy = force.y * this.DAMPING_FACTOR;
                 const newX = node.x + dx;
                 const newY = node.y + dy;
-                if ((newX > node.x || newX > 20) && (newX < node.x || newX < this.graphicsConfig.canvasWidth - 22)) {
+                // if ((newX > node.x || newX > 20) && (newX < node.x || newX < this.graphicsConfig.canvasWidth - 22)) {
                     node.x  = newX;
-                }
-                if ((newY > node.y || newY > 22) && (newY < node.y || newY < this.graphicsConfig.canvasHeight - 22)){
+                // }
+                // if ((newY > node.y || newY > 22) && (newY < node.y || newY < this.graphicsConfig.canvasHeight - 22)){
                     node.y = newY;
-                }
+                // }
 
                 const movement = Math.sqrt(dx * dx + dy * dy);
                 if (movement > maxMovement) maxMovement = movement;
