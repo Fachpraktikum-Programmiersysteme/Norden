@@ -74,9 +74,6 @@ export class TextInputComponent implements OnDestroy {
     public processFormSubmit(inEvent : SubmitEvent) : void {
         inEvent.preventDefault();
         this.emitTextData(this._inputText);
-        /* to be removed - start */
-        console.log('submit action triggered - text : "' + this._inputText + '"');
-        /* to be removed - end */
     };
 
     private emitTextData(inString : string | undefined) : void {

@@ -88,7 +88,7 @@ export class SymbolsButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._symbolsDisabled = !(this._symbolsDisabled);
         this._settings.updateState({ nodeSymbolsDisabled: this._symbolsDisabled });
         this._displayService.refreshData();

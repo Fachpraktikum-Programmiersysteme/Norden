@@ -61,9 +61,10 @@ export class SvgService implements OnDestroy {
 
     /* methods - other */
 
-    public createSvgStatics(inGraph : Graph) : [SVGElement[], SVGElement[]] {
+    public createSvgStatics(inGraph : Graph) : [SVGElement[], SVGElement[], SVGElement[]] {
         const svgLayerOne: Array<SVGElement> = [];
         const svgLayerTwo: Array<SVGElement> = [];
+        const svgLayerThr: Array<SVGElement> = [];
         let arcId : number = 0;
         for (const arc of inGraph.arcs) {
             if (arc !== undefined) {
@@ -84,11 +85,11 @@ export class SvgService implements OnDestroy {
                     svgLayerTwo.push(this.createSvgLabel(node));
                 };
                 if (this._infos || node.infoActive || node.infoOverride) {
-                    svgLayerTwo.push(this.createSvgInfo(node));
+                    svgLayerThr.push(this.createSvgInfo(node));
                 };
             };
         };
-        return [svgLayerOne, svgLayerTwo];
+        return [svgLayerOne, svgLayerTwo, svgLayerThr];
     };
 
     public createSvgNodes(inGraph : Graph) : Array<SVGElement> {

@@ -89,4 +89,4 @@ export class AppComponent implements OnDestroy {
         this._displayService.updateData(parsedContent);
     };
 
-}
+};

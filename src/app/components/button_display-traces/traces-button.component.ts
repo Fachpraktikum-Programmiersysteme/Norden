@@ -88,7 +88,7 @@ export class TracesButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._animationsDisabled = !(this._animationsDisabled);
         this._settings.updateState({ traceAnimationsDisabled: this._animationsDisabled });
         this._displayService.refreshData();

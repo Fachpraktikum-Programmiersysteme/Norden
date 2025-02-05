@@ -25,7 +25,6 @@ export class DisplayService implements OnDestroy {
 
     ngOnDestroy(): void {
         this._graph$.complete();
-        // this._log$.complete();
     };
 
     /* methods - getters */

@@ -7,6 +7,8 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
+import {InductiveMinerService} from '../../services/inductive-miner.service';
+
 import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
@@ -28,6 +30,7 @@ export class BaseCaseButtonComponent implements OnDestroy {
 
     private _disabled : boolean;
     private _graphEmpty : boolean;
+    private _minerTerminated : boolean;
 
     private _automationDisabled : boolean;
 
@@ -35,20 +38,28 @@ export class BaseCaseButtonComponent implements OnDestroy {
 
     constructor(
         private _settings : SettingsSingleton,
+        private _minerService : InductiveMinerService,
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
         this._disabled = true;
         this._graphEmpty = false;
+        this._minerTerminated = false;
         this._automationDisabled = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
                     this._graphEmpty = true;
+                    this._minerTerminated = false;
+                } else if (this._minerService.checkTermination(graph)) {
+                    this._disabled = true;
+                    this._graphEmpty = false;
+                    this._minerTerminated = true;
                 } else {
                     this._disabled = false;
                     this._graphEmpty = false;
+                    this._minerTerminated = false;
                 }
             }
         );
@@ -74,6 +85,8 @@ export class BaseCaseButtonComponent implements OnDestroy {
         if (this._disabled) {
             if (this._graphEmpty) {
                 return '[disabled] - (graph empty)';
+            } else if (this._minerTerminated) {
+                return '[disabled] - (miner terminated)';
             } else {
                 return '[currently disabled]';
             };
@@ -88,7 +101,7 @@ export class BaseCaseButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._automationDisabled = !(this._automationDisabled);
         if (this._automationDisabled) {
             this._settings.updateState({ basecaseMode: 'manual' });

@@ -51,10 +51,7 @@ export class DisplayButtonComponent {
 
     /* methods - other */
 
-    public processMouseClickA(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('display toggle clicked - selected option A (dfg) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickA() {
         if (this._displayMode === 'changes') {
             this._displayMode = 'dfg';
             this._settings.updateState({ displayMode: this._displayMode });
@@ -62,10 +59,7 @@ export class DisplayButtonComponent {
         };
     };
 
-    public processMouseClickB(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('display toggle clicked - selected option B (changes) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickB() {
         if (this._displayMode === 'dfg') {
             this._displayMode = 'changes';
             this._settings.updateState({ displayMode: this._displayMode });
