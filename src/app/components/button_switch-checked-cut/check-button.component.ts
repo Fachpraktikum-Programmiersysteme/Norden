@@ -66,10 +66,7 @@ export class CheckButtonComponent {
 
     /* methods - other */
 
-    public processMouseClickA(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option A (ec) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickA() {
         if (this._checkMode !== 'ec') {
             this._checkMode = 'ec';
             this._settings.updateState({ checkMode: this._checkMode });
@@ -77,10 +74,7 @@ export class CheckButtonComponent {
         };
     };
 
-    public processMouseClickB(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option B (sc) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickB() {
         if (this._checkMode !== 'sc') {
             this._checkMode = 'sc';
             this._settings.updateState({ checkMode: this._checkMode });
@@ -88,10 +82,7 @@ export class CheckButtonComponent {
         };
     };
 
-    public processMouseClickC(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option C (pc) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickC() {
         if (this._checkMode !== 'pc') {
             this._checkMode = 'pc';
             this._settings.updateState({ checkMode: this._checkMode });
@@ -99,10 +90,7 @@ export class CheckButtonComponent {
         };
     };
 
-    public processMouseClickD(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option D (lc) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickD() {
         if (this._checkMode !== 'lc') {
             this._checkMode = 'lc';
             this._settings.updateState({ checkMode: this._checkMode });
@@ -110,10 +98,7 @@ export class CheckButtonComponent {
         };
     };
 
-    public processMouseClickE(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option E (bc) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickE() {
         if (this._checkMode !== 'bc') {
             this._checkMode = 'bc';
             this._settings.updateState({ checkMode: this._checkMode });
@@ -121,10 +106,7 @@ export class CheckButtonComponent {
         };
     };
 
-    public processMouseClickF(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('cut toggle clicked - selected option F (ft) : ' + inEvent);
-        /* to be removed - end */
+    public processMouseClickF() {
         if (this._checkMode !== 'ft') {
             this._checkMode = 'ft';
             this._settings.updateState({ checkMode: this._checkMode });

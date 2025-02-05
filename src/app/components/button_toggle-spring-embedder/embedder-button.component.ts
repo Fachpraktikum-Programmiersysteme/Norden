@@ -88,7 +88,7 @@ export class EmbedderButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._embedderDisabled = !(this._embedderDisabled);
         this._settings.updateState({ springEmbedderDisabled: this._embedderDisabled });
         this._displayService.refreshData();

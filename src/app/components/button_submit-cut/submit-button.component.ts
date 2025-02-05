@@ -8,6 +8,8 @@ import {Subscription} from 'rxjs';
 import {DisplayService} from '../../services/display.service';
 import {InductiveMinerService} from '../../services/inductive-miner.service';
 
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
+
 @Component({
     selector: 'submit-button',
     templateUrl: './submit-button.component.html',
@@ -33,6 +35,7 @@ export class SubmitButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
+        private _settings: SettingsSingleton,
         private _minerService : InductiveMinerService,
         private _displayService : DisplayService,
     ) {
@@ -91,13 +94,32 @@ export class SubmitButtonComponent implements OnDestroy {
                 return '[currently disabled]';
             };
         } else {
-            return 'check currently selected cut';
+            switch (this._settings.currentState.checkMode) {
+                case 'ec' : {
+                    return 'check selected Exclusive Cut';
+                }
+                case 'sc' : {
+                    return 'check selected Secuence Cut';
+                }
+                case 'pc' : {
+                    return 'check selected Parallel Cut';
+                }
+                case 'lc' : {
+                    return 'check selected Loop Cut';
+                }
+                case 'bc' : {
+                    return 'check selected Base Case';
+                }
+                case 'ft' : {
+                    return 'check for Fall Through';
+                }
+            };
         };
     };
 
     /* methods - other */
 
-    public processMouseClick(inEvent: MouseEvent) {
+    public processMouseClick() {
         this._minerService.checkInput(this._displayService.graph);
     };
 
