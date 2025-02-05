@@ -4,7 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
-import { ToastService } from '../../services/toast/toast.service';
+
 import {DisplayService} from '../../services/display.service';
 import {InductiveMinerService} from '../../services/inductive-miner.service';
 
@@ -26,25 +26,42 @@ export class SubmitButtonComponent implements OnDestroy {
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
+    private _graphEmpty : boolean;
+    private _minerTerminated : boolean;
+    private _nothingMarked : boolean;
 
     /* methods - constructor */
 
     constructor(
-        private _displayService : DisplayService,
         private _minerService : InductiveMinerService,
-        private toastService: ToastService
+        private _displayService : DisplayService,
     ) {
         this._disabled = true;
+        this._graphEmpty = false;
+        this._minerTerminated = false;
+        this._nothingMarked = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('submit-button_component noticed new graph');
-                if (this._minerService.checkTermination(graph)) {
+                if (this._displayService.graphEmpty) {
                     this._disabled = true;
-                    this.toastService.showToast('', 'info');
+                    this._graphEmpty = true;
+                    this._minerTerminated = false;
+                    this._nothingMarked = false;
+                } else if (this._minerService.checkTermination(graph)) {
+                    this._disabled = true;
+                    this._graphEmpty = false;
+                    this._minerTerminated = true;
+                    this._nothingMarked = false;
                 } else if ((this._displayService.graph.markedNodes.length < 1) && (this._displayService.graph.markedArcs.length < 1)) {
                     this._disabled = true;
+                    this._graphEmpty = false;
+                    this._minerTerminated = false;
+                    this._nothingMarked = true;
                 } else {
                     this._disabled = false;
+                    this._graphEmpty = false;
+                    this._minerTerminated = false;
+                    this._nothingMarked = false;
                 }
             }
         );
@@ -64,7 +81,15 @@ export class SubmitButtonComponent implements OnDestroy {
 
     public get tooltip() : string {
         if (this._disabled) {
-            return '[currently disabled]';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
+            } else if (this._minerTerminated) {
+                return '[disabled] - (miner terminated)';
+            } else if (this._nothingMarked) {
+                return '[disabled] - (nothing marked)';
+            } else {
+                return '[currently disabled]';
+            };
         } else {
             return 'check currently selected cut';
         };
@@ -72,28 +97,8 @@ export class SubmitButtonComponent implements OnDestroy {
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
-    public async processMouseClick(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('submit button clicked - event : ' + inEvent);
-        /* to be removed - end */
-        // this._minerService.checkCut(this._displayService.graph);
-        // this._displayService.refreshData();
-        /* to be removed - start */
-        this._minerService.testExclusiveCut(this._displayService.graph);
-        console.error('waiting 5s');
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        this._minerService.testUnmarkMarked(this._displayService.graph);
-        this._displayService.refreshData();
-        console.error('waiting 20s');
-        await new Promise(resolve => setTimeout(resolve, 20000));
-        this._minerService.testBaseCase(this._displayService.graph);
-        this._displayService.refreshData();
-        /* to be removed - end */
+    public processMouseClick(inEvent: MouseEvent) {
+        this._minerService.checkInput(this._displayService.graph);
     };
 
 };

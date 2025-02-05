@@ -9,14 +9,12 @@ import {SvgService} from '../../services/svg.service';
 
 import {ExampleFileComponent} from "../example-file/example-file.component";
 
-import {SpringEmbedderAlgorithm} from "../../classes/spring-embedder/spring-embedder.algorithm";
-import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
+import {SpringEmbedderAlgorithm} from "../../classes/display/spring-embedder.algorithm";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 import {Graph} from '../../classes/graph-representation/graph';
-import {Node} from 'src/app/classes/graph-representation/node';
-import {Arc} from 'src/app/classes/graph-representation/arc';
+import {Node} from '../../classes/graph-representation/node';
+import {Arc} from '../../classes/graph-representation/arc';
 import {Cut} from '../../classes/graph-representation/cut';
-
-
 
 @Component({
     selector: 'app-display',
@@ -70,15 +68,12 @@ export class DisplayComponent implements OnDestroy {
         private _displayService: DisplayService,
         private _fileReaderService: FileReaderService,
         private _renderAlgorithm: SpringEmbedderAlgorithm,
-        private _globalState: GlobalStateSingleton,
+        private _settings: SettingsSingleton,
         private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
         this._sub = this._displayService.graph$.subscribe(
             graph => {
-                /* to be removed - start*/
-                console.log('display_component noticed new graph through subscription');
-                /* to be removed - end*/
                 this._graph = this._displayService.graph;
                 this.draw();
             }
@@ -94,16 +89,6 @@ export class DisplayComponent implements OnDestroy {
 
     /* methods - other */
 
-    public processDropEvent(inEvent: DragEvent) : void {
-        inEvent.preventDefault();
-        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
-        if (fileLocation) {
-            this.fetchFile(fileLocation);
-        } else {
-            this.readFile(inEvent.dataTransfer?.files);
-        }
-    };
-
     private getNode(inId : number) : Node {
         const node : Node |undefined = this._graph.nodes[inId];
         if (node !== undefined) {
@@ -117,61 +102,8 @@ export class DisplayComponent implements OnDestroy {
             return this._graph.arcs[inPos];
     };
 
-    private setElementMarking(inElement : Node | Arc, inValue : boolean) {
-        if (inValue !== inElement.marked) {
-            if (inElement instanceof Node) {
-                if (inValue) {
-                    this._graph.markedNodes.push(inElement);
-                    inElement.marked = true;
-                } else {
-                    let nodeID : number = 0;
-                    let foundElement : boolean = false;
-                    for (const node of this._graph.markedNodes) {
-                        if (node !== inElement) {
-                            nodeID++;
-                        } else {
-                            foundElement = true;
-                            this._graph.markedNodes.splice(nodeID, 1);
-                            inElement.marked = false;
-                        };
-                    };
-                    if (!foundElement) {
-                        throw new Error('#cmp.dsp.sem.000: ' + 'removal of node marking failed - given node (' + inElement + ') is marked, but not a part of the marked nodes array (' + this._graph.markedNodes + ')');
-                    };
-                };
-            } else {
-                if (inValue) {
-                    this._graph.markedArcs.push(inElement);
-                    inElement.marked = true;
-                } else {
-                    let arcID : number = 0;
-                    let foundElement : boolean = false;
-                    for (const arc of this._graph.markedArcs) {
-                        if (arc !== inElement) {
-                            arcID++;
-                        } else {
-                            foundElement = true;
-                            this._graph.markedArcs.splice(arcID, 1);
-                            inElement.marked = false;
-                        };
-                    };
-                    if (!foundElement) {
-                        throw new Error('#cmp.dsp.sem.001: ' + 'removal of arc marking failed - given arc (' + inElement + ') is marked, but not a part of the marked arcs array (' + this._graph.markedArcs + ')');
-                    };
-                };
-            };
-        };
-    };
-
     private getMousePosition(inEvent : MouseEvent) : void {
         inEvent.preventDefault();
-        console.log ('event.client   : (' + inEvent.clientX + '|' + inEvent.clientY + ')');
-        console.log ('event.layer    : (' + inEvent.layerX + '|' + inEvent.layerY + ')');
-        console.log ('event.movement : (' + inEvent.movementX + '|' + inEvent.movementY + ')');
-        console.log ('event.offset   : (' + inEvent.offsetX + '|' + inEvent.offsetY + ')');
-        console.log ('event.page     : (' + inEvent.pageX + '|' + inEvent.pageY + ')');
-        console.log ('event.screen   : (' + inEvent.screenX + '|' + inEvent.screenY + ')');
-        console.log ('event.xy       : (' + inEvent.x + '|' + inEvent.y + ')');
     };
 
     private getMouseTarget(inEvent : MouseEvent) : ['node' | 'arc' | 'else', number] {
@@ -182,93 +114,42 @@ export class DisplayComponent implements OnDestroy {
             if (targetId !== null) {
                 const svgId : string[]  = targetId.split('_');
                 if (svgId[0] === 'support' || svgId[0] === 'event' || svgId[0] === 'place' || svgId[0] === 'transition') {
-                    /* to be removed - start */
-                    console.log('display-component found target: node (' + svgId[0] + ')');
-                    /* to be removed - end */
                     return ['node', parseInt(svgId[1])];
                 } else if (svgId[0] === 'arc') {
-                    /* to be removed - start */
-                    console.log('display-component found target: arc');
-                    /* to be removed - end */
                     return ['arc', parseInt(svgId[1])];
-                }
-            }
-        }
-        /* to be removed - start */
-        console.log('display-component found target: neither node nor arc');
-        /* to be removed - end */
+                };
+            };
+        };
         return ['else', 0];
     };
 
     private async checkMouseHover(inNode : Node) {
-        /* to be removed - start*/
-        // console.log('checking node ' + inNode.id);
-        // console.log('[hoverActive : "' + inNode.hoverActive + '", hoverCancelled : "' + inNode.hoverCancelled + '"');
-        /* to be removed - end*/
         await new Promise(resolve => setTimeout(resolve, 500));
         if (inNode.hoverActive) {
-            /* to be removed - start*/
-            // console.log('hover was active');
-            /* to be removed - end*/
             if (inNode.hoverCancelled) {
-                /* to be removed - start*/
-                // console.log('hover was cancelled');
-                /* to be removed - end*/
                 inNode.hoverActive = false;
-                /* to be removed - start*/
-                // console.log(' >> check action set hover to "false" for Node ' + inNode.id);
-                /* to be removed - end*/
                 inNode.hoverCancelled = false;
-                /* to be removed - start*/
-                // console.log(' >> check action set cancel to "false" for Node ' + inNode.id);
-                /* to be removed - end*/
             } else {
-                /* to be removed - start*/
-                // console.log('hover still active');
-                /* to be removed - end*/
                 this.activeInfo = inNode;
                 this.activeInfo.infoActive = true;
                 this.infoActive = true;
-                /* to be removed - start*/
-                // console.log(' >> check action set info to "true" for Node ' + this.activeInfo.id);
-                /* to be removed - end*/
                 inNode.hoverActive = false;
                 inNode.hoverCancelled = false;
-                /* to be removed - start*/
-                // console.log(' >> check action set hover & cancel to "false" for Node ' + inNode.id);
-                /* to be removed - end*/
-                this.redraw();
+                this.update();
             }
         } else {
-            /* active hover was overwritten by old check --> case is ignored, move mouse to fix */
-            /* to be removed - start*/
-            console.log('hover was overwritten (move mouse onto node again to fix)');
-            /* to be removed - end*/
         }
-        /* to be removed - start*/
-        // console.log('[hoverActive : "' + inNode.hoverActive + '", hoverCancelled : "' + inNode.hoverCancelled + '"');
-        /* to be removed - end*/
     };
 
     public processMouseEvent(inEvent : MouseEvent) : void {
-        /* to be removed - start */
-        // console.log('display-component processes MouseEvent');
-        /* to be removed - end */
         inEvent.preventDefault();
-        this.redraw();
     };
 
     public processMouseEnter(inEvent : MouseEvent) {
-        /* to be removed - start */
-        // console.log('display-component processes MouseEnter');
-        /* to be removed - end */
         inEvent.preventDefault();
     };
 
     public processMouseDown(inEvent : MouseEvent) {
-        /* to be removed - start */
-        // console.log('display-component processes MouseDown');
-        /* to be removed - end */
         inEvent.preventDefault();
         let redrawNeeded : boolean = false;
         const targetInfo : ['node' | 'arc' | 'else', number] = this.getMouseTarget(inEvent);
@@ -279,9 +160,6 @@ export class DisplayComponent implements OnDestroy {
                         if (this.activeNode !== this.getNode(targetInfo[1])) {
                             if (this.infoActive) {
                                 if (this.activeInfo !== undefined) {
-                                    /* to be removed - start*/
-                                    // console.log(' >> down action will set info to "false" for Node ' + this.activeInfo.id);
-                                    /* to be removed - end*/
                                     this.activeInfo.infoActive = false;
                                     this.activeInfo = undefined;
                                     this.infoActive = false;
@@ -290,18 +168,12 @@ export class DisplayComponent implements OnDestroy {
                                 };
                             } else if (this.activeNode.hoverActive) {
                                 this.activeNode.hoverCancelled = true;
-                                /* to be removed - start*/
-                                // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
-                                /* to be removed - end*/
                             };
                             this.activeNode.active = false;
                             this.activeNode = this.getNode(targetInfo[1]);
                             this.activeNode.active = true;
                             this.activeNode.visited = true;
                             this.activeNode.hoverActive = true;
-                            /* to be removed - start*/
-                            // console.log(' >> down action set hover to "true" for Node ' + this.activeNode.id);
-                            /* to be removed - end*/
                             this.checkMouseHover(this.activeNode);
                             redrawNeeded = true;
                         };
@@ -323,9 +195,6 @@ export class DisplayComponent implements OnDestroy {
                     this.activeNode.active = true;
                     this.activeNode.visited = true;
                     this.activeNode.hoverActive = true;
-                    /* to be removed - start*/
-                    // console.log(' >> down action set hover to "true" for Node ' + this.activeNode.id);
-                    /* to be removed - end*/
                     this.checkMouseHover(this.activeNode);
                     redrawNeeded = true;
                 };
@@ -351,9 +220,6 @@ export class DisplayComponent implements OnDestroy {
                         if (this.activeNode !== undefined) {
                             if (this.infoActive) {
                                 if (this.activeInfo !== undefined) {
-                                    /* to be removed - start*/
-                                    // console.log(' >> down action will set info to "false" for Node ' + this.activeInfo.id);
-                                    /* to be removed - end*/
                                     this.activeInfo.infoActive = false;
                                     this.activeInfo = undefined;
                                     this.infoActive = false;
@@ -362,9 +228,6 @@ export class DisplayComponent implements OnDestroy {
                                 };
                             } else if (this.activeNode.hoverActive) {
                                 this.activeNode.hoverCancelled = true;
-                                /* to be removed - start*/
-                                // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
-                                /* to be removed - end*/
                             };
                             this.activeNode.active = false;
                             this.activeNode = undefined;
@@ -388,9 +251,6 @@ export class DisplayComponent implements OnDestroy {
                     if (this.activeNode !== undefined) {
                         if (this.infoActive) {
                             if (this.activeInfo !== undefined) {
-                                /* to be removed - start*/
-                                // console.log(' >> down action will set info to "false" for Node ' + this.activeInfo.id);
-                                /* to be removed - end*/
                                 this.activeInfo.infoActive = false;
                                 this.activeInfo = undefined;
                                 this.infoActive = false;
@@ -399,9 +259,6 @@ export class DisplayComponent implements OnDestroy {
                             };
                         } else if (this.activeNode.hoverActive) {
                             this.activeNode.hoverCancelled = true;
-                            /* to be removed - start*/
-                            // console.log(' >> down action set cancel to "true" for Node ' + this.activeNode.id);
-                            /* to be removed - end*/
                         };
                         this.activeNode.active = false;
                         this.activeNode = undefined;
@@ -424,7 +281,7 @@ export class DisplayComponent implements OnDestroy {
             }
         };
         if (redrawNeeded) {
-            this.redraw();
+            this.update();
         };
         if (!(this.nodeHeld || this.arcHeld)) {
             this.cutActive = true;
@@ -433,9 +290,6 @@ export class DisplayComponent implements OnDestroy {
     };
 
     public processMouseMove(inEvent : MouseEvent) {
-        /* to be removed - start */
-        // console.log('display-component processes MouseMove');
-        /* to be removed - end */
         inEvent.preventDefault();
         let redrawNeeded : boolean = false;
         if (this.nodeHeld) {
@@ -483,9 +337,6 @@ export class DisplayComponent implements OnDestroy {
                                 if (this.activeNode !== this.getNode(targetInfo[1])) {
                                     if (this.infoActive) {
                                         if (this.activeInfo !== undefined) {
-                                            /* to be removed - start*/
-                                            // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
-                                            /* to be removed - end*/
                                             this.activeInfo.infoActive = false;
                                             this.activeInfo = undefined;
                                             this.infoActive = false;
@@ -494,18 +345,12 @@ export class DisplayComponent implements OnDestroy {
                                         };
                                     } else if (this.activeNode.hoverActive) {
                                         this.activeNode.hoverCancelled = true;
-                                        /* to be removed - start*/
-                                        // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
-                                        /* to be removed - end*/
                                     };
                                     this.activeNode.active = false;
                                     this.activeNode = this.getNode(targetInfo[1]);
                                     this.activeNode.active = true;
                                     this.activeNode.visited = true;
                                     this.activeNode.hoverActive = true;
-                                    /* to be removed - start*/
-                                    // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
-                                    /* to be removed - end*/
                                     this.checkMouseHover(this.activeNode);
                                     redrawNeeded = true;
                                 };
@@ -531,9 +376,6 @@ export class DisplayComponent implements OnDestroy {
                             this.activeNode.active = true;
                             this.activeNode.visited = true;
                             this.activeNode.hoverActive = true;
-                            /* to be removed - start*/
-                            // console.log(' >> move action set hover to "true" for Node ' + this.activeNode.id);
-                            /* to be removed - end*/
                             this.checkMouseHover(this.activeNode);
                             redrawNeeded = true;
                         };
@@ -561,9 +403,6 @@ export class DisplayComponent implements OnDestroy {
                                 if (this.activeNode !== undefined) {
                                     if (this.infoActive) {
                                         if (this.activeInfo !== undefined) {
-                                            /* to be removed - start*/
-                                            // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
-                                            /* to be removed - end*/
                                             this.activeInfo.infoActive = false;
                                             this.activeInfo = undefined;
                                             this.infoActive = false;
@@ -572,9 +411,6 @@ export class DisplayComponent implements OnDestroy {
                                         };
                                     } else if (this.activeNode.hoverActive) {
                                         this.activeNode.hoverCancelled = true;
-                                        /* to be removed - start*/
-                                        // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
-                                        /* to be removed - end*/
                                     };
                                     this.activeNode.active = false;
                                     this.activeNode = undefined;
@@ -596,9 +432,6 @@ export class DisplayComponent implements OnDestroy {
                             if (this.activeNode !== undefined) {
                                 if (this.infoActive) {
                                     if (this.activeInfo !== undefined) {
-                                        /* to be removed - start*/
-                                        // console.log(' >> move action will set info to "false" for Node ' + this.activeInfo.id);
-                                        /* to be removed - end*/
                                         this.activeInfo.infoActive = false;
                                         this.activeInfo = undefined;
                                         this.infoActive = false;
@@ -607,9 +440,6 @@ export class DisplayComponent implements OnDestroy {
                                     };
                                 } else if (this.activeNode.hoverActive) {
                                     this.activeNode.hoverCancelled = true;
-                                    /* to be removed - start*/
-                                    // console.log(' >> move action set cancel to "true" for Node ' + this.activeNode.id);
-                                    /* to be removed - end*/
                                 };
                                 this.activeNode.active = false;
                                 this.activeNode = undefined;
@@ -638,14 +468,11 @@ export class DisplayComponent implements OnDestroy {
             };
         };
         if (redrawNeeded) {
-            this.redraw();
+            this.update();
         };
     };
 
     public processMouseUp(inEvent : MouseEvent) {
-        /* to be removed - start */
-        // console.log('display-component processes MouseUp');
-        /* to be removed - end */
         inEvent.preventDefault();
         if (this.nodeHeld) {
             if (this.dragInProgress) {
@@ -653,22 +480,22 @@ export class DisplayComponent implements OnDestroy {
                 this.draggedNode = undefined;
             } else {
                 if (this.heldNode !== undefined) {
-                    this.setElementMarking(this.heldNode, (!(this.heldNode.marked)))
+                    this._graph.setElementMarkedFlag(this.heldNode, (!(this.heldNode.marked)))
                 } else {
                     throw new Error('#cmp.dsp.pmu.000: ' + 'click of node failed - clicked node is undefined');
                 };
             };
             this.heldNode = undefined;
             this.nodeHeld = false;
-            this.redraw();
+            this.update();
         } else if (this.arcHeld) {
             if (this.heldArc !== undefined) {
-                this.setElementMarking(this.heldArc, (!(this.heldArc.marked)))
+                this._graph.setElementMarkedFlag(this.heldArc, (!(this.heldArc.marked)))
             } else {
                 throw new Error('#cmp.dsp.pmu.001: ' + 'click of arc failed - clicked arc is undefined');
             };
             this.heldArc.overrideMarking = true;
-            this.redraw();
+            this.update();
             this.heldArc.overrideMarking = false;
             this.heldArc = undefined;
             this.arcHeld = false;
@@ -679,9 +506,6 @@ export class DisplayComponent implements OnDestroy {
     };
 
     public processMouseLeave(inEvent : MouseEvent) {
-        /* to be removed - start */
-        // console.log('display-component processes MouseLeave');
-        /* to be removed - end */
         inEvent.preventDefault();
         if (this.nodeActive) {
             if (this.nodeHeld) {
@@ -699,9 +523,6 @@ export class DisplayComponent implements OnDestroy {
             if (this.activeNode !== undefined) {
                 if (this.infoActive) {
                     if (this.activeInfo !== undefined) {
-                        /* to be removed - start*/
-                        // console.log(' >> leave action will set info to "false" for Node ' + this.activeInfo.id)
-                        /* to be removed - end*/
                         this.activeInfo.infoActive = false;
                         this.activeInfo = undefined;
                         this.infoActive = false;
@@ -710,9 +531,6 @@ export class DisplayComponent implements OnDestroy {
                     };
                 } else if (this.activeNode.hoverActive) {
                     this.activeNode.hoverCancelled = true;
-                    /* to be removed - start*/
-                    // console.log(' >> leave action set cancel to "true" for Node ' + this.activeNode.id);
-                    /* to be removed - end*/
                 };
                 this.activeNode.active = false;
             } else {
@@ -720,7 +538,7 @@ export class DisplayComponent implements OnDestroy {
             };
             this.activeNode = undefined;
             this.nodeActive = false;
-            this.redraw();
+            this.update();
         };
         if (this.cutActive) {
             this.endCut(inEvent);
@@ -730,16 +548,11 @@ export class DisplayComponent implements OnDestroy {
 
     public processKeyPress(inEvent : KeyboardEvent) {
         inEvent.preventDefault();
-        /* to be removed - start */
-        console.log('display-component processes KeyPress');
-        /* to be removed - end */
         if ((inEvent.key === 'i') || (inEvent.key === 'I')) {
             if (this.nodeActive) {
                 if (this.activeNode !== undefined) {
-                    this.activeNode.infoOverride = (!(this.activeNode.infoOverride))
-                    /* to be removed - start */
-                    console.log('info override set to "' + this.activeNode.infoOverride + '"" for node with id "' + this.activeNode.id + '"');
-                    /* to be removed - end */
+                    this.activeNode.infoOverride = (!(this.activeNode.infoOverride));
+                    this.update();
                 } else {
                     throw new Error('#cmp.dsp.pkp.000: ' + 'inversion of node info override failed - active node is undefined');
                 };
@@ -747,8 +560,19 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
+    public processDropEvent(inEvent: DragEvent) : void {
+        inEvent.preventDefault();
+        const fileLocation = inEvent.dataTransfer?.getData(ExampleFileComponent.META_DATA_CODE);
+        if (fileLocation) {
+            this.fetchFile(fileLocation);
+        } else {
+            this.readFile(inEvent.dataTransfer?.files);
+        };
+        this._settings.updateState({ resetInputForm : true });
+    };
+
     public prevent(inEvent: DragEvent): void {
-        // dragover must be prevented for drop to work
+        /* dragover must be prevented for drop to work */
         inEvent.preventDefault();
     };
 
@@ -782,18 +606,16 @@ export class DisplayComponent implements OnDestroy {
             };
             // TODO - call inductive miner here - No.
             if (this.activeCut.cutArcs.length > 0) {
-                console.log('Folgende Kanten wurden geschnitten: ')
                 this.activeCut.cutArcs.forEach(
                     cutArc => {
                         if (cutArc.marked) {
-                            this.setElementMarking(cutArc, false);
+                            this._graph.setElementMarkedFlag(cutArc, false);
                         } else {
-                            this.setElementMarking(cutArc, true);
+                            this._graph.setElementMarkedFlag(cutArc, true);
                         };
-                        console.log(cutArc);
                     }
                 );
-                this.redraw();
+                this.update();
             };
             this.activeCut.removeCutSvgs(this.drawingArea?.nativeElement)
             this.activeCut = undefined;
@@ -817,11 +639,6 @@ export class DisplayComponent implements OnDestroy {
                 const fileType: string | undefined = inLink.split('.').pop();
                 if (fileType !== undefined) {
                     this.emitFileData(fileType, fileContent);
-                    /* to be removed - start */
-                    console.log();
-                    console.log('"fetchFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + inLink + '"');
-                    console.log();
-                    /* to be removed - start */
                 } else {
                     throw new Error('#cmp.dsp.ftf.000: ' + 'fetching file failed - filetype was assigned "undefined"');
                 }
@@ -831,28 +648,13 @@ export class DisplayComponent implements OnDestroy {
 
     private readFile(files: FileList | undefined | null) : void {
         if (files === undefined || files === null || files.length === 0) {
-            /* to be removed - start */
-            console.log();
-            console.log('"readFile" could not detect file');
-            console.log();
-            /* to be removed - start */
             return;
         }
-        /* to be removed - start */
-        console.log();
-        console.log('"readFile" detected file "' + files[0] + '" with name "' + files[0].name + '"');
-        console.log();
-        /* to be removed - start */
         const fileType : string | undefined = files[0].name.split('.').pop();
         if (fileType !== undefined) {
             this._fileReaderService.readFile(files[0]).pipe(take(1)).subscribe(
                 fileContent => {
                     this.emitFileData(fileType, fileContent);
-                    /* to be removed - start */
-                    console.log();
-                    console.log('"readFile" prompted emit of type "' + fileType + /*'" and content "' + fileContent +*/ '" for link "' + files[0] + '"');
-                    console.log();
-                    /* to be removed - start */
                 }
             );
         } else {
@@ -867,7 +669,7 @@ export class DisplayComponent implements OnDestroy {
         this.fileData.emit([inFileType, inFileContent]);
     };
 
-    private redraw() : void {
+    private update() : void {
         this._displayService.updateData(this._graph);
     };
 
@@ -876,33 +678,29 @@ export class DisplayComponent implements OnDestroy {
             console.debug('drawing area not ready yet');
             return;
         };
-        if (!(this._globalState.currentState.embedderDiabled)) {
+        if (!(this._settings.currentState.springEmbedderDisabled)) {
             this._graph = this._renderAlgorithm.applyLayout(this._graph);
             const canvasWidth = this.drawingArea.nativeElement.clientWidth;
             const canvasHeight = this.drawingArea.nativeElement.clientHeight;
             this.resizeGraphToFitCanvas(this._graph, canvasWidth, canvasHeight);
         };
         this.clearDrawingArea();
-        const arcs: SVGElement[] = this._svgService.createSvgArcs(this._graph);
-        for (const arc of arcs) {
-            this.drawingArea.nativeElement.appendChild(arc);
+        const svgLayers : [SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
+        const layerOne : SVGElement[] = svgLayers[0];
+        const layerTwo : SVGElement[] = svgLayers[1];
+        for (const svg of layerOne) {
+            this.drawingArea.nativeElement.appendChild(svg);
         };
-        const nodes: SVGElement[] = this._svgService.createSvgNodes(this._graph);
-        for (const node of nodes) {
-            this.drawingArea.nativeElement.appendChild(node);
+        for (const svg of layerTwo) {
+            this.drawingArea.nativeElement.appendChild(svg);
         };
-        const infos: SVGElement[] = this._svgService.createSvgInfos(this._graph);
-        for (const info of infos) {
-            this.drawingArea.nativeElement.appendChild(info);
-        };
-        if (!this.dragInProgress) {
-            const traces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
-            for (const trace of traces) {
-                this.drawingArea.nativeElement.appendChild(trace);
+        if (!(this.dragInProgress)) {
+            const svgTraces: SVGElement[] = this._svgService.createSvgTraces(this._graph);
+            for (const svg of svgTraces) {
+                this.drawingArea.nativeElement.appendChild(svg);
             };
         };
     };
-
 
     private clearDrawingArea(): void {
         const drawingArea = this.drawingArea?.nativeElement;
@@ -915,38 +713,39 @@ export class DisplayComponent implements OnDestroy {
     };
 
     private resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
-        const margin = 20; // Margin around the graph
+        /* Margin around the graph */
+        const margin = 20;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-        // Calculate bounding box of the graph
-        graph.nodes.forEach((node) => {
-            if (node) {
-                minX = Math.min(minX, node.x);
-                minY = Math.min(minY, node.y);
-                maxX = Math.max(maxX, node.x);
-                maxY = Math.max(maxY, node.y);
-            };
-        });
-
+        /* Calculate bounding box of the graph */
+        graph.nodes.forEach(
+            (node) => {
+                if (node) {
+                    minX = Math.min(minX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxX = Math.max(maxX, node.x);
+                    maxY = Math.max(maxY, node.y);
+                };
+            }
+        );
         const graphWidth = maxX - minX;
         const graphHeight = maxY - minY;
-
-        // Calculate scaling factors to fit graph within canvas
+        /* Calculate scaling factors to fit graph within canvas */
         const scaleX = (canvasWidth - margin * 2) / graphWidth;
         const scaleY = (canvasHeight - margin * 2) / graphHeight;
-        const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
-
-        // Calculate offsets to center the graph in the canvas
+        /* Maintain aspect ratio */
+        const scale = Math.min(scaleX, scaleY);
+        /* Calculate offsets to center the graph in the canvas */
         const offsetX = (canvasWidth - graphWidth * scale) / 2 - minX * scale;
         const offsetY = (canvasHeight - graphHeight * scale) / 2 - minY * scale;
-
-        // Apply scaling and centering
-        graph.nodes.forEach((node) => {
-            if (node) {
-                node.x = node.x * scale + offsetX;
-                node.y = node.y * scale + offsetY;
-            };
-        });
+        /* Apply scaling and centering */
+        graph.nodes.forEach(
+            (node) => {
+                if (node) {
+                    node.x = Math.floor(node.x * scale + offsetX);
+                    node.y = Math.floor(node.y * scale + offsetY);
+                };
+            }
+        );
     };
 
 };

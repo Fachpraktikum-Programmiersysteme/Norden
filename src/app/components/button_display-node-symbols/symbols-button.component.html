@@ -1,0 +1,16 @@
+<button 
+    mat-fab 
+    [matTooltip]="tooltip" 
+    [disabled]="disabled"
+    (click)="processMouseClick($event)"
+>
+    @if (symbolsDisabled) {
+        <mat-icon>
+            font_download_off
+        </mat-icon>
+    } @else {
+        <mat-icon>
+            font_download
+        </mat-icon>
+    }
+</button>

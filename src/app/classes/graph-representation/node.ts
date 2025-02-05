@@ -20,6 +20,10 @@ export class Node {
     private _marked : boolean;
     private _active : boolean;
     private _visited : boolean;
+    private _changed : boolean;
+    private _newlyCreated : boolean;
+
+    private _special : boolean;
 
     private _infoOverride : boolean;
     private _infoActive : boolean;
@@ -29,10 +33,10 @@ export class Node {
     /* methods : constructor */
 
     public constructor(
-        inId : number, 
-        inType : 'support' | 'event' | 'place' | 'transition', 
-        inLabel : string, 
-        inX : number,  
+        inId : number,
+        inType : 'support' | 'event' | 'place' | 'transition',
+        inLabel : string,
+        inX : number,
         inY : number
     ) {
         this._id = inId;
@@ -48,6 +52,9 @@ export class Node {
         this._marked = false;
         this._active = false;
         this._visited = false;
+        this._changed = false;
+        this._newlyCreated = false;
+        this._special = false;
         this._infoOverride = false;
         this._infoActive = false;
         this._hoverActive = false;
@@ -112,6 +119,18 @@ export class Node {
         return this._visited;
     };
 
+    public get changed() : boolean {
+        return this._changed;
+    };
+
+    public get newlyCreated() : boolean {
+        return this._newlyCreated;
+    };
+
+    public get special() : boolean {
+        return this._special;
+    };
+
     public get infoOverride() : boolean {
         return this._infoOverride;
     };
@@ -127,7 +146,7 @@ export class Node {
     public get hoverCancelled() : boolean {
         return this._hoverCancelled;
     };
-    
+
     /* methods : setters */
 
     public set x(inX : number) {
@@ -165,6 +184,18 @@ export class Node {
 
     public set visited(inValue : boolean) {
         this._visited = inValue;
+    };
+
+    public set changed(inValue : boolean) {
+        this._changed = inValue;
+    };
+
+    public set newlyCreated(inValue : boolean) {
+        this._newlyCreated = inValue;
+    };
+
+    public set special(inValue : boolean) {
+        this._special = inValue;
     };
 
     public set infoOverride(inValue : boolean) {

@@ -1,0 +1,16 @@
+<button 
+    mat-fab 
+    [matTooltip]="tooltip" 
+    [disabled]="disabled"
+    (click)="processMouseClick($event)"
+>
+    @if (weightsDisabled) {
+        <mat-icon>
+            horizontal_rule
+        </mat-icon>
+    } @else {
+        <mat-icon>
+            123
+        </mat-icon>
+    }
+</button>

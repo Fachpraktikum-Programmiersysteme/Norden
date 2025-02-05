@@ -267,10 +267,10 @@ export class JsonParserService {
                     this.arcIds[arc] = arcId;
                     arcId++;
                 } else {
-                    throw new Error('#srv.jps.pra.000: ' + 'parsing arcs from .json file failed - target node is undefined (node id in .json: "' + idPair[1] + '", node id in graph: "' + this.nodeIds[idPair[1]] + '")');
+                    throw new Error('#srv.jps.pra.000: ' + 'parsing arc from .json file failed - target node is undefined (node id in .json: "' + idPair[1] + '", node id in graph: "' + this.nodeIds[idPair[1]] + '")');
                 };
             } else {
-                throw new Error('#srv.jps.pra.000: ' + 'parsing arcs from .json file failed - source node is undefined (node id in .json: "' + idPair[0] + '", node id in graph: "' + this.nodeIds[idPair[0]] + '")');
+                throw new Error('#srv.jps.pra.000: ' + 'parsing arc from .json file failed - source node is undefined (node id in .json: "' + idPair[0] + '", node id in graph: "' + this.nodeIds[idPair[0]] + '")');
             };
         };
     };
@@ -297,13 +297,26 @@ export class JsonParserService {
                     this.graph.markedNodes.push(node);
                     node.marked = true;
                 } else {
-                    throw new Error('#srv.jps.prm.000: ' + 'parsing node from .json file failed - node in json (id "' + nodeID + '") is noted as marked, but the corresponding node in graph (id "' + this.nodeIds[nodeID] + '") is undefined');
+                    throw new Error('#srv.jps.prm.000: ' + 'parsing node \'marked\'-flag from .json file failed - node in json (id "' + nodeID + '") is flagged as marked, but the corresponding node in graph (id "' + this.nodeIds[nodeID] + '") is undefined');
                 };
             };
             for (const arcID in inJsonGraph.marked[1]) {
                 const arc : Arc = this.graph.arcs[this.arcIds[arcID]];
                 this.graph.markedArcs.push(arc);
                 arc.marked = true;
+            };
+        };
+    };
+
+    private parseSpecial(inJsonGraph : JsonGraph) : void {
+        if (inJsonGraph.special !== undefined) {
+            for (const nodeID in inJsonGraph.special) {
+                const node : Node | undefined = this.graph.nodes[this.nodeIds[nodeID]]
+                if (node !== undefined) {
+                    node.special = true;
+                } else {
+                    throw new Error('#srv.jps.prs.000: ' + 'parsing node \'special\'-flag from .json file failed - node in json (id "' + nodeID + '") is flagged as special, but the corresponding node in graph (id "' + this.nodeIds[nodeID] + '") is undefined');
+                };
             };
         };
     };
@@ -317,6 +330,7 @@ export class JsonParserService {
                 const endNode : Node | undefined = this.graph.nodes[this.nodeIds[jsonDfg[1]]];
                 const nodes : Node[] = [];
                 const arcs : Arc[] = [];
+                const log : Node[][] = [];
                 for (const nodeID of jsonDfg[2]) {
                     const node : Node | undefined = this.graph.nodes[this.nodeIds[nodeID]]
                     if (node !== undefined) {
@@ -328,18 +342,30 @@ export class JsonParserService {
                 for (const arcID of jsonDfg[3]) {
                     arcs.push(this.graph.arcs[this.arcIds[arcID]]);
                 };
+                for (const trace of jsonDfg[4]) {
+                    const traceArray : Node[] = [];
+                    for (let eventID = 0; eventID < trace.length; eventID++) {
+                        const event : Node | undefined = this.graph.nodes[this.nodeIds[trace[eventID]]]
+                        if (event !== undefined) {
+                            traceArray.push(event);
+                        } else {
+                            throw new Error('#srv.jps.prd.001: ' + 'parsing dfg from .json file failed - node with id "' + trace[eventID] + '" is set as part of a dfg log in json, but the corresponding node in graph with id "' + this.nodeIds[trace[eventID]] + '" is undefined');
+                        };
+                    };
+                    log.push(traceArray);
+                };
                 if (startNode !== undefined) {
                     if (endNode !== undefined) {
-                        this.graph.appendDFG(startNode, endNode, nodes, arcs);
+                        this.graph.appendDFG(startNode, endNode, nodes, arcs, log);
                         /* TODO - if the service works as intended, remove the following comments */
                         // if (dfgId !== this.dfgIds[jsonDfgId]) {
                         //     throw new Error('#srv.jps.prd.000: ' + 'parsing dfg from .json file failed - id of last appended dfg (' + dfgId + ') is not equal to predicted id (' + this.dfgIds[jsonDfgId] + ')');
                         // };
                     } else {
-                        throw new Error('#srv.jps.prd.001: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[1] + '" is set as end of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[1]] + '" is undefined');
+                        throw new Error('#srv.jps.prd.002: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[1] + '" is set as end of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[1]] + '" is undefined');
                     };
                 } else {
-                    throw new Error('#srv.jps.prd.002: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[0] + '" is set as start of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[0]] + '" is undefined');
+                    throw new Error('#srv.jps.prd.003: ' + 'parsing dfg from .json file failed - node with id "' + jsonDfg[0] + '" is set as start of a dfg in json, but the corresponding node in graph with id "' + this.nodeIds[jsonDfg[0]] + '" is undefined');
                 };
                 dfgCount++;
             };

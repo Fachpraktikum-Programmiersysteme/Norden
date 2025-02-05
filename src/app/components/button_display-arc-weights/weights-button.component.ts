@@ -5,13 +5,14 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
 
+import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
-import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'info-button',
-    templateUrl: './info-button.component.html',
-    styleUrls: ['./info-button.component.css'],
+    selector: 'weights-button',
+    templateUrl: './weights-button.component.html',
+    styleUrls: ['./weights-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -19,31 +20,35 @@ import {GlobalStateSingleton} from "../../classes/global-state/global-state.sing
         MatTooltipModule
     ]
 })
-export class InfoButtonComponent implements OnDestroy {
+export class WeightsButtonComponent implements OnDestroy {
 
     /* attributes */
 
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
+    private _graphEmpty : boolean;
 
-    private _overrideActive : boolean;
+    private _weightsDisabled : boolean;
 
     /* methods - constructor */
 
     constructor(
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
-        private globalState: GlobalStateSingleton,
+        private _toastService : ToastService,
     ) {
         this._disabled = true;
-        this._overrideActive = false;
+        this._graphEmpty = false;
+        this._weightsDisabled = true;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('info-button_component noticed new graph');
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
+                    this._graphEmpty = true;
                 } else {
                     this._disabled = false;
+                    this._graphEmpty = false;
                 }
             }
         );
@@ -61,34 +66,37 @@ export class InfoButtonComponent implements OnDestroy {
         return this._disabled;
     };
 
-    public get overrideActive() : boolean {
-        return this._overrideActive;
+    public get weightsDisabled() : boolean {
+        return this._weightsDisabled;
     };
 
     public get tooltip() : string {
         if (this._disabled) {
-            return '[currently disabled]';
-        } else if (this._overrideActive) {
-            return 'hide all node information';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
+            } else {
+                return '[currently disabled]';
+            };
         } else {
-            return 'display all node information';
+            if (this._weightsDisabled) {
+                return 'display arc weights';
+            } else {
+                return 'hide arc weights';
+            };
         };
     };
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
     public processMouseClick(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('info button clicked - event : ' + inEvent);
-        /* to be removed - end */
-        this._overrideActive = !(this._overrideActive);
-        this.globalState.updateState({ infoOverrideActive: this._overrideActive });
+        this._weightsDisabled = !(this._weightsDisabled);
+        this._settings.updateState({ arcWeightsDisabled: this._weightsDisabled });
         this._displayService.refreshData();
+        if (this._weightsDisabled) {
+            this._toastService.showToast('arc weights hidden', 'info');
+        } else {
+            this._toastService.showToast('arc weights shown', 'info');
+        };
     };
 
 };

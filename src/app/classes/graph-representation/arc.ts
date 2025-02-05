@@ -19,10 +19,9 @@ export class Arc {
     private _marked : boolean;
     private _active : boolean;
     private _visited : boolean;
+    private _changed : boolean;
+    private _newlyCreated : boolean;
     private _overrideMarking : boolean;
-
-    // private _hoverActive : boolean;
-    // private _hoverCancelled : boolean;
 
     /* methods : constructor */
 
@@ -43,9 +42,9 @@ export class Arc {
         this._marked = false;
         this._active = false;
         this._visited = false;
+        this._changed = false;
+        this._newlyCreated = false;
         this._overrideMarking = false;
-        // this._hoverActive = false;
-        // this._hoverCancelled = false;
     };
 
     /* methods : getters */
@@ -106,17 +105,17 @@ export class Arc {
         return this._visited;
     };
 
+    public get changed() : boolean {
+        return this._changed;
+    };
+
+    public get newlyCreated() : boolean {
+        return this._newlyCreated;
+    };
+
     public get overrideMarking() : boolean {
         return this._overrideMarking;
     };
-
-    // public get hoverActive() : boolean {
-    //     return this._hoverActive;
-    // };
-
-    // public get hoverCancelled() : boolean {
-    //     return this._hoverCancelled;
-    // };
     
     /* methods : setters */
 
@@ -144,17 +143,17 @@ export class Arc {
         this._visited = inValue;
     };
 
+    public set changed(inValue : boolean) {
+        this._changed = inValue;
+    };
+
+    public set newlyCreated(inValue : boolean) {
+        this._newlyCreated = inValue;
+    };
+
     public set overrideMarking(inValue : boolean) {
         this._overrideMarking = inValue;
     };
-
-    // public set hoverActive(inValue : boolean) {
-    //     this._hoverActive = inValue;
-    // };
-
-    // public set hoverCancelled(inValue : boolean) {
-    //     this._hoverCancelled = inValue;
-    // };
 
     /* methods : other */
 

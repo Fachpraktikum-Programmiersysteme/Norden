@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 
-import {GraphUiConfig} from "../graph-ui/graph-ui.config";
+import {GraphGraphicsConfig} from "./graph-graphics.config";
 import {Graph} from '../graph-representation/graph';
 import {Node} from '../graph-representation/node';
 import {Arc} from '../graph-representation/arc';
@@ -15,7 +15,7 @@ export class SpringEmbedderAlgorithm {
     private readonly MAX_ITERATIONS = 1000;
 
     public constructor(
-        private graphUiConfig: GraphUiConfig
+        private graphicsConfig: GraphGraphicsConfig
     ) {}
 
     public applyLayout(graph: Graph): Graph
@@ -23,13 +23,14 @@ export class SpringEmbedderAlgorithm {
         let iteration = 0;
         let maxMovement = Infinity;
 
-        this.initializeNodePositions(graph, this.graphUiConfig.canvasWidth, this.graphUiConfig.canvasHeight)
+        this.initializeNodePositions(graph, this.graphicsConfig.canvasWidth, this.graphicsConfig.canvasHeight)
 
         while (iteration < this.MAX_ITERATIONS && maxMovement > 0.1) {
             const forces: Map<Node, { x: number; y: number }> = new Map();
 
             // Calculate forces
             for (const nodeA of graph.nodes) {
+
                 if (!nodeA) continue; // Safeguard against undefined nodes
 
                 let netForceX = 0;
@@ -66,6 +67,7 @@ export class SpringEmbedderAlgorithm {
                 }
 
                 forces.set(nodeA, { x: netForceX, y: netForceY });
+                
             }
 
             // Apply forces

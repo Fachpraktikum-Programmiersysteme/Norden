@@ -27,24 +27,27 @@ export class SaveButtonComponent implements OnDestroy {
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
+    private _graphEmpty : boolean;
 
     private _outId : number;
 
     /* methods - constructor */
 
     constructor(
+        private _fileWriterService : FileWriterService,
         private _displayService : DisplayService,
-        private _fileWriterService : FileWriterService
     ) {
         this._outId = 0;
         this._disabled = true;
+        this._graphEmpty = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('save-button_component noticed new graph');
                 if (graph.initialState === true) {
                     this._disabled = true;
+                    this._graphEmpty = true;
                 } else {
                     this._disabled = false;
+                    this._graphEmpty = false;
                 }
             }
         );
@@ -64,33 +67,24 @@ export class SaveButtonComponent implements OnDestroy {
 
     public get tooltip() : string {
         if (this._disabled) {
-            return '[currently disabled]';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
+            } else {
+                return '[currently disabled]';
+            };
         } else {
-            return 'save currently displayed graph';
+            return 'save graph';
         }
     };
 
     /* methods - other */
-
-    prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
+    
     processMouseClick(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log(' >> save button clicked - event : ' + inEvent);
-        /* to be removed - end */
         const currentGraph = this._displayService.graph;
         const isPN : boolean = this._fileWriterService.isPetriNet(currentGraph);
-        let fileName : string = 'out';
-        /* to be removed - start */
-        // let savePath : string = '../../../assets/files-out';
-        /* to be removed - end */
+        let fileName : string = 'saved_graph_' + this._outId;
         if (isPN) {
-            fileName = (fileName + '_' + this._outId + '_PetriNet');
-        } else {
-            fileName = (fileName + '_' + this._outId + '_Graph');
+            fileName = (fileName + '_(PetriNet)');
         };
         this._fileWriterService.writeFile(fileName, currentGraph)
         this._outId++;

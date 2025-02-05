@@ -1,9 +1,11 @@
 import {Component, OnDestroy} from '@angular/core';
+// import {MatFabButton} from "@angular/material/button";
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {Subscription} from 'rxjs';
-import { ToastService } from '../../services/toast/toast.service';
+
+import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
 
 @Component({
@@ -24,21 +26,24 @@ export class DeleteButtonComponent implements OnDestroy {
     private readonly _sub : Subscription;
 
     private _disabled : boolean;
+    private _graphEmpty : boolean;
 
     /* methods - constructor */
 
     constructor(
         private _displayService : DisplayService,
-        private toastService: ToastService
+        private _toastService: ToastService,
     ) {
         this._disabled = true;
+        this._graphEmpty = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
-                console.log('delete-button_component noticed new graph');
                 if (this._displayService.graphEmpty) {
                     this._disabled = true;
+                    this._graphEmpty = true;
                 } else {
                     this._disabled = false;
+                    this._graphEmpty = false;
                 }
             }
         );
@@ -58,28 +63,21 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public get tooltip() : string {
         if (this._disabled) {
-            return '[currently disabled]';
+            if (this._graphEmpty) {
+                return '[disabled] - (graph empty)';
+            } else {
+                return '[currently disabled]';
+            };
         } else {
-            return 'delete currently displayed graph';
+            return 'delete graph';
         };
     };
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-    triggerToast() {
-        this.toastService.showToast('Graph deleted successful', 'success');
-    }
-
     public processMouseClick(inEvent: MouseEvent) {
-        /* to be removed - start */
-        console.log('delete button clicked - event : ' + inEvent);
-        /* to be removed - end */
         this._displayService.deleteData();
-        this.triggerToast();
+        this._toastService.showToast('graph deleted', 'info');
     };
 
-}
+};

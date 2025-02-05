@@ -1,0 +1,16 @@
+<button 
+    mat-fab 
+    [matTooltip]="tooltip" 
+    [disabled]="disabled"
+    (click)="processMouseClick($event)"
+>
+    @if (automationDisabled) {
+        <mat-icon>
+            code_off
+        </mat-icon>
+    } @else {
+        <mat-icon>
+            code
+        </mat-icon>
+    }
+</button>

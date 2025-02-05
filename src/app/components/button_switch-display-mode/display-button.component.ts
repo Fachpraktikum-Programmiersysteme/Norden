@@ -5,12 +5,12 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 import {DisplayService} from '../../services/display.service';
-import {GlobalStateSingleton} from "../../classes/global-state/global-state.singleton";
+import {SettingsSingleton} from "../../classes/settings/settings.singleton";
 
 @Component({
-    selector: 'mode-button',
-    templateUrl: './mode-button.component.html',
-    styleUrls: ['./mode-button.component.css'],
+    selector: 'display-button',
+    templateUrl: './display-button.component.html',
+    styleUrls: ['./display-button.component.css'],
     standalone: true,
     imports: [
         // MatFabButton,
@@ -20,60 +20,55 @@ import {GlobalStateSingleton} from "../../classes/global-state/global-state.sing
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModeButtonComponent {
+export class DisplayButtonComponent {
 
     /* attributes */
 
-    private _mode : 'default' | 'dfg';
+    private _displayMode : 'dfg' | 'changes';
 
     /* methods - constructor */
 
     constructor(
+        private _settings: SettingsSingleton,
         private _displayService : DisplayService,
-        private globalState: GlobalStateSingleton,
     ) {
-        this._mode = 'default';
+        this._displayMode = 'dfg';
     };
 
     /* methods - getters */
 
-    public get mode() : 'default' | 'dfg' {
-        return this._mode;
+    public get displayMode() : 'dfg' | 'changes' {
+        return this._displayMode;
     };
 
     public get tooltip() : string {
-        if (this._mode) {
-            return 'switch display mode' + '\,\n';
+        if (this._displayMode === 'dfg') {
+            return 'switch display mode to highlight the latest cut\'s changes';
         } else {
-            return 'switch display mode' + '\,\n' + '(currently displaying DFG\'s)';
+            return 'switch display mode to highlight DFG\'s';
         }
     };
 
     /* methods - other */
 
-    private prevent(inEvent: Event) {
-        inEvent.preventDefault();
-        inEvent.stopPropagation();
-    };
-
     public processMouseClickA(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('mode button clicked - selected option A (default) : ' + inEvent);
+        console.log('display toggle clicked - selected option A (dfg) : ' + inEvent);
         /* to be removed - end */
-        if (this._mode === 'dfg') {
-            this._mode = 'default';
-            this.globalState.updateState({ mode: this._mode });
+        if (this._displayMode === 'changes') {
+            this._displayMode = 'dfg';
+            this._settings.updateState({ displayMode: this._displayMode });
             this._displayService.refreshData();
         };
     };
 
     public processMouseClickB(inEvent: MouseEvent) {
         /* to be removed - start */
-        console.log('mode button clicked - selected option B (dfg) : ' + inEvent);
+        console.log('display toggle clicked - selected option B (changes) : ' + inEvent);
         /* to be removed - end */
-        if (this._mode === 'default') {
-            this._mode = 'dfg';
-            this.globalState.updateState({ mode: this._mode });
+        if (this._displayMode === 'dfg') {
+            this._displayMode = 'changes';
+            this._settings.updateState({ displayMode: this._displayMode });
             this._displayService.refreshData();
         };
     };
