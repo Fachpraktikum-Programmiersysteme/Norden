@@ -589,6 +589,30 @@ export class DisplayComponent implements OnDestroy {
                     throw new Error('#cmp.dsp.pkp.000: ' + 'inversion of node info override failed - active node is undefined');
                 };
             } else if (this.arcActive) {};
+        } else if ((inEvent.key === 'm') || (inEvent.key === 'M')) {
+            if (this.nodeActive) {
+                if (this.activeNode !== undefined) {
+                    if (this.activeNode.marked) {
+                        this._graph.setElementMarkedFlag(this.activeNode, false);
+                    } else {
+                        this._graph.setElementMarkedFlag(this.activeNode, true);
+                    };
+                    this.update();
+                } else {
+                    throw new Error('#cmp.dsp.pkp.001: ' + 'inversion of node marked flag failed - active node is undefined');
+                };
+            } else if (this.arcActive) {
+                if (this.activeArc !== undefined) {
+                    if (this.activeArc.marked) {
+                        this._graph.setElementMarkedFlag(this.activeArc, false);
+                    } else {
+                        this._graph.setElementMarkedFlag(this.activeArc, true);
+                    };
+                    this.update();
+                } else {
+                    throw new Error('#cmp.dsp.pkp.002: ' + 'inversion of arc marked flag failed - active arc is undefined');
+                };
+            };
         };
     };
 
