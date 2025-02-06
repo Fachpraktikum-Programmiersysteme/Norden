@@ -52,6 +52,8 @@ export class JsonParserService {
 
             this.parseMarked(jsonGraph);
 
+            this.parseSpecial(jsonGraph);
+
             this.parseDFGs(jsonGraph);
 
             this.parseLog(jsonGraph)
@@ -218,6 +220,7 @@ export class JsonParserService {
                 if (targetNode !== undefined) {
                     this.graph.addArc(sourceNode, targetNode, inJsonGraph.arcs[arc]);
                     this.arcIds[arc] = arcId;
+                    console.warn('arcIds[' + arc + ']=' + this.arcIds[arc] + ' (' + arcId + ')')
                     arcId++;
                 } else {
                     throw new Error('#srv.jps.psa.000: ' + 'parsing arc from .json file failed - target node is undefined (node id in .json: "' + idPair[1] + '", node id in graph: "' + this.nodeIds[idPair[1]] + '")');
@@ -226,6 +229,7 @@ export class JsonParserService {
                 throw new Error('#srv.jps.psa.001: ' + 'parsing arc from .json file failed - source node is undefined (node id in .json: "' + idPair[0] + '", node id in graph: "' + this.nodeIds[idPair[0]] + '")');
             };
         };
+        console.error(this.graph.arcs)
     };
 
     private parseMarked(inJsonGraph : JsonGraph) : void {
@@ -279,6 +283,9 @@ export class JsonParserService {
                     };
                 };
                 for (const arcID of jsonDfg[3]) {
+                    console.warn(arcID)
+                    console.warn(this.arcIds[arcID])
+                    console.warn(this.graph.arcs[this.arcIds[arcID]])
                     arcs.push(this.graph.arcs[this.arcIds[arcID]]);
                 };
                 for (const trace of jsonDfg[4]) {

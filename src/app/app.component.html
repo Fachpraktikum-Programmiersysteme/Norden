@@ -62,32 +62,32 @@
                         </textarea>
                         <div class="eventLogList">
                             @for (trace of logArray; track trace.id) {
-                            @if ($last) {
-                            <li>
-                                @for (event of trace.events; track event.id) {
-                                @if ($first) {
-                                "<font color={{event.color}}>{{event.label}}</font>"
+                                @if ($last) {
+                                    <li>
+                                    @for (event of trace.events; track event.id) {
+                                        @if ($first) {
+                                            "<font color={{event.color}}>{{event.label}}</font>"
+                                        } @else {
+                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                        }
+                                    }
+                                    </li>
                                 } @else {
-                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                    <li>
+                                    @for (event of trace.events; track event.id) {
+                                        @if ($first) {
+                                            "<font color={{event.color}}>{{event.label}}</font>"
+                                        } @else {
+                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                        }
+                                    }
+                                    <font> + </font>
+                                    </li>
                                 }
-                                }
-                            </li>
-                            } @else {
-                            <li>
-                                @for (event of trace.events; track event.id) {
-                                @if ($first) {
-                                "<font color={{event.color}}>{{event.label}}</font>"
-                                } @else {
-                                <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
-                                }
-                                }
-                                <font> + </font>
-                            </li>
-                            }
                             } @empty {
-                            <div class="noLogDisplay">
-                                (no log available)
-                            </div>
+                                <div class="noLogDisplay">
+                                    (no log available)
+                                </div>
                             }
                         </div>
                     </div>
@@ -115,24 +115,21 @@
                             </embedder-button>
                         </div>
                         <div>
-                            <symbols-button>
-                            </symbols-button>
+                            <traces-button>
+                            </traces-button>
                         </div>
                     </div>
                 </div>
                 <div>
                     <basecase-button>
                     </basecase-button>
-                    
                 </div>
                 <submit-button>
                 </submit-button>
             </div>
-
-
             <div class="flexGap2px" style="padding-top: 2px; padding-bottom: 2px;">
-                <traces-button>
-                </traces-button>
+                <symbols-button>
+                </symbols-button>
                 <labels-button>
                 </labels-button>
                 <weights-button>
@@ -140,7 +137,6 @@
                 <display-button>
                 </display-button>
             </div>
-
         </div>
     </div>
 

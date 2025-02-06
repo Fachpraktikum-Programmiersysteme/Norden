@@ -190,7 +190,7 @@ export class XesParserService {
                                         let tauY : number;
                                         tauX = Math.floor(currentNode.x + Math.ceil(this._graphicsConfig.defaultNodeRadius / 2));
                                         tauY = Math.floor(currentNode.y);
-                                        const tauAdded : [boolean, number, Node] = graph.addNode('support', 'tau', tauX, tauY);
+                                        const tauAdded : [boolean, number, Node] = graph.addNode('support', 'tau'/*, tauX, tauY*/);
                                         if (!(tauAdded[0])) {
                                             throw new Error('#srv.tps.prs.003: ' + 'parsing text failed - addition of tau node failed due to conflict with an existing node');
                                         };
@@ -349,17 +349,7 @@ export class XesParserService {
             };
 
             if (traceCount > 0) {
-                if (emptyTraceCount === 0) {
-                    if (graph.nodes.length !== dfgNodesArray.length) {
-                        throw new Error('#srv.xps.end.000: ' + 'parsing .xes-file failed - node count of graph and initial dfg do not match');
-                    };
-                    if (graph.arcs.length !== dfgArcsArray.length) {
-                        throw new Error('#srv.xps.end.001: ' + 'parsing .xes-file failed - arc count of graph and initial dfg do not match');
-                    };
-                    if (graphLogArray.length !== dfgLogArray.length) {
-                        throw new Error('#srv.xps.end.002: ' + 'parsing .xes-file failed - log size of graph and initial dfg do not match');
-                    };
-                } else if (emptyTraceCount > 0) {
+                if (emptyTraceCount > 0) {
                     if (emptyTraceCount === traceCount) {
                         graph.logArray = graphLogArray;
                         try {
@@ -368,19 +358,19 @@ export class XesParserService {
                             throw new Error('conversion of empty graph failed - ' + error);
                         };
                     } else if (emptyTraceCount > traceCount) {
-                        throw new Error('#srv.xps.end.003: ' + 'parsing .xes-file failed - number of empty traces found is higher than number of total traces found');
+                        throw new Error('#srv.xps.end.000: ' + 'parsing .xes-file failed - number of empty traces found is higher than number of total traces found');
                     };
-                    if (graph.nodes.length !== (dfgNodesArray.length + 1)) {
-                        throw new Error('#srv.xps.end.004: ' + 'parsing .xes-file failed - node count of graph and initial dfg do not match');
-                    };
-                    if (graph.arcs.length !== (dfgArcsArray.length + 2)) {
-                        throw new Error('#srv.xps.end.005: ' + 'parsing .xes-file failed - arc count of graph and initial dfg do not match');
-                    };
-                    if (graphLogArray.length !== (dfgLogArray.length + emptyTraceCount)) {
-                        throw new Error('#srv.xps.end.006: ' + 'parsing .xes-file failed - log size of graph and initial dfg do not match');
-                    };
-                } else {
-                    throw new Error('#srv.xps.end.007: ' + 'parsing .xes-file failed - number of empty traces found is less than zero');
+                } else if (emptyTraceCount < 0) {
+                    throw new Error('#srv.xps.end.001: ' + 'parsing .xes-file failed - number of empty traces found is less than zero');
+                };
+                if (graph.nodes.length !== dfgNodesArray.length) {
+                    throw new Error('#srv.xps.end.002: ' + 'parsing .xes-file failed - node count of graph and initial dfg do not match');
+                };
+                if (graph.arcs.length !== dfgArcsArray.length) {
+                    throw new Error('#srv.xps.end.003: ' + 'parsing .xes-file failed - arc count of graph and initial dfg do not match');
+                };
+                if (graphLogArray.length !== dfgLogArray.length) {
+                    throw new Error('#srv.xps.end.004: ' + 'parsing .xes-file failed - log size of graph and initial dfg do not match');
                 };
                 graph.appendDFG(startNode, endNode, dfgNodesArray, dfgArcsArray, dfgLogArray);
                 graph.logArray = graphLogArray;

@@ -48,7 +48,7 @@ export class FileWriterService {
             [graphNodeId: number]: string
         } = {};
         const arcIds : {
-            [graphArcId: number]: string
+            [graphArcPos: number]: string
         } = {};
         const dfgIds : {
             [dfgId: number]: string
@@ -167,8 +167,20 @@ export class FileWriterService {
             for (const node of dfg.nodes) {
                 jsonGraph.dfgs[dfgID][2].push(nodeIds[node.id]);
             };
-            for (let arcID = 0; arcID < dfg.arcs.length; arcID++) {
-                jsonGraph.dfgs[dfgID][3].push(arcIds[arcID]);
+            for (let idx = 0; idx < dfg.arcs.length; idx++) {
+                const dfgArc = dfg.arcs[idx];
+                let arcPos : number = (-1);
+                for (let pos = 0; pos < inGraph.arcs.length; pos++) {
+                    if (inGraph.arcs[pos] === dfgArc) {
+                        arcPos = pos;
+                        break;
+                    };
+                };
+                if (arcPos > (-1)) {
+                    jsonGraph.dfgs[dfgID][3].push(arcIds[arcPos]);
+                } else {
+                    throw new Error('#srv.jws.toj.005: ' + 'conversion of graph to json failed - arc from dfg arcs array (' + dfgArc + ') could not be found in graph arcs array');
+                };
             };
             for (const trace of dfg.log) {
                 const traceArray : string[] = [];
