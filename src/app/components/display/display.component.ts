@@ -74,6 +74,7 @@ export class DisplayComponent implements OnDestroy {
         private _http: HttpClient
     ) {
         this.fileData = new EventEmitter<[string, string]>();
+        this._displayService.setDisplayComponent(this);
         this._sub = this._displayService.graph$.subscribe(
             graph => {
                 this._graph = this._displayService.graph;
@@ -511,10 +512,9 @@ export class DisplayComponent implements OnDestroy {
 
     public processMouseWheel(inEvent: WheelEvent) {
         if (!this.drawingArea?.nativeElement) return;
-        if (!this.viewBox.h || !this.viewBox.w) {
-            this.viewBox = { x: 0, y: 0, w: this.drawingArea?.nativeElement.clientWidth, h: this.drawingArea?.nativeElement.clientHeight };
-            this.drawingArea?.nativeElement.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
-        }
+        this.viewBox.w ??= this.drawingArea?.nativeElement.clientWidth;
+        this.viewBox.h ??= this.drawingArea?.nativeElement.clientHeight;
+        this.drawingArea?.nativeElement.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
         if (!this.viewBox.h || !this.viewBox.w) return;
         if(inEvent.deltaY < 0) {
             this.drawingArea.nativeElement.style.cursor = 'zoom-in';
@@ -522,7 +522,7 @@ export class DisplayComponent implements OnDestroy {
             this.drawingArea.nativeElement.style.cursor = 'zoom-out';
         }
         inEvent.preventDefault();
-
+        
         var mx = inEvent.offsetX;
         var my = inEvent.offsetY;
         var dw = this.viewBox.w * Math.sign(inEvent.deltaY) * -0.05;
@@ -658,6 +658,11 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
+    public resetZoom() {
+        this.viewBox = { x: 0, y: 0, w: this.drawingArea?.nativeElement.clientWidth, h: this.drawingArea?.nativeElement.clientHeight };
+        this.drawingArea?.nativeElement.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
+    }
+
     private fetchFile(inLink: string): void {
         this._http.get(
             inLink,
@@ -752,7 +757,7 @@ export class DisplayComponent implements OnDestroy {
         };
     };
 
-    private resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
+    public resizeGraphToFitCanvas(graph: Graph, canvasWidth: number, canvasHeight: number): void {
         /* Margin around the graph */
         const margin = 20;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -787,6 +792,7 @@ export class DisplayComponent implements OnDestroy {
             }
         );
     };
+
     private getMousePositionInSvg(evt: MouseEvent, svgElement: SVGSVGElement): { x: number, y: number } {
         const svgPoint = svgElement.createSVGPoint();
         svgPoint.x = evt.clientX;

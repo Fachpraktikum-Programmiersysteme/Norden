@@ -1,8 +1,10 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-import {BehaviorSubject, Observable} from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-import {Graph} from '../classes/graph-representation/graph';
+import { Graph } from '../classes/graph-representation/graph';
+
+import { DisplayComponent } from '../components/display/display.component';
 
 @Injectable({
     providedIn: 'root'
@@ -11,9 +13,9 @@ export class DisplayService implements OnDestroy {
 
     /* attributes */
 
-    private readonly _graph$ : BehaviorSubject<Graph>;
-    private _graphEmpty : boolean;
-
+    private readonly _graph$: BehaviorSubject<Graph>;
+    private _graphEmpty: boolean;
+    private _displayComponent: DisplayComponent | undefined;
     /* methods - constructor */
 
     public constructor() {
@@ -43,19 +45,19 @@ export class DisplayService implements OnDestroy {
 
     /* methods - other */
 
-    public deleteData() : void {
+    public deleteData(): void {
         this.updateData(undefined);
     };
 
-    public refreshData() : void {
+    public refreshData(): void {
         this.updateData(this._graph$.getValue());
     };
 
     public async updateData(inGraph: Graph | undefined) {
         return await new Promise(
             resolve => {
-                let newGraph : Graph = new Graph();
-                let graphEmpty : boolean = true;
+                let newGraph: Graph = new Graph();
+                let graphEmpty: boolean = true;
                 if (inGraph !== undefined) {
                     newGraph = inGraph;
                     if ((newGraph.nodes.length !== 0) || (newGraph.arcs.length !== 0)) {
@@ -68,11 +70,11 @@ export class DisplayService implements OnDestroy {
         );
     };
 
-    public generateOutputLogString() : string {
-        let outLogString : string = '';
-        let traceIdx : number = 0;
+    public generateOutputLogString(): string {
+        let outLogString: string = '';
+        let traceIdx: number = 0;
         for (const trace of this.graph.logArray) {
-            let eventIdx : number = 0;
+            let eventIdx: number = 0;
             for (const event of trace) {
                 if (eventIdx !== 0) {
                     outLogString = outLogString + ' "' + event.label + '"'
@@ -93,4 +95,11 @@ export class DisplayService implements OnDestroy {
         return outLogString;
     };
 
+    public setDisplayComponent(component: DisplayComponent) {
+        this._displayComponent = component;
+    }
+
+    public resetZoom(): void {
+        this._displayComponent?.resetZoom();
+    }
 };
