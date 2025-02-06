@@ -1159,6 +1159,8 @@ export class InductiveMinerService {
             /* to be removed - end */
             return undefined;
         };
+        const previouslyMarkedNodes : Node[] = inOutGraph.markedNodes.slice();
+        const previouslyMarkedArcs : Arc[] = inOutGraph.markedArcs.slice();
         let cut : [Node[], Arc[]] | undefined = undefined;
         cut = this.searchExclusiveCut(inOutGraph, dfg);
         if (cut !== undefined) {
@@ -1185,6 +1187,19 @@ export class InductiveMinerService {
         if (cut !== undefined) {
             /* to be removed - start */
             console.log('fall through rejected on check 9');
+            /* to be removed - end */
+            return undefined;
+        };
+        inOutGraph.resetAllMarked();
+        for (const node of previouslyMarkedNodes) {
+            inOutGraph.setElementMarkedFlag(node, true);
+        };
+        for (const arc of previouslyMarkedArcs) {
+            inOutGraph.setElementMarkedFlag(arc, true);
+        };
+        if (this.checkBaseCase(inOutGraph) !== undefined) {
+            /* to be removed - start */
+            console.log('fall through rejected on check 10');
             /* to be removed - end */
             return undefined;
         };
@@ -2037,30 +2052,34 @@ export class InductiveMinerService {
                 let botTauCase : boolean = false;
                 let topTauArc : Arc | undefined = undefined;
                 let botTauArc : Arc | undefined = undefined;
-                let topTauTarget : Node | undefined = undefined;
-                let botTauSource : Node | undefined = undefined;
                 let topTauBranch : [Arc, Node, Arc] | undefined = undefined;
                 let botTauBranch : [Arc, Node, Arc] | undefined = undefined;
+                const topTauTargets : {
+                    [nodeId : number] : boolean;
+                } = {};
+                const botTauSources : {
+                    [nodeId : number] : boolean;
+                } = {};
                 for (const arc of inCutArcs) {
                     const outerArcsAdded : [boolean, Arc, boolean, Arc] = this.replaceAndAddArc(inOutGraph, arc, arc.source, newStop, newPlay, arc.target);
-                    if (outerArcsAdded[0]) {
-                        if (outerArcsAdded[1].source === inSplitDfg.startNode) {
-                            topTauTarget = arc.target;
+                    if (outerArcsAdded[1].source === inSplitDfg.startNode) {
                             topTauCase = true;
                             topTauArc = outerArcsAdded[1];
+                            topTauTargets[arc.target.id] = true;
                         } else {
-                            inTopSubgraph[1].push(outerArcsAdded[1]);
+                            if (outerArcsAdded[0]) {
+                                inTopSubgraph[1].push(outerArcsAdded[1]);
+                            };
                         };
-                    };
-                    if (outerArcsAdded[2]) {
                         if (outerArcsAdded[3].target === inSplitDfg.endNode) {
-                            botTauSource = arc.source;
                             botTauCase = true;
                             botTauArc = outerArcsAdded[3];
+                            botTauSources[arc.source.id] = true;
                         } else {
-                            inBotSubgraph[1].push(outerArcsAdded[3]);
+                            if (outerArcsAdded[2]) {
+                                inBotSubgraph[1].push(outerArcsAdded[3]);
+                            };
                         };
-                    };
                 };
                 if (topTauCase && botTauCase) {
                     throw new Error('#srv.mnr.esc.028: ' + 'sequence cut execution failed - top and bottom split both contain tau case');
@@ -2226,7 +2245,7 @@ export class InductiveMinerService {
                                     trace.splice((evIdx + 1), 0, newStop, newPlace, newPlay);
                                     if (topTauCase) {
                                         if (topTauBranch !== undefined) {
-                                            if ((arc.source === inSplitDfg.startNode) && (arc.target === topTauTarget)) {
+                                            if ((arc.source === inSplitDfg.startNode) && (topTauTargets[arc.target.id] === true)) {
                                                 trace.splice((evIdx + 1), 0, topTauBranch[1]);
                                                 evIdx = (evIdx + 1);
                                             };
@@ -2235,11 +2254,11 @@ export class InductiveMinerService {
                                         };
                                     } else if (botTauCase) {
                                         if (botTauBranch !== undefined) {
-                                            if ((arc.source === botTauSource) && (arc.target === inSplitDfg.endNode)) {
+                                            if ((arc.target === inSplitDfg.endNode) && (botTauSources[arc.source.id] === true)) {
                                                 trace.splice((evIdx + 4), 0, botTauBranch[1]);
                                                 evIdx = (evIdx + 1);
                                             };
-                                        }else {
+                                        } else {
                                             throw new Error('#srv.mnr.esc.048: ' + 'sequence cut execution failed - bottom tau case was detected, but bottom tau branch returns undefined');
                                         };
                                     };
@@ -3078,7 +3097,7 @@ export class InductiveMinerService {
                             };
                             let translation : [Node[], Node[]] | undefined = undefined;
                             for (const entry of traceTranslations) {
-                                if (this.checkTraceEquality (cutSubtrace, entry[0])) {
+                                if (this.checkTraceEquality(cutSubtrace, entry[0])) {
                                     translation = [entry[1], entry[2]];
                                     break;
                                 };
@@ -3370,6 +3389,11 @@ export class InductiveMinerService {
                 inOutGraph.setElementMarkedFlag(doSubgraphPlay, true);
             };
             inOutGraph.setElementNewFlag(doSubgraphPlay, true);
+            const arcToDoPlayAdded = inOutGraph.addArc(newStartNode, doSubgraphPlay, arcsToDoWeight);
+            if (!(arcToDoPlayAdded[0])) {
+                throw new Error('#srv.mnr.elc.013: ' + 'loop cut execution failed - addition of arc from new start node to do play node failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementChangedFlag(arcToDoPlayAdded[2], true);
             for (const arc of arcsToDo) {
                 doSubgraph[1].push(this.replaceArc(inOutGraph, arc, doSubgraphPlay, arc.target));
             };
@@ -3396,6 +3420,7 @@ export class InductiveMinerService {
             for (const arc of arcsToDo) {
                 doSubgraph[1].push(arc);
             };
+            inOutGraph.updateArcWeight(incomingArc, arcsToDoWeight);
         };
         if (endOfGraph) {
             const globalStopNodes : [Node, Node, Node] = this.transformEnd(inOutGraph, oldEndNode, arcsFromDoWeight);
@@ -3412,6 +3437,11 @@ export class InductiveMinerService {
                 inOutGraph.setElementMarkedFlag(doSubgraphStop, true);
             };
             inOutGraph.setElementNewFlag(doSubgraphStop, true);
+            const arcFromDoStopAdded = inOutGraph.addArc(doSubgraphStop, newEndNode, arcsFromDoWeight);
+            if (!(arcFromDoStopAdded[0])) {
+                throw new Error('#srv.mnr.elc.014: ' + 'loop cut execution failed - addition of arc from do stop node to new end node failed due to conflict with an existing arc');
+            };
+            inOutGraph.setElementChangedFlag(arcFromDoStopAdded[2], true);
             for (const arc of arcsFromDo) {
                 doSubgraph[1].push(this.replaceArc(inOutGraph, arc, arc.source, doSubgraphStop));
             };
@@ -3438,6 +3468,7 @@ export class InductiveMinerService {
             for (const arc of arcsFromDo) {
                 doSubgraph[1].push(arc);
             };
+            inOutGraph.updateArcWeight(outgoingArc, arcsFromDoWeight)
         };
         const redoPlayX : number = Math.floor((newStartNode.x / 2) + (nextRedoNodeFromStartX / 2));
         const redoPlayY : number = Math.floor((newStartNode.y / 2) + (nextRedoNodeFromStartY / 2));
@@ -3459,14 +3490,6 @@ export class InductiveMinerService {
         };
         inOutGraph.setElementNewFlag(redoSubgraphPlay, true);
         inOutGraph.setElementNewFlag(redoSubgraphStop, true);
-        const arcToDoAdded = inOutGraph.addArc(newStartNode, doSubgraphPlay, arcsToDoWeight);
-        if (!(arcToDoAdded[0])) {
-            throw new Error('#srv.mnr.elc.013: ' + 'loop cut execution failed - addition of arc from new start node to do play node failed due to conflict with an existing arc');
-        };
-        const arcFromDoAdded = inOutGraph.addArc(doSubgraphStop, newEndNode, arcsFromDoWeight);
-        if (!(arcFromDoAdded[0])) {
-            throw new Error('#srv.mnr.elc.014: ' + 'loop cut execution failed - addition of arc from do stop node to new end node failed due to conflict with an existing arc');
-        };
         const arcToRedoAdded = inOutGraph.addArc(newEndNode, redoSubgraphPlay, arcsToRedoWeight);
         if (!(arcToRedoAdded[0])) {
             throw new Error('#srv.mnr.elc.015: ' + 'loop cut execution failed - addition of arc from new end node to redo play node failed due to conflict with an existing arc');
@@ -3477,8 +3500,6 @@ export class InductiveMinerService {
         };
         inOutGraph.setElementMarkedFlag(arcToRedoAdded[2], true);
         inOutGraph.setElementMarkedFlag(arcFromRedoAdded[2], true);
-        inOutGraph.setElementChangedFlag(arcToDoAdded[2], true);
-        inOutGraph.setElementChangedFlag(arcFromDoAdded[2], true);
         inOutGraph.setElementNewFlag(arcToRedoAdded[2], true);
         inOutGraph.setElementNewFlag(arcFromRedoAdded[2], true);
         for (const arc of arcsToRedo) {
@@ -5792,6 +5813,8 @@ export class InductiveMinerService {
         const cutArcs : Arc[] = [];
         const arcsBetweenMarked : Arc[] = [];
         const arcsBetweenUnmarked : Arc[] = [];
+        let cutStartArcFound : boolean = false;
+        let cutEndArcFound : boolean = false;
         if (inCutsStartOnMarked) {
             for (const arc of inDfg.arcs) {
                 if (arc.source === inDfg.startNode) {
@@ -5805,6 +5828,20 @@ export class InductiveMinerService {
                     };
                     if (!(arc.source.marked)) {
                         return undefined;
+                    };
+                    if (arc.source === inDfg.startNode) {
+                        if (cutEndArcFound) {
+                            return undefined;
+                        } else {
+                            cutStartArcFound = true;
+                        };
+                    };
+                    if (arc.target === inDfg.endNode) {
+                        if (cutStartArcFound) {
+                            return undefined;
+                        } else {
+                            cutEndArcFound = true;
+                        };
                     };
                     cutArcs.push(arc);
                 } else {
@@ -5837,6 +5874,20 @@ export class InductiveMinerService {
                     };
                     if (!(arc.target.marked)) {
                         return undefined;
+                    };
+                    if (arc.source === inDfg.startNode) {
+                        if (cutEndArcFound) {
+                            return undefined;
+                        } else {
+                            cutStartArcFound = true;
+                        };
+                    };
+                    if (arc.target === inDfg.endNode) {
+                        if (cutStartArcFound) {
+                            return undefined;
+                        } else {
+                            cutEndArcFound = true;
+                        };
                     };
                     cutArcs.push(arc);
                 } else {

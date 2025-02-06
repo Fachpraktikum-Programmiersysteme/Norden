@@ -156,7 +156,7 @@ export class TextParserService {
                                 let tauY : number;
                                 tauX = Math.floor(currentNode.x + Math.ceil(this._graphicsConfig.defaultNodeRadius / 2));
                                 tauY = Math.floor(currentNode.y);
-                                const tauAdded : [boolean, number, Node] = graph.addNode('support', 'tau', tauX, tauY);
+                                const tauAdded : [boolean, number, Node] = graph.addNode('support', 'tau'/*, tauX, tauY*/);
                                 if (!(tauAdded[0])) {
                                     throw new Error('#srv.tps.prs.003: ' + 'parsing text failed - addition of tau node failed due to conflict with an existing node');
                                 };
