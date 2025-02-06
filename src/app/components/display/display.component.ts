@@ -60,6 +60,8 @@ export class DisplayComponent implements OnDestroy {
 
     private cutActive: boolean = false;
     private activeCut: Cut | undefined;
+
+    private viewBox: { x: number, y: number, w: number | undefined, h: number | undefined } = { x: 0, y: 0, w: undefined, h: undefined };
  
     /* methods - constructor */
 
@@ -506,6 +508,34 @@ export class DisplayComponent implements OnDestroy {
             this.cutActive = false;
         };
     };
+
+    public processMouseWheel(inEvent: WheelEvent) {
+        if (!this.drawingArea?.nativeElement) return;
+        if (!this.viewBox.h || !this.viewBox.w) {
+            this.viewBox = { x: 0, y: 0, w: this.drawingArea?.nativeElement.clientWidth, h: this.drawingArea?.nativeElement.clientHeight };
+            this.drawingArea?.nativeElement.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
+        }
+        if (!this.viewBox.h || !this.viewBox.w) return;
+        if(inEvent.deltaY < 0) {
+            this.drawingArea.nativeElement.style.cursor = 'zoom-in';
+        } else {
+            this.drawingArea.nativeElement.style.cursor = 'zoom-out';
+        }
+        inEvent.preventDefault();
+
+        var mx = inEvent.offsetX;
+        var my = inEvent.offsetY;
+        var dw = this.viewBox.w * Math.sign(inEvent.deltaY) * -0.05;
+        var dh = this.viewBox.h * Math.sign(inEvent.deltaY) * -0.05;
+        var dx = dw * mx / this.drawingArea?.nativeElement.clientWidth;
+        var dy = dh * my / this.drawingArea?.nativeElement.clientHeight;
+        this.viewBox = { x: this.viewBox.x + dx, y: this.viewBox.y + dy, w: this.viewBox.w - dw, h: this.viewBox.h - dh };
+        this.drawingArea?.nativeElement.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
+        setTimeout(() => {
+            if (this.drawingArea)
+            this.drawingArea.nativeElement.style.cursor = 'default';
+        }, 200)
+    }
 
     public processMouseLeave(inEvent : MouseEvent) {
         inEvent.preventDefault();
