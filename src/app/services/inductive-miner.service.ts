@@ -1007,7 +1007,7 @@ export class InductiveMinerService {
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
-        if (dfg.nodes.length > 4) {
+        if (dfg.nodes.length > 3) {
             /* to be removed - start */
             console.log('base case rejected on check 6');
             /* to be removed - end */
