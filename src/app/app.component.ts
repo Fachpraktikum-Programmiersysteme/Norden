@@ -70,7 +70,7 @@ export class AppComponent implements OnDestroy {
     /* methods - other */
 
     public processSourceChange(inSourceData : [string, string]) : void {
-         this.fileAreaFc.setValue(inSourceData[1]);
+        this.fileAreaFc.setValue(inSourceData[1]);
         let parsedContent : Graph = new Graph;
         switch (inSourceData[0]) {
             case 'txt' : {

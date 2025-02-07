@@ -7,6 +7,7 @@ import {Subscription} from 'rxjs';
 
 import {ToastService} from '../../services/toast.service';
 import {DisplayService} from '../../services/display.service';
+import {SettingsSingleton} from 'src/app/classes/settings/settings.singleton';
 
 @Component({
     selector: 'delete-button',
@@ -31,6 +32,7 @@ export class DeleteButtonComponent implements OnDestroy {
     /* methods - constructor */
 
     constructor(
+        private _settings : SettingsSingleton,
         private _displayService : DisplayService,
         private _toastService: ToastService,
     ) {
@@ -77,6 +79,7 @@ export class DeleteButtonComponent implements OnDestroy {
 
     public processMouseClick() {
         this._displayService.deleteData();
+        this._settings.updateState({ resetInputForm : true });
         this._toastService.showToast('graph deleted', 'info');
     };
 
