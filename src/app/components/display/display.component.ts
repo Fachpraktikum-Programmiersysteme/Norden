@@ -751,16 +751,13 @@ export class DisplayComponent implements OnDestroy {
         };
         this.clearDrawingArea();
         const svgLayers : [SVGElement[], SVGElement[], SVGElement[]] = this._svgService.createSvgStatics(this._graph);
-        const layerOne : SVGElement[] = svgLayers[0];
-        const layerTwo : SVGElement[] = svgLayers[1];
-        const layerThr : SVGElement[] = svgLayers[2];
-        for (const svg of layerOne) {
+        const svgGraphElements : SVGElement[] = svgLayers[0];
+        const svgDescriptors : SVGElement[] = svgLayers[1];
+        const svgInfoBoxes : SVGElement[] = svgLayers[2];
+        for (const svg of svgGraphElements) {
             this.drawingArea.nativeElement.appendChild(svg);
         };
-        for (const svg of layerTwo) {
-            this.drawingArea.nativeElement.appendChild(svg);
-        };
-        for (const svg of layerThr) {
+        for (const svg of svgDescriptors) {
             this.drawingArea.nativeElement.appendChild(svg);
         };
         if (!(this.dragInProgress)) {
@@ -768,6 +765,9 @@ export class DisplayComponent implements OnDestroy {
             for (const svg of svgTraces) {
                 this.drawingArea.nativeElement.appendChild(svg);
             };
+        };
+        for (const svg of svgInfoBoxes) {
+            this.drawingArea.nativeElement.appendChild(svg);
         };
     };
 

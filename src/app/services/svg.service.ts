@@ -62,34 +62,34 @@ export class SvgService implements OnDestroy {
     /* methods - other */
 
     public createSvgStatics(inGraph : Graph) : [SVGElement[], SVGElement[], SVGElement[]] {
-        const svgLayerOne: Array<SVGElement> = [];
-        const svgLayerTwo: Array<SVGElement> = [];
-        const svgLayerThr: Array<SVGElement> = [];
+        const svgGraphElements: Array<SVGElement> = [];
+        const svgDescriptors: Array<SVGElement> = [];
+        const svgInfoBoxes: Array<SVGElement> = [];
         let arcId : number = 0;
         for (const arc of inGraph.arcs) {
             if (arc !== undefined) {
-                svgLayerOne.push(this.createSvgArc(arc, arcId));
+                svgGraphElements.push(this.createSvgArc(arc, arcId));
                 if (this._weights) {
-                    svgLayerTwo.push(this.createSvgWeight(arc, arcId));
+                    svgDescriptors.push(this.createSvgWeight(arc, arcId));
                 };
             };
             arcId++;
         };
         for (const node of inGraph.nodes) {
             if (node !== undefined) {
-                svgLayerOne.push(this.createSvgNode(node));
+                svgGraphElements.push(this.createSvgNode(node));
                 if (this._symbols) {
-                    svgLayerOne.push(this.createSvgSymbol(node, inGraph.startNode, inGraph.endNode));
+                    svgGraphElements.push(this.createSvgSymbol(node, inGraph.startNode, inGraph.endNode));
                 };
                 if (this._labels) {
-                    svgLayerTwo.push(this.createSvgLabel(node));
+                    svgDescriptors.push(this.createSvgLabel(node));
                 };
                 if (this._infos || node.infoActive || node.infoOverride) {
-                    svgLayerThr.push(this.createSvgInfo(node));
+                    svgInfoBoxes.push(this.createSvgInfo(node));
                 };
             };
         };
-        return [svgLayerOne, svgLayerTwo, svgLayerThr];
+        return [svgGraphElements, svgDescriptors, svgInfoBoxes];
     };
 
     public createSvgNodes(inGraph : Graph) : Array<SVGElement> {
