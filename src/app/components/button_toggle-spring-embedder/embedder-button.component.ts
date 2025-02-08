@@ -38,9 +38,9 @@ export class EmbedderButtonComponent implements OnDestroy {
         private _displayService : DisplayService,
         private _toastService : ToastService,
     ) {
-        this._disabled = true;
+        this._disabled = false;
         this._graphEmpty = false;
-        this._embedderDisabled = true;
+        this._embedderDisabled = false;
         this._sub  = this._displayService.graph$.subscribe(
             graph => {
                 if (this._displayService.graphEmpty) {
