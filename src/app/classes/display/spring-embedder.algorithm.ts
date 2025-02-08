@@ -4,11 +4,13 @@ import {GraphGraphicsConfig} from "./graph-graphics.config";
 import {Graph} from '../graph-representation/graph';
 import {Node} from '../graph-representation/node';
 import {Arc} from '../graph-representation/arc';
+import {LayoutAlgorithmInterface} from "./layout-algorithm.interface";
 
 @Injectable({
     providedIn: 'root', /* Makes it available application-wide */
 })
-export class SpringEmbedderAlgorithm {
+export class SpringEmbedderAlgorithm implements LayoutAlgorithmInterface
+{
     private readonly SPRING_LENGTH = 100;
     private readonly SPRING_CONSTANT = 0.004;
     private readonly REPULSION_CONSTANT = 1000;
@@ -77,7 +79,7 @@ export class SpringEmbedderAlgorithm {
                 };
 
                 forces.set(nodeA, { x: netForceX, y: netForceY });
-                
+
             };
 
             /* Apply forces */
