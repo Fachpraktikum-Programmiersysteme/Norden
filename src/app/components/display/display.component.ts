@@ -624,6 +624,7 @@ export class DisplayComponent implements OnDestroy {
         } else {
             this.readFile(inEvent.dataTransfer?.files);
         };
+        this._settings.updateState({ falseInputStage : 0 });
         this._settings.updateState({ resetInputForm : true });
     };
 

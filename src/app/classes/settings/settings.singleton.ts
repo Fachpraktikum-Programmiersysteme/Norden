@@ -29,9 +29,9 @@ export class SettingsSingleton {
         resetInputForm: false,
         nodeInfosDisabled: true,
         nodeLabelsDisabled: true,
-        nodeSymbolsDisabled: true,
+        nodeSymbolsDisabled: false,
         arcWeightsDisabled: true,
-        springEmbedderDisabled: true,
+        springEmbedderDisabled: false,
         traceAnimationsDisabled: true,
     });
 

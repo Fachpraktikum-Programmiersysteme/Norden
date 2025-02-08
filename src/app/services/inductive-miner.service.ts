@@ -206,9 +206,9 @@ export class InductiveMinerService {
             };
             await new Promise(resolve => setTimeout(resolve, 3000));
             if (this.checkTermination(inOutGraph)) {
-                this._toastService.showToast('the inductive miner has terminated', 'success');
+                this._toastService.showToast('the inductive miner has terminated', 'success', 6000);
             } else {
-                this._toastService.showToast('termination condition of inductive miner not met', 'error');
+                this._toastService.showToast('termination condition of inductive miner not met', 'error', 6000);
             };
         } else {
             const falseInputs : number = this._settings.currentState.falseInputStage;
@@ -242,31 +242,31 @@ export class InductiveMinerService {
                     }
                     case 3 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Cut is possible', 'info');
+                        this._toastService.showToast('a Cut is possible', 'info', 6000);
                         break;
                     }
                     case 4 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                        this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                         break;
                     }
                     case 5 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
                         switch (cutCheck[0]) {
                             case 'EC' : {
-                                this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'SC' : {
-                                this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'PC' : {
-                                this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'LC' : {
-                                this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                         };
@@ -284,19 +284,19 @@ export class InductiveMinerService {
                         this._displayService.refreshData();
                         switch (cutCheck[0]) {
                             case 'EC' : {
-                                this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'SC' : {
-                                this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'PC' : {
-                                this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                             case 'LC' : {
-                                this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info');
+                                this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
                                 break;
                             }
                         };
@@ -326,12 +326,12 @@ export class InductiveMinerService {
                     }
                     case 3 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Base Case is applicable', 'info');
+                        this._toastService.showToast('a Base Case is applicable', 'info', 6000);
                         break;
                     }
                     case 4 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info');
+                        this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
                         break;
                     }
                     default : {
@@ -341,7 +341,7 @@ export class InductiveMinerService {
                             inOutGraph.setElementMarkedFlag(node, true);
                         };
                         this._displayService.refreshData();
-                        this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info');
+                        this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
                     }
                 };
             } else {
@@ -367,12 +367,12 @@ export class InductiveMinerService {
                     }
                     case 3 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Fall Through is applicable', 'info');
+                        this._toastService.showToast('a Fall Through is applicable', 'info', 6000);
                         break;
                     }
                     case 4 : {
                         await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info');
+                        this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
                         break;
                     }
                     default : {
@@ -382,7 +382,7 @@ export class InductiveMinerService {
                             inOutGraph.setElementMarkedFlag(node, true);
                         };
                         this._displayService.refreshData();
-                        this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info');
+                        this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
                         break;
                     }
                 };
