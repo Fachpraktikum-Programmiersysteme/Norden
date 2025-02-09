@@ -1,7 +1,8 @@
 <button 
     mat-fab 
+    class="button" 
     [matTooltip]="tooltip" 
-    [disabled]="disabled"
+    [disabled]="disabled" 
     (click)="processMouseClick()"
 >
     @if (automationDisabled) {

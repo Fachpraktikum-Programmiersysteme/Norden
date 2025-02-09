@@ -128,8 +128,24 @@ export class GraphGraphicsConfig {
         if (inDfgId !== undefined) {
             return this.dfgFillColors[((inDfgId) % (this.dfgFillColors.length))];
         } else {
-            return 'Black'
+            return 'Black';
         };
+    };
+
+    public static getMarkedNodeColor() : string {
+        return 'Crimson';
+    };
+
+    public static getActiveNodeColor() : string {
+        return 'Orange';
+    };
+
+    public static getChangedNodeColor() : string {
+        return 'GoldenRod';
+    };
+
+    public static getNewNodeColor() : string {
+        return 'Green';
     };
 
 };

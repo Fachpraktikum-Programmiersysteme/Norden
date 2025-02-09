@@ -1,6 +1,13 @@
-.buttonClass {
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 70px;
     width: 90px;
-    align-items: center;
-    justify-content: center
+}
+
+.mat-icon{
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
 }

@@ -252,31 +252,18 @@ export class SvgService implements OnDestroy {
                 };
             };
         } else {
-            if (inNode.marked) {
-                svg.setAttribute('stroke', this.graphicsConfig.markedNodeStroke);
-                if (inNode.active) {
-                    svg.setAttribute('fill', this.graphicsConfig.activeNodeFill);
-                } else if (inNode.changed) {
-                    svg.setAttribute('fill', this.graphicsConfig.changedNodeFill);
-                } else if (inNode.newlyCreated) {
-                    svg.setAttribute('fill', this.graphicsConfig.newNodeFill);
-                } else {
-                    svg.setAttribute('fill', this.graphicsConfig.defaultNodeFill);
-                };
+            if (inNode.active) {
+                svg.setAttribute('stroke', this.graphicsConfig.activeNodeStroke);
+                svg.setAttribute('fill', this.graphicsConfig.activeNodeFill);
+            } else if (inNode.changed) {
+                svg.setAttribute('stroke', this.graphicsConfig.changedNodeStroke);
+                svg.setAttribute('fill', this.graphicsConfig.changedNodeFill);
+            } else if (inNode.newlyCreated) {
+                svg.setAttribute('stroke', this.graphicsConfig.newNodeStroke);
+                svg.setAttribute('fill', this.graphicsConfig.newNodeFill);
             } else {
-                if (inNode.active) {
-                    svg.setAttribute('stroke', this.graphicsConfig.activeNodeStroke);
-                    svg.setAttribute('fill', this.graphicsConfig.activeNodeFill);
-                } else if (inNode.changed) {
-                    svg.setAttribute('stroke', this.graphicsConfig.changedNodeStroke);
-                    svg.setAttribute('fill', this.graphicsConfig.changedNodeFill);
-                } else if (inNode.newlyCreated) {
-                    svg.setAttribute('stroke', this.graphicsConfig.newNodeStroke);
-                    svg.setAttribute('fill', this.graphicsConfig.newNodeFill);
-                } else {
-                    svg.setAttribute('stroke', this.graphicsConfig.defaultNodeStroke);
-                    svg.setAttribute('fill', this.graphicsConfig.defaultNodeFill);
-                };
+                svg.setAttribute('stroke', this.graphicsConfig.defaultNodeStroke);
+                svg.setAttribute('fill', this.graphicsConfig.defaultNodeFill);
             };
         };
         inNode.registerNodeSvg(svg);

@@ -8,6 +8,7 @@ export interface Settings {
     basecaseMode: 'auto' | 'manual';
     falseInputStage: number;
     resetInputForm: boolean;
+    delaysDisabled: boolean;
     nodeInfosDisabled: boolean;
     nodeLabelsDisabled: boolean;
     nodeSymbolsDisabled: boolean;
@@ -27,6 +28,7 @@ export class SettingsSingleton {
         basecaseMode: 'auto',
         falseInputStage: 0,
         resetInputForm: false,
+        delaysDisabled: false,
         nodeInfosDisabled: true,
         nodeLabelsDisabled: true,
         nodeSymbolsDisabled: false,

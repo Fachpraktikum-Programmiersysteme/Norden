@@ -3,13 +3,15 @@ import {FormControl} from '@angular/forms';
 
 import {Subscription} from 'rxjs';
 
+import {SettingsSingleton} from "./classes/settings/settings.singleton";
+import {Graph} from './classes/graph-representation/graph';
+
 import {TextParserService} from './services/text-parser.service';
 import {JsonParserService} from './services/json-parser.service';
 import {XesParserService} from './services/xes-parser.service';
 import {GraphLogService} from "./services/graph-log.service";
 import {DisplayService} from './services/display.service';
 import {ToastService} from './services/toast.service';
-import {Graph} from './classes/graph-representation/graph';
 
 @Component({
     selector: 'app-root',
@@ -39,7 +41,8 @@ export class AppComponent implements OnDestroy {
         private _xesParserService : XesParserService,
         private _txtParserService : TextParserService,
         private _displayService : DisplayService,
-        private _toastService : ToastService
+        private _toastService : ToastService,
+        private _settings : SettingsSingleton
     ) {
         this.fileAreaFc = new FormControl();
         this.fileAreaFc.disable();
@@ -49,7 +52,11 @@ export class AppComponent implements OnDestroy {
         this._sub = this._displayService.graph$.subscribe(
             graph => {
                 this.logAreaFc.setValue(this._displayService.generateOutputLogString());
-                this.logArray = GraphLogService.generateOutputLogArray(graph);
+                if (this._settings.currentState.displayMode === 'dfg') {
+                    this.logArray = GraphLogService.generateOutputLogArrayDFG(graph);
+                } else {
+                    this.logArray = GraphLogService.generateOutputLogArrayCGS(graph);
+                };
             }
         );
         this._toastService.toast$.subscribe(toast => {

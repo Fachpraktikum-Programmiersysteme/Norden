@@ -18,12 +18,37 @@
         <app-toast [message]="toast.message" [type]="toast.type" [duration]="toast.duration">
         </app-toast>
     </div>
+    
+    <!-- vertical line -->
+    <hr>
+    
+    <!-- display controls -->
+    <div class="flexRowAlignSpaceBetweenStart">
+        <traces-button>
+        </traces-button>
+        <symbols-button>
+        </symbols-button>
+        <labels-button>
+        </labels-button>
+        <weights-button>
+        </weights-button>
+        <embedder-button>
+        </embedder-button>
+        <div class="top_row_gap">
+        </div>
+        <display-button>
+        </display-button>
+    </div>
+
+    <!-- vertical gap of 10 px -->
+    <div class="gap_v_10px">
+    </div>
 
     <!-- canvas -->
     <app-display id="canvas" class="padding full-size" (fileData)="processSourceChange($event)">
     </app-display>
 
-    <!-- vertical gap of 60 px -->
+    <!-- vertical gap of 30 px -->
     <div class="gap_v_30px">
     </div>
 
@@ -32,10 +57,10 @@
         <div class="container_inout">
             <div class="flexRowAlignSpaceBetweenStart">
                 <app-example-file title="An example Event Log of Teleclaims processes, stored as a .xes file."
-                    label="Teleclaims Event Log" link="assets/example-files/logs__Teleclaims_Example_(modified).xes">
+                    label="Teleclaims Event Log" link="assets/example-files/logs__Teleclaims_Example_(100).xes">
                 </app-example-file>
-                <app-example-file title="An example Event Log of Workshop processes, stored as a .xes file."
-                    label="Workshop Event Log" link="assets/example-files/logs__Workshop_Organisation_(6.1.2).xes">
+                <app-example-file title="An example Event Log of Workshop processes, stored as a .txt file."
+                    label="Workshop Event Log" link="assets/example-files/logs__Workshop_Organisation_(8.2.1).txt">
                 </app-example-file>
                 <app-example-file title="An example Graph containing an Exclusive Cut, stored as a .json file."
                     label="Exclusive Cut" link="assets/example-files/cuts__Exclusive_Cut.json">
@@ -55,7 +80,7 @@
             <div class="flexRowAlignSpaceBetweenStart">
                 <mat-form-field appearance="outline" class="container_log">
                     <mat-label>
-                        Event Log (detailed view)
+                        Trace Paths
                     </mat-label>
                     <div appearance="outline" class="scrollerForLog">
                         <textarea readonly matInput cdkTextareaAutosize>
@@ -66,9 +91,9 @@
                                     <li>
                                     @for (event of trace.events; track event.id) {
                                         @if ($first) {
-                                            "<font color={{event.color}}>{{event.label}}</font>"
+                                            '<font color={{event.color}}>'{{event.label}}'</font>'
                                         } @else {
-                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                            <font> </font>'<font color={{event.color}}>'{{event.label}}'</font>'
                                         }
                                     }
                                     </li>
@@ -76,9 +101,9 @@
                                     <li>
                                     @for (event of trace.events; track event.id) {
                                         @if ($first) {
-                                            "<font color={{event.color}}>{{event.label}}</font>"
+                                            '<font color={{event.color}}>'{{event.label}}'</font>'
                                         } @else {
-                                            <font> </font>"<font color={{event.color}}>{{event.label}}</font>"
+                                            <font> </font>'<font color={{event.color}}>'{{event.label}}'</font>'
                                         }
                                     }
                                     <font> + </font>
@@ -103,49 +128,31 @@
             </div>
             <div class="flexRowAlignSpaceBetweenStart">
                 <div>
-                    <div class="flexGap2px">
+                    <div class="flexGap6px">
                         <save-button>
                         </save-button>
                         <delete-button>
                         </delete-button>
                     </div>
                     <div class="flexGap2px" style="padding-top: 39px;">
-                        <div>
-                            <embedder-button>
-                            </embedder-button>
-                        </div>
-                        <div>
-                            <traces-button>
-                            </traces-button>
-                        </div>
                     </div>
                 </div>
-                <div>
+                <div class="flexColumnAlignSpaceBetweenStretch">
                     <basecase-button>
                     </basecase-button>
+                    <skip-button>
+                    </skip-button>
                 </div>
                 <submit-button>
                 </submit-button>
             </div>
-            <div class="flexGap2px" style="padding-top: 2px; padding-bottom: 2px;">
-                <symbols-button>
-                </symbols-button>
-                <labels-button>
-                </labels-button>
-                <weights-button>
-                </weights-button>
-                <display-button>
-                </display-button>
-            </div>
         </div>
     </div>
-
-    <!-- vertical gap of 40 px -->
-    <div>
-    </div>
+    
+    <!-- vertical line -->
+    <hr>
 
     <!--  Footer  -->
-    <hr>
     <app-footer></app-footer>
 
     <!-- vertical gap of 30 px -->

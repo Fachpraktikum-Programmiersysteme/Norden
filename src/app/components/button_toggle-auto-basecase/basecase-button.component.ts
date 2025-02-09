@@ -92,9 +92,9 @@ export class BaseCaseButtonComponent implements OnDestroy {
             };
         } else {
             if (this._automationDisabled) {
-                return 'automatically convert Base Cases';
+                return 'enable automatic conversion of Base Cases';
             } else {
-                return 'disable automatic Base Case conversion';
+                return 'disable automatic conversion of Base Cases';
             };
         };
     };

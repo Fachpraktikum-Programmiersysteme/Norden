@@ -1,16 +1,17 @@
 <button 
     mat-fab 
+    class="button" 
     [matTooltip]="tooltip" 
-    [disabled]="disabled"
+    [disabled]="disabled" 
     (click)="processMouseClick()"
 >
     @if (animationsDisabled) {
         <mat-icon>
-            hide_source
+            pause_circle
         </mat-icon>
     } @else {
         <mat-icon>
-            published_with_changes
+            play_circle
         </mat-icon>
     }
 </button>

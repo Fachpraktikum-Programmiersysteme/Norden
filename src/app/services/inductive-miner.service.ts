@@ -66,325 +66,458 @@ export class InductiveMinerService {
     };
 
     public async checkInput(inOutGraph : Graph) {
-        this.checkGraphStartEnd(inOutGraph);
-        inOutGraph.resetAllChanged();
-        inOutGraph.resetAllNew();
-        this._displayService.refreshData();
-        let cutFound : boolean = false;
-        switch (this._settings.currentState.checkMode) {
-            case 'ec' : {
-                const checkEC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc] = this.checkExclusiveCut(inOutGraph);
-                if (checkEC !== undefined) {
-                    this._toastService.showToast('Exclusive Cut accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeExclusiveCut(inOutGraph, checkEC[0], checkEC[1], checkEC[2], checkEC[3], checkEC[4], checkEC[5]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Exclusive Cut executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+        if (this._settings.currentState.delaysDisabled) {
+            this.checkGraphStartEnd(inOutGraph);
+            inOutGraph.resetAllChanged();
+            inOutGraph.resetAllNew();
+            this._displayService.refreshData();
+            let cutFound : boolean = false;
+            switch (this._settings.currentState.checkMode) {
+                case 'ec' : {
+                    const checkEC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc] = this.checkExclusiveCut(inOutGraph);
+                    if (checkEC !== undefined) {
+                        this.executeExclusiveCut(inOutGraph, checkEC[0], checkEC[1], checkEC[2], checkEC[3], checkEC[4], checkEC[5]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Exclusive Cut rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Exclusive Cut rejected', 'error');
-                };
-                break;
-            }
-            case 'sc' : {
-                const checkSC : undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean] = this.checkSequenceCut(inOutGraph);
-                if (checkSC !== undefined) {
-                    this._toastService.showToast('Sequence Cut accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeSequenceCut(inOutGraph, checkSC[0], checkSC[1], checkSC[2], checkSC[3], checkSC[4]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Sequence Cut executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                    break;
+                }
+                case 'sc' : {
+                    const checkSC : undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean] = this.checkSequenceCut(inOutGraph);
+                    if (checkSC !== undefined) {
+                        this.executeSequenceCut(inOutGraph, checkSC[0], checkSC[1], checkSC[2], checkSC[3], checkSC[4]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Sequence Cut rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Sequence Cut rejected', 'error');
-                };
-                break;
-            }
-            case 'pc' : {
-                const checkPC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] = this.checkParallelCut(inOutGraph);
-                if (checkPC !== undefined) {
-                    this._toastService.showToast('Parallel Cut accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeParallelCut(inOutGraph, checkPC[0], checkPC[1], checkPC[2], checkPC[3], checkPC[4], checkPC[5], checkPC[6]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Parallel Cut executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                    break;
+                }
+                case 'pc' : {
+                    const checkPC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] = this.checkParallelCut(inOutGraph);
+                    if (checkPC !== undefined) {
+                        this.executeParallelCut(inOutGraph, checkPC[0], checkPC[1], checkPC[2], checkPC[3], checkPC[4], checkPC[5], checkPC[6]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Parallel Cut rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Parallel Cut rejected', 'error');
-                };
-                break;
-            }
-            case 'lc' : {
-                const checkLC : undefined | [DFG, Node[], Node[], Node[], Node[], boolean] = this.checkLoopCut(inOutGraph);
-                if (checkLC !== undefined) {
-                    this._toastService.showToast('Loop Cut accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeLoopCut(inOutGraph, checkLC[0], checkLC[1], checkLC[2], checkLC[3], checkLC[4], checkLC[5]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Loop Cut executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                    break;
+                }
+                case 'lc' : {
+                    const checkLC : undefined | [DFG, Node[], Node[], Node[], Node[], boolean] = this.checkLoopCut(inOutGraph);
+                    if (checkLC !== undefined) {
+                        this.executeLoopCut(inOutGraph, checkLC[0], checkLC[1], checkLC[2], checkLC[3], checkLC[4], checkLC[5]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Loop Cut rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Loop Cut rejected', 'error');
-                };
-                break;
-            }
-            case 'bc' : {
-                const checkBC : undefined | [DFG, Node | undefined] = this.checkBaseCase(inOutGraph);
-                if (checkBC !== undefined) {
-                    this._toastService.showToast('Base Case accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeBaseCase(inOutGraph, checkBC[0], checkBC[1]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Base Case executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                    break;
+                }
+                case 'bc' : {
+                    const checkBC : undefined | [DFG, Node | undefined] = this.checkBaseCase(inOutGraph);
+                    if (checkBC !== undefined) {
+                        this.executeBaseCase(inOutGraph, checkBC[0], checkBC[1]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Base Case rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Base Case rejected', 'error');
-                };
-                break;
-            }
-            case 'ft' : {
-                const checkFT : undefined | [DFG, Node | undefined] = this.checkFallThrough(inOutGraph);
-                if (checkFT !== undefined) {
-                    this._toastService.showToast('Fall Through accepted, 3s until execution', 'success');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    this.executeFallThrough(inOutGraph, checkFT[0], checkFT[1]);
-                    inOutGraph.resetAllMarked();
-                    this._displayService.refreshData();
-                    this._settings.updateState({ falseInputStage: (0) });
-                    cutFound = true;
-                    this._toastService.showToast('Fall Through executed', 'info');
-                } else {
-                    if (this._settings.currentState.falseInputStage < 6) {
-                        this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                    break;
+                }
+                case 'ft' : {
+                    const checkFT : undefined | [DFG, Node | undefined] = this.checkFallThrough(inOutGraph);
+                    if (checkFT !== undefined) {
+                        this.executeFallThrough(inOutGraph, checkFT[0], checkFT[1]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Fall Through rejected', 'error', 1000);
                     };
-                    this._toastService.showToast('Fall Through rejected', 'error');
-                };
-                break;
-            }
-        };
-        this._displayService.refreshData();
-        if (cutFound) {
-            if (this._settings.currentState.basecaseMode !== 'manual') {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                const autoBC : [number, [DFG, Node | undefined][]] = this.checkAllBaseCases(inOutGraph);
-                inOutGraph.resetAllMarked();
-                let casesExecuted : number = 0;
-                for (const foundCase of autoBC[1]) {
-                    this.executeBaseCase(inOutGraph, foundCase[0], foundCase[1]);
-                    casesExecuted++;
-                };
-                if (casesExecuted !== autoBC[0]) {
-                    throw new Error('#srv.mnr.cci.000: ' + 'automated base case check failed - found ' + autoBC[0] + ' cases, but executed ' + casesExecuted);
-                };
-                this._displayService.refreshData();
-                this._toastService.showToast(('converted ' + casesExecuted + ' Base Cases'), 'info');
+                    break;
+                }
             };
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            if (this.checkTermination(inOutGraph)) {
-                this._toastService.showToast('the inductive miner has terminated', 'success', 6000);
-            } else {
-                this._toastService.showToast('termination condition of inductive miner not met', 'error', 6000);
+            this._displayService.refreshData();
+            if (cutFound) {
+                if (this._settings.currentState.basecaseMode !== 'manual') {
+                    const autoBC : [number, [DFG, Node | undefined][]] = this.checkAllBaseCases(inOutGraph);
+                    inOutGraph.resetAllMarked();
+                    let casesExecuted : number = 0;
+                    for (const foundCase of autoBC[1]) {
+                        this.executeBaseCase(inOutGraph, foundCase[0], foundCase[1]);
+                        casesExecuted++;
+                    };
+                    if (casesExecuted !== autoBC[0]) {
+                        throw new Error('#srv.mnr.cci.000: ' + 'automated base case check failed - found ' + autoBC[0] + ' cases, but executed ' + casesExecuted);
+                    };
+                    this._displayService.refreshData();
+                    if (casesExecuted !== 1) {
+                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Cases converted'), 'success', 2000);
+                    } else {
+                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Case converted'), 'success', 2000);
+                    };
+                } else {
+                    this._toastService.showToast(('Action executed'), 'success', 2000);
+                };
             };
         } else {
-            const falseInputs : number = this._settings.currentState.falseInputStage;
-            const previouslyMarkedNodes : Node[] = inOutGraph.markedNodes.slice();
-            const previouslyMarkedArcs : Arc[] = inOutGraph.markedArcs.slice();
-            inOutGraph.resetAllMarked();
-            const cutCheck = this.checkForCut(inOutGraph);
-            inOutGraph.resetAllMarked();
-            const bcCheck = this.checkAllBaseCases(inOutGraph);
-            inOutGraph.resetAllMarked();
-            if (cutCheck !== undefined) {
-                if (falseInputs < 6) {
-                    inOutGraph.resetAllMarked();
-                    for (const node of previouslyMarkedNodes) {
-                        inOutGraph.setElementMarkedFlag(node, true);
+            this.checkGraphStartEnd(inOutGraph);
+            inOutGraph.resetAllChanged();
+            inOutGraph.resetAllNew();
+            this._displayService.refreshData();
+            let cutFound : boolean = false;
+            switch (this._settings.currentState.checkMode) {
+                case 'ec' : {
+                    const checkEC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc] = this.checkExclusiveCut(inOutGraph);
+                    if (checkEC !== undefined) {
+                        this._toastService.showToast('Exclusive Cut accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeExclusiveCut(inOutGraph, checkEC[0], checkEC[1], checkEC[2], checkEC[3], checkEC[4], checkEC[5]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Exclusive Cut executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Exclusive Cut rejected', 'error');
                     };
-                    for (const arc of previouslyMarkedArcs) {
-                        inOutGraph.setElementMarkedFlag(arc, true);
+                    break;
+                }
+                case 'sc' : {
+                    const checkSC : undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean] = this.checkSequenceCut(inOutGraph);
+                    if (checkSC !== undefined) {
+                        this._toastService.showToast('Sequence Cut accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeSequenceCut(inOutGraph, checkSC[0], checkSC[1], checkSC[2], checkSC[3], checkSC[4]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Sequence Cut executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Sequence Cut rejected', 'error');
+                    };
+                    break;
+                }
+                case 'pc' : {
+                    const checkPC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] = this.checkParallelCut(inOutGraph);
+                    if (checkPC !== undefined) {
+                        this._toastService.showToast('Parallel Cut accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeParallelCut(inOutGraph, checkPC[0], checkPC[1], checkPC[2], checkPC[3], checkPC[4], checkPC[5], checkPC[6]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Parallel Cut executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Parallel Cut rejected', 'error');
+                    };
+                    break;
+                }
+                case 'lc' : {
+                    const checkLC : undefined | [DFG, Node[], Node[], Node[], Node[], boolean] = this.checkLoopCut(inOutGraph);
+                    if (checkLC !== undefined) {
+                        this._toastService.showToast('Loop Cut accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeLoopCut(inOutGraph, checkLC[0], checkLC[1], checkLC[2], checkLC[3], checkLC[4], checkLC[5]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Loop Cut executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Loop Cut rejected', 'error');
+                    };
+                    break;
+                }
+                case 'bc' : {
+                    const checkBC : undefined | [DFG, Node | undefined] = this.checkBaseCase(inOutGraph);
+                    if (checkBC !== undefined) {
+                        this._toastService.showToast('Base Case accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeBaseCase(inOutGraph, checkBC[0], checkBC[1]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Base Case executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Base Case rejected', 'error');
+                    };
+                    break;
+                }
+                case 'ft' : {
+                    const checkFT : undefined | [DFG, Node | undefined] = this.checkFallThrough(inOutGraph);
+                    if (checkFT !== undefined) {
+                        this._toastService.showToast('Fall Through accepted, 3s until execution', 'success');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this.executeFallThrough(inOutGraph, checkFT[0], checkFT[1]);
+                        inOutGraph.resetAllMarked();
+                        this._displayService.refreshData();
+                        this._settings.updateState({ falseInputStage: (0) });
+                        cutFound = true;
+                        this._toastService.showToast('Fall Through executed', 'info');
+                    } else {
+                        if (this._settings.currentState.falseInputStage < 6) {
+                            this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
+                        };
+                        this._toastService.showToast('Fall Through rejected', 'error');
+                    };
+                    break;
+                }
+            };
+            this._displayService.refreshData();
+            if (cutFound) {
+                if (this._settings.currentState.basecaseMode !== 'manual') {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    const autoBC : [number, [DFG, Node | undefined][]] = this.checkAllBaseCases(inOutGraph);
+                    inOutGraph.resetAllMarked();
+                    let casesExecuted : number = 0;
+                    for (const foundCase of autoBC[1]) {
+                        this.executeBaseCase(inOutGraph, foundCase[0], foundCase[1]);
+                        casesExecuted++;
+                    };
+                    if (casesExecuted !== autoBC[0]) {
+                        throw new Error('#srv.mnr.cci.000: ' + 'automated base case check failed - found ' + autoBC[0] + ' cases, but executed ' + casesExecuted);
                     };
                     this._displayService.refreshData();
+                    if (casesExecuted !== 1) {
+                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Cases'), 'info');
+                    } else {
+                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Case'), 'info');
+                    };
                 };
-                switch (falseInputs) {
-                    case 0 : {
-                        break;
-                    }
-                    case 1 : {
-                        break;
-                    }
-                    case 2 : {
-                        break;
-                    }
-                    case 3 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Cut is possible', 'info', 6000);
-                        break;
-                    }
-                    case 4 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                        break;
-                    }
-                    case 5 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        switch (cutCheck[0]) {
-                            case 'EC' : {
-                                this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'SC' : {
-                                this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'PC' : {
-                                this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'LC' : {
-                                this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                        };
-                        break;
-                    }
-                    default : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                if (this.checkTermination(inOutGraph)) {
+                    this._toastService.showToast('the inductive miner has terminated', 'success', 6000);
+                } else {
+                    this._toastService.showToast('termination condition of inductive miner not met', 'error', 6000);
+                };
+            } else {
+                const falseInputs : number = this._settings.currentState.falseInputStage;
+                const previouslyMarkedNodes : Node[] = inOutGraph.markedNodes.slice();
+                const previouslyMarkedArcs : Arc[] = inOutGraph.markedArcs.slice();
+                inOutGraph.resetAllMarked();
+                const cutCheck = this.checkForCut(inOutGraph);
+                inOutGraph.resetAllMarked();
+                const bcCheck = this.checkAllBaseCases(inOutGraph);
+                inOutGraph.resetAllMarked();
+                if (cutCheck !== undefined) {
+                    if (falseInputs < 6) {
                         inOutGraph.resetAllMarked();
-                        for (const node of cutCheck[2]) {
+                        for (const node of previouslyMarkedNodes) {
                             inOutGraph.setElementMarkedFlag(node, true);
                         };
-                        for (const arc of cutCheck[3]) {
+                        for (const arc of previouslyMarkedArcs) {
                             inOutGraph.setElementMarkedFlag(arc, true);
                         };
                         this._displayService.refreshData();
-                        switch (cutCheck[0]) {
-                            case 'EC' : {
-                                this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'SC' : {
-                                this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'PC' : {
-                                this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                            case 'LC' : {
-                                this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
-                                break;
-                            }
-                        };
-                        break;
-                    }
-                };
-            } else if (bcCheck[0] > 0) {
-                if (falseInputs < 5) {
-                    inOutGraph.resetAllMarked();
-                    for (const node of previouslyMarkedNodes) {
-                        inOutGraph.setElementMarkedFlag(node, true);
                     };
-                    for (const arc of previouslyMarkedArcs) {
-                        inOutGraph.setElementMarkedFlag(arc, true);
+                    switch (falseInputs) {
+                        case 0 : {
+                            break;
+                        }
+                        case 1 : {
+                            break;
+                        }
+                        case 2 : {
+                            break;
+                        }
+                        case 3 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Cut is possible', 'info', 6000);
+                            break;
+                        }
+                        case 4 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                            break;
+                        }
+                        case 5 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            switch (cutCheck[0]) {
+                                case 'EC' : {
+                                    this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'SC' : {
+                                    this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'PC' : {
+                                    this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'LC' : {
+                                    this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                            };
+                            break;
+                        }
+                        default : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            inOutGraph.resetAllMarked();
+                            for (const node of cutCheck[2]) {
+                                inOutGraph.setElementMarkedFlag(node, true);
+                            };
+                            for (const arc of cutCheck[3]) {
+                                inOutGraph.setElementMarkedFlag(arc, true);
+                            };
+                            this._displayService.refreshData();
+                            switch (cutCheck[0]) {
+                                case 'EC' : {
+                                    this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'SC' : {
+                                    this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'PC' : {
+                                    this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                                case 'LC' : {
+                                    this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    break;
+                                }
+                            };
+                            break;
+                        }
                     };
-                    this._displayService.refreshData();
-                };
-                switch (falseInputs) {
-                    case 0 : {
-                        break;
-                    }
-                    case 1 : {
-                        break;
-                    }
-                    case 2 : {
-                        break;
-                    }
-                    case 3 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Base Case is applicable', 'info', 6000);
-                        break;
-                    }
-                    case 4 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
-                        break;
-                    }
-                    default : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                } else if (bcCheck[0] > 0) {
+                    if (falseInputs < 5) {
                         inOutGraph.resetAllMarked();
-                        for (const node of bcCheck[1][0][0].nodes) {
+                        for (const node of previouslyMarkedNodes) {
                             inOutGraph.setElementMarkedFlag(node, true);
                         };
-                        this._displayService.refreshData();
-                        this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
-                    }
-                };
-            } else {
-                if (falseInputs < 5) {
-                    inOutGraph.resetAllMarked();
-                    for (const node of previouslyMarkedNodes) {
-                        inOutGraph.setElementMarkedFlag(node, true);
-                    };
-                    for (const arc of previouslyMarkedArcs) {
-                        inOutGraph.setElementMarkedFlag(arc, true);
-                    };
-                    this._displayService.refreshData();
-                };
-                switch (falseInputs) {
-                    case 0 : {
-                        break;
-                    }
-                    case 1 : {
-                        break;
-                    }
-                    case 2 : {
-                        break;
-                    }
-                    case 3 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Fall Through is applicable', 'info', 6000);
-                        break;
-                    }
-                    case 4 : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
-                        break;
-                    }
-                    default : {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        inOutGraph.resetAllMarked();
-                        for (const node of inOutGraph.dfgArray[0].nodes) {
-                            inOutGraph.setElementMarkedFlag(node, true);
+                        for (const arc of previouslyMarkedArcs) {
+                            inOutGraph.setElementMarkedFlag(arc, true);
                         };
                         this._displayService.refreshData();
-                        this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
-                        break;
-                    }
+                    };
+                    switch (falseInputs) {
+                        case 0 : {
+                            break;
+                        }
+                        case 1 : {
+                            break;
+                        }
+                        case 2 : {
+                            break;
+                        }
+                        case 3 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Base Case is applicable', 'info', 6000);
+                            break;
+                        }
+                        case 4 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
+                            break;
+                        }
+                        default : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            inOutGraph.resetAllMarked();
+                            for (const node of bcCheck[1][0][0].nodes) {
+                                inOutGraph.setElementMarkedFlag(node, true);
+                            };
+                            this._displayService.refreshData();
+                            this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
+                        }
+                    };
+                } else {
+                    if (falseInputs < 5) {
+                        inOutGraph.resetAllMarked();
+                        for (const node of previouslyMarkedNodes) {
+                            inOutGraph.setElementMarkedFlag(node, true);
+                        };
+                        for (const arc of previouslyMarkedArcs) {
+                            inOutGraph.setElementMarkedFlag(arc, true);
+                        };
+                        this._displayService.refreshData();
+                    };
+                    switch (falseInputs) {
+                        case 0 : {
+                            break;
+                        }
+                        case 1 : {
+                            break;
+                        }
+                        case 2 : {
+                            break;
+                        }
+                        case 3 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Fall Through is applicable', 'info', 6000);
+                            break;
+                        }
+                        case 4 : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
+                            break;
+                        }
+                        default : {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            inOutGraph.resetAllMarked();
+                            for (const node of inOutGraph.dfgArray[0].nodes) {
+                                inOutGraph.setElementMarkedFlag(node, true);
+                            };
+                            this._displayService.refreshData();
+                            this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
+                            break;
+                        }
+                    };
                 };
             };
         };
@@ -2882,9 +3015,6 @@ export class InductiveMinerService {
                             };
                             if (inEndpointsMarked) {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceRest, globalStopNodesArray[0], globalStopNodesArray[1]);
                                 for (let idx = (translation[0].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[0][idx]);
@@ -2896,9 +3026,6 @@ export class InductiveMinerService {
                                 trace.splice(cutStartIdx, 0, globalPlayNodesArray[0], globalPlayNodesArray[1], startPlaceCut);
                             } else {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceCut, globalStopNodesArray[0], globalStopNodesArray[1]);
                                 for (let idx = (translation[1].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[1][idx]);
@@ -2958,9 +3085,6 @@ export class InductiveMinerService {
                             };
                             if (inEndpointsMarked) {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceRest, endTransition);
                                 for (let idx = (translation[0].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[0][idx]);
@@ -2972,9 +3096,6 @@ export class InductiveMinerService {
                                 trace.splice(cutStartIdx, 0, globalPlayNodesArray[0], globalPlayNodesArray[1], startPlaceCut);
                             } else {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceCut, endTransition);
                                 for (let idx = (translation[1].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[1][idx]);
@@ -3039,9 +3160,6 @@ export class InductiveMinerService {
                             };
                             if (inEndpointsMarked) {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceRest, globalStopNodesArray[0], globalStopNodesArray[1]);
                                 for (let idx = (translation[0].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[0][idx]);
@@ -3053,9 +3171,6 @@ export class InductiveMinerService {
                                 trace.splice(cutStartIdx, 0, startTransition, startPlaceCut);
                             } else {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceCut, globalStopNodesArray[0], globalStopNodesArray[1]);
                                 for (let idx = (translation[1].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[1][idx]);
@@ -3115,9 +3230,6 @@ export class InductiveMinerService {
                             };
                             if (inEndpointsMarked) {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceRest, endTransition);
                                 for (let idx = (translation[0].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[0][idx]);
@@ -3129,9 +3241,6 @@ export class InductiveMinerService {
                                 trace.splice(cutStartIdx, 0, startTransition, startPlaceCut);
                             } else {
                                 trace.splice(cutStartIdx, cutSubtrace.length);
-                                for (let idx = (traceEnd.length - 1); idx > (-1); idx--) {
-                                    trace.splice(cutStartIdx, 0, traceEnd[idx]);
-                                };
                                 trace.splice(cutStartIdx, 0, endPlaceCut, endTransition);
                                 for (let idx = (translation[1].length - 1); idx > (-1); idx--) {
                                     trace.splice(cutStartIdx, 0, translation[1][idx]);
@@ -4535,9 +4644,6 @@ export class InductiveMinerService {
                             throw new Error('#srv.mnr.efa.049: ' + 'aopt fall through execution failed - a trace of the graph log was split incorrectly');
                         };
                         trace.splice(cut_start_idx, trace_cut_nodes.length);
-                        for (let idx = (trace_end_nodes.length - 1); idx > (-1); idx--) {
-                            trace.splice(cut_start_idx, 0, trace_end_nodes[idx]);
-                        };
                         if (end_of_graph) {
                             trace.splice(cut_start_idx, 0, place_stop_AOPT, global_stop[0], global_stop[1]);
                         } else {
@@ -5243,12 +5349,19 @@ export class InductiveMinerService {
                 inOutGraph.setElementMarkedFlag(arc, true);
             };
         });
-        /* copy marked elements to return */
-        const cutNodes : Node[] = inOutGraph.markedNodes.slice();
-        const cutArcs : Arc[] = inOutGraph.markedArcs.slice();
-        /* unmark all marked elements */
-        inOutGraph.resetAllMarked();
-        return [cutNodes, cutArcs];
+        const checkPC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] = this.checkParallelCut(inOutGraph);
+        if (checkPC === undefined) {
+            /* unmark all marked elements */
+            inOutGraph.resetAllMarked();
+            return undefined;
+        } else {
+            /* copy marked elements to return */
+            const cutNodes : Node[] = inOutGraph.markedNodes.slice();
+            const cutArcs : Arc[] = inOutGraph.markedArcs.slice();
+            /* unmark all marked elements */
+            inOutGraph.resetAllMarked();
+            return [cutNodes, cutArcs];
+        };
     };
 
     private searchLoopCut(

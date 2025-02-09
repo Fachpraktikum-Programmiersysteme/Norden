@@ -1,6 +1,5 @@
 .container_controls {
     width: 303px;
-
     margin-left: 30px;
 }
 
@@ -24,11 +23,11 @@
     width: 49%;
 }
 
-.noLogDisplay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.eventLogList {
+    position: absolute;
+    top: 0px;
     height: 100%;
+    width: 100%;
 }
 
 .flexColumnAlignStartStretch {
@@ -36,6 +35,24 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
+}
+
+.flexColumnAlignSpaceBetweenStretch {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.flexGap2px {
+    display: flex;
+    gap: 2px;
+}
+
+.flexGap6px {
+    display: flex;
+    gap: 6px;
 }
 
 .flexRowAlignCenterCenter {
@@ -59,11 +76,6 @@
     align-items: flex-start;
 }
 
-.flexGap2px {
-    display: flex;
-    gap: 2px;
-}
-
 .flexRowAlignSpaceEvenlyStart {
     display: flex;
     flex-direction: row;
@@ -76,24 +88,6 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: flex-start;
-}
-
-.noDisplay {
-    display: none;
-}
-
-.scrollerForLog {
-    height: 170px;
-    overflow-y: auto;
-    width: 100%;
-    position: relative;
-}
-
-.eventLogList {
-    position: absolute;
-    top: 0px;
-    height: 100%;
-    width: 100%;
 }
 
 .gap_h_15px {
@@ -111,6 +105,11 @@
     height: 100%;
 }
 
+.gap_v_10px {
+    width: 100%;
+    height: 10px;
+}
+
 .gap_v_30px {
     width: 100%;
     height: 30px;
@@ -126,8 +125,31 @@
     height: 60px;
 }
 
+.noDisplay {
+    display: none;
+}
+
+.noLogDisplay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
 .red {
     color: red;
+}
+
+.scrollerForLog {
+    height: 130px;
+    overflow-y: auto;
+    width: 100%;
+    position: relative;
+}
+
+.top_row_gap {
+    width: calc(100% - 420px);
+    height: 100%;
 }
 
 h1 {

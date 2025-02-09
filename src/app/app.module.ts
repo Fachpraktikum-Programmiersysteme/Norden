@@ -22,6 +22,7 @@ import {FooterComponent} from './components/footer/footer.component';
 import {LabelsButtonComponent} from './components/button_display-node-labels/labels-button.component';
 import {SaveButtonComponent} from './components/button_save-graph/save-button.component';
 import {SearchButtonComponent} from "./components/button_search-cut/search-button.component";
+import {SkipButtonComponent} from "./components/button_toggle-delays/skip-button.component";
 import {SubmitButtonComponent} from './components/button_submit-cut/submit-button.component';
 import {SymbolsButtonComponent} from './components/button_display-node-symbols/symbols-button.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
@@ -38,29 +39,30 @@ import {WeightsButtonComponent} from './components/button_display-arc-weights/we
     ],bootstrap: [
         AppComponent
     ], imports: [
-        BaseCaseButtonComponent,
-        BrowserAnimationsModule,
-        BrowserModule,
-        CheckButtonComponent,
-        DeleteButtonComponent,
-        DisplayButtonComponent,
-        EmbedderButtonComponent,
-        ExampleFileComponent,
-        InfoButtonComponent,
-        LabelsButtonComponent,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        ReactiveFormsModule,
-        SaveButtonComponent,
-        SearchButtonComponent,
-        SubmitButtonComponent,
-        SymbolsButtonComponent,
-        TextInputComponent,
-        TracesButtonComponent,
-        WeightsButtonComponent
-    ], providers: [
+    BaseCaseButtonComponent,
+    BrowserAnimationsModule,
+    BrowserModule,
+    CheckButtonComponent,
+    DeleteButtonComponent,
+    DisplayButtonComponent,
+    EmbedderButtonComponent,
+    ExampleFileComponent,
+    InfoButtonComponent,
+    LabelsButtonComponent,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    SaveButtonComponent,
+    SearchButtonComponent,
+    SkipButtonComponent,
+    SubmitButtonComponent,
+    SymbolsButtonComponent,
+    TextInputComponent,
+    TracesButtonComponent,
+    WeightsButtonComponent
+], providers: [
         {
             provide: APP_BASE_HREF,
             useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),

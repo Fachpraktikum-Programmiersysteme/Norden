@@ -41,7 +41,7 @@ export class ExampleFileComponent {
     };
 
     public get type() : boolean {
-        if (this.link.split('.').pop() === 'xes') {
+        if (this.link.split('.').pop() === 'json') {
             return true;
         } else {
             return false;
