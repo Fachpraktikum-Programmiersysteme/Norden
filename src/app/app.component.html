@@ -23,7 +23,9 @@
     <hr>
     
     <!-- display controls -->
-    <div class="flexRowAlignSpaceBetweenStart">
+    <div class="displayControls">
+        <embedder-button>
+        </embedder-button>
         <traces-button>
         </traces-button>
         <symbols-button>
@@ -32,17 +34,9 @@
         </labels-button>
         <weights-button>
         </weights-button>
-        <embedder-button>
-        </embedder-button>
-        <div class="top_row_gap">
-        </div>
-        <display-button>
-        </display-button>
     </div>
 
-    <!-- vertical gap of 10 px -->
-    <div class="gap_v_10px">
-    </div>
+
 
     <!-- canvas -->
     <app-display id="canvas" class="padding full-size" (fileData)="processSourceChange($event)">
@@ -128,7 +122,7 @@
             </div>
             <div class="flexRowAlignSpaceBetweenStart">
                 <div>
-                    <div class="flexGap6px">
+                    <div class="flexGap2px">
                         <save-button>
                         </save-button>
                         <delete-button>
@@ -146,6 +140,12 @@
                 <submit-button>
                 </submit-button>
             </div>
+            <div class="gap_v_40px">
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+            <display-button>
+            </display-button>
+        </div>
         </div>
     </div>
     

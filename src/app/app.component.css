@@ -30,6 +30,15 @@
     width: 100%;
 }
 
+.displayControls {
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; 
+    position: absolute; 
+    right: 55px; 
+    top: 480px;
+}
+
 .flexColumnAlignStartStretch {
     display: flex;
     flex-direction: column;
@@ -42,7 +51,7 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: stretch;
-    gap: 6px;
+    gap: 2px;
 }
 
 .flexGap2px {
@@ -52,7 +61,7 @@
 
 .flexGap6px {
     display: flex;
-    gap: 6px;
+    gap: 7px;
 }
 
 .flexRowAlignCenterCenter {
