@@ -54,6 +54,12 @@
     gap: 2px;
 }
 
+.flexEnd {
+    display: flex; 
+    justify-content: 
+    flex-end;
+}
+
 .flexGap2px {
     display: flex;
     gap: 2px;
