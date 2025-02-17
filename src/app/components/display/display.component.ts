@@ -725,7 +725,7 @@ export class DisplayComponent implements OnDestroy {
             );
         } else {
             throw new Error('#cmp.dsp.rdf.000: ' + 'reading file failed - filetype was assigned "undefined"');
-        }
+        };
     };
 
     private emitFileData(inFileType: string | undefined, inFileContent: string | undefined): void {
@@ -741,7 +741,11 @@ export class DisplayComponent implements OnDestroy {
 
     private draw(): void {
         if (this.drawingArea === undefined) {
-            console.debug('drawing area not ready yet');
+            if (this._graph.initialState) {
+                console.debug('drawing area not initialized yet');
+            } else {
+                console.warn('failed to draw graph - the drawing area is undefined');
+            };
             return;
         };
         if (!(this._settings.currentState.springEmbedderDisabled)) {

@@ -36,29 +36,32 @@ export class GraphGraphicsConfig {
     /* default colors for nodes, arcs, traces, and text */
     readonly defaultNodeStroke: CssColorName = 'Black';
     readonly markedNodeStroke: CssColorName = 'Crimson';
-    readonly activeNodeStroke: CssColorName = 'OrangeRed';
     readonly visitedNodeStroke: CssColorName = 'MediumBlue';
     readonly changedNodeStroke: CssColorName = 'GoldenRod';
     readonly newNodeStroke: CssColorName = 'Green';
+    readonly activeNodeStrokeDFG: CssColorName = 'OrangeRed';
+    readonly activeNodeStrokeCGS: CssColorName = 'Blue';
     readonly defaultNodeFill: CssColorName = 'Silver';
-    readonly activeNodeFill: CssColorName = 'Orange';
     readonly visitedNodeFill: CssColorName = 'RoyalBlue';
     readonly changedNodeFill: CssColorName = 'Gold';
     readonly newNodeFill: CssColorName = 'Lime';
+    readonly activeNodeFillDFG: CssColorName = 'Orange';
+    readonly activeNodeFillCGS: CssColorName = 'Aqua';
 
     readonly defaultArcStroke: CssColorName = 'Gray';
     readonly markedArcStroke: CssColorName = 'Crimson';
-    readonly activeArcStroke: CssColorName = 'Orange';
     readonly visitedArcStroke: CssColorName = 'RoyalBlue';
     readonly changedArcStroke: CssColorName = 'Gold';
     readonly newArcStroke: CssColorName = 'Lime';
+    readonly activeArcStrokeDFG: CssColorName = 'Orange';
+    readonly activeArcStrokeCGS: CssColorName = 'Aqua';
+
+    readonly defaultTraceStrokeDFG: CssColorName = 'Indigo';
+    readonly defaultTraceStrokeCGS: CssColorName = 'Blue';
+    readonly defaultTraceFillDFG: CssColorName = 'Magenta';
+    readonly defaultTraceFillCGS: CssColorName = 'Aqua';
 
     readonly defaultCutStroke: CssColorName = 'Red';
-
-    readonly defaultTraceStroke: CssColorName = 'Blue';
-    readonly dfgTraceStroke: CssColorName = 'Indigo';
-    readonly defaultTraceFill: CssColorName = 'Aqua';
-    readonly dfgTraceFill: CssColorName = 'Magenta';
 
     readonly defaultTextBoxStroke: CssColorName = 'Black';
     readonly defaultTextBoxFill: CssColorName = 'White';
@@ -132,20 +135,29 @@ export class GraphGraphicsConfig {
         };
     };
 
-    public static getMarkedNodeColor() : string {
-        return 'Crimson';
+    public static getActiveColorDFG() : string {
+        // return 'OrangeRed'; /* darker option */
+        return 'Orange'; /* brighter option */
     };
 
-    public static getActiveNodeColor() : string {
-        return 'Orange';
+    public static getActiveColorCGS() : string {
+        // return 'Blue'; /* darker option */
+        return 'Aqua'; /* brighter option */
     };
 
-    public static getChangedNodeColor() : string {
-        return 'GoldenRod';
+    public static getMarkedColor() : string {
+        return 'Crimson'; /* darker option */
+        // return 'Red'; /* brighter option */
     };
 
-    public static getNewNodeColor() : string {
-        return 'Green';
+    public static getChangedColor() : string {
+        return 'GoldenRod'; /* darker option */
+        // return 'Gold'; /* brighter option */
+    };
+
+    public static getNewColor() : string {
+        return 'Green'; /* darker option */
+        // return 'Lime'; /* brighter option */
     };
 
 };

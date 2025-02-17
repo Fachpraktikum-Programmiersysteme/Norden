@@ -17,6 +17,13 @@ import {DFG} from "../classes/graph-representation/dfg";
 })
 export class InductiveMinerService {
 
+    /* attributes */
+
+    private defaultToastTimeS : number = 3000;
+    private defaultToastTimeL : number = 6000;
+    private fastToastTimeS : number = 1000;
+    private fastToastTimeL : number = 2000;
+
     /* methods : constructor */
 
     public constructor(
@@ -85,7 +92,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Exclusive Cut rejected', 'error', 1000);
+                        this._toastService.showToast('Exclusive Cut rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -101,7 +108,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Sequence Cut rejected', 'error', 1000);
+                        this._toastService.showToast('Sequence Cut rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -117,7 +124,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Parallel Cut rejected', 'error', 1000);
+                        this._toastService.showToast('Parallel Cut rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -133,7 +140,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Loop Cut rejected', 'error', 1000);
+                        this._toastService.showToast('Loop Cut rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -149,7 +156,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Base Case rejected', 'error', 1000);
+                        this._toastService.showToast('Base Case rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -165,7 +172,7 @@ export class InductiveMinerService {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Fall Through rejected', 'error', 1000);
+                        this._toastService.showToast('Fall Through rejected', 'error', this.fastToastTimeS);
                     };
                     break;
                 }
@@ -185,12 +192,12 @@ export class InductiveMinerService {
                     };
                     this._displayService.refreshData();
                     if (casesExecuted !== 1) {
-                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Cases converted'), 'success', 2000);
+                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Cases converted'), 'success', this.fastToastTimeL);
                     } else {
-                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Case converted'), 'success', 2000);
+                        this._toastService.showToast(('Action executed & ' + casesExecuted + ' Base Case converted'), 'success', this.fastToastTimeL);
                     };
                 } else {
-                    this._toastService.showToast(('Action executed'), 'success', 2000);
+                    this._toastService.showToast(('Action executed'), 'success', this.fastToastTimeL);
                 };
             };
         } else {
@@ -203,114 +210,114 @@ export class InductiveMinerService {
                 case 'ec' : {
                     const checkEC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc] = this.checkExclusiveCut(inOutGraph);
                     if (checkEC !== undefined) {
-                        this._toastService.showToast('Exclusive Cut accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Exclusive Cut accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeExclusiveCut(inOutGraph, checkEC[0], checkEC[1], checkEC[2], checkEC[3], checkEC[4], checkEC[5]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Exclusive Cut executed', 'info');
+                        this._toastService.showToast('Exclusive Cut executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Exclusive Cut rejected', 'error');
+                        this._toastService.showToast('Exclusive Cut rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
                 case 'sc' : {
                     const checkSC : undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean] = this.checkSequenceCut(inOutGraph);
                     if (checkSC !== undefined) {
-                        this._toastService.showToast('Sequence Cut accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Sequence Cut accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeSequenceCut(inOutGraph, checkSC[0], checkSC[1], checkSC[2], checkSC[3], checkSC[4]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Sequence Cut executed', 'info');
+                        this._toastService.showToast('Sequence Cut executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Sequence Cut rejected', 'error');
+                        this._toastService.showToast('Sequence Cut rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
                 case 'pc' : {
                     const checkPC : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] = this.checkParallelCut(inOutGraph);
                     if (checkPC !== undefined) {
-                        this._toastService.showToast('Parallel Cut accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Parallel Cut accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeParallelCut(inOutGraph, checkPC[0], checkPC[1], checkPC[2], checkPC[3], checkPC[4], checkPC[5], checkPC[6]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Parallel Cut executed', 'info');
+                        this._toastService.showToast('Parallel Cut executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Parallel Cut rejected', 'error');
+                        this._toastService.showToast('Parallel Cut rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
                 case 'lc' : {
                     const checkLC : undefined | [DFG, Node[], Node[], Node[], Node[], boolean] = this.checkLoopCut(inOutGraph);
                     if (checkLC !== undefined) {
-                        this._toastService.showToast('Loop Cut accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Loop Cut accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeLoopCut(inOutGraph, checkLC[0], checkLC[1], checkLC[2], checkLC[3], checkLC[4], checkLC[5]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Loop Cut executed', 'info');
+                        this._toastService.showToast('Loop Cut executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Loop Cut rejected', 'error');
+                        this._toastService.showToast('Loop Cut rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
                 case 'bc' : {
                     const checkBC : undefined | [DFG, Node | undefined] = this.checkBaseCase(inOutGraph);
                     if (checkBC !== undefined) {
-                        this._toastService.showToast('Base Case accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Base Case accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeBaseCase(inOutGraph, checkBC[0], checkBC[1]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Base Case executed', 'info');
+                        this._toastService.showToast('Base Case executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Base Case rejected', 'error');
+                        this._toastService.showToast('Base Case rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
                 case 'ft' : {
                     const checkFT : undefined | [DFG, Node | undefined] = this.checkFallThrough(inOutGraph);
                     if (checkFT !== undefined) {
-                        this._toastService.showToast('Fall Through accepted, 3s until execution', 'success');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        this._toastService.showToast('Fall Through accepted, 3s until execution', 'success', this.defaultToastTimeS);
+                        await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                         this.executeFallThrough(inOutGraph, checkFT[0], checkFT[1]);
                         inOutGraph.resetAllMarked();
                         this._displayService.refreshData();
                         this._settings.updateState({ falseInputStage: (0) });
                         cutFound = true;
-                        this._toastService.showToast('Fall Through executed', 'info');
+                        this._toastService.showToast('Fall Through executed', 'info', this.defaultToastTimeS);
                     } else {
                         if (this._settings.currentState.falseInputStage < 6) {
                             this._settings.updateState({ falseInputStage: (this._settings.currentState.falseInputStage + 1) });
                         };
-                        this._toastService.showToast('Fall Through rejected', 'error');
+                        this._toastService.showToast('Fall Through rejected', 'error', this.defaultToastTimeS);
                     };
                     break;
                 }
@@ -318,7 +325,7 @@ export class InductiveMinerService {
             this._displayService.refreshData();
             if (cutFound) {
                 if (this._settings.currentState.basecaseMode !== 'manual') {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                     const autoBC : [number, [DFG, Node | undefined][]] = this.checkAllBaseCases(inOutGraph);
                     inOutGraph.resetAllMarked();
                     let casesExecuted : number = 0;
@@ -331,16 +338,16 @@ export class InductiveMinerService {
                     };
                     this._displayService.refreshData();
                     if (casesExecuted !== 1) {
-                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Cases'), 'info');
+                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Cases'), 'info', this.defaultToastTimeS);
                     } else {
-                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Case'), 'info');
+                        this._toastService.showToast(('converted ' + casesExecuted + ' Base Case'), 'info', this.defaultToastTimeS);
                     };
                 };
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                 if (this.checkTermination(inOutGraph)) {
-                    this._toastService.showToast('the inductive miner has terminated', 'success', 6000);
+                    this._toastService.showToast('the inductive miner has terminated', 'success', this.defaultToastTimeL);
                 } else {
-                    this._toastService.showToast('termination condition of inductive miner not met', 'error', 6000);
+                    this._toastService.showToast('termination condition of inductive miner not met', 'error', this.defaultToastTimeL);
                 };
             } else {
                 const falseInputs : number = this._settings.currentState.falseInputStage;
@@ -373,39 +380,39 @@ export class InductiveMinerService {
                             break;
                         }
                         case 3 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Cut is possible', 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Cut is possible', 'info', this.defaultToastTimeL);
                             break;
                         }
                         case 4 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                             break;
                         }
                         case 5 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                             switch (cutCheck[0]) {
                                 case 'EC' : {
-                                    this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('an Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'SC' : {
-                                    this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('a Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'PC' : {
-                                    this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('a Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'LC' : {
-                                    this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('a Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                             };
                             break;
                         }
                         default : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                             inOutGraph.resetAllMarked();
                             for (const node of cutCheck[2]) {
                                 inOutGraph.setElementMarkedFlag(node, true);
@@ -416,19 +423,19 @@ export class InductiveMinerService {
                             this._displayService.refreshData();
                             switch (cutCheck[0]) {
                                 case 'EC' : {
-                                    this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('the marked Exclusive Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'SC' : {
-                                    this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('the marked Sequence Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'PC' : {
-                                    this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('the marked Parallel Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                                 case 'LC' : {
-                                    this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', 6000);
+                                    this._toastService.showToast('the marked Loop Cut is possible in DFG ' + cutCheck[1].id, 'info', this.defaultToastTimeL);
                                     break;
                                 }
                             };
@@ -457,23 +464,23 @@ export class InductiveMinerService {
                             break;
                         }
                         case 3 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Base Case is applicable', 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Base Case is applicable', 'info', this.defaultToastTimeL);
                             break;
                         }
                         case 4 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', this.defaultToastTimeL);
                             break;
                         }
                         default : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                             inOutGraph.resetAllMarked();
                             for (const node of bcCheck[1][0][0].nodes) {
                                 inOutGraph.setElementMarkedFlag(node, true);
                             };
                             this._displayService.refreshData();
-                            this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', 6000);
+                            this._toastService.showToast('the marked Base Case is applicable in DFG ' + bcCheck[1][0][0].id, 'info', this.defaultToastTimeL);
                         }
                     };
                 } else {
@@ -498,23 +505,23 @@ export class InductiveMinerService {
                             break;
                         }
                         case 3 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Fall Through is applicable', 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Fall Through is applicable', 'info', this.defaultToastTimeL);
                             break;
                         }
                         case 4 : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
+                            this._toastService.showToast('a Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', this.defaultToastTimeL);
                             break;
                         }
                         default : {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            await new Promise(resolve => setTimeout(resolve, this.defaultToastTimeS));
                             inOutGraph.resetAllMarked();
                             for (const node of inOutGraph.dfgArray[0].nodes) {
                                 inOutGraph.setElementMarkedFlag(node, true);
                             };
                             this._displayService.refreshData();
-                            this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', 6000);
+                            this._toastService.showToast('the marked Fall Through is applicable in DFG ' + inOutGraph.dfgArray[0].id, 'info', this.defaultToastTimeL);
                             break;
                         }
                     };
@@ -530,62 +537,48 @@ export class InductiveMinerService {
     //     inOutGraph.resetAllChanged();
     //     inOutGraph.resetAllNew();
     //     this._displayService.refreshData();
-    //     /* TODO - part to be modified - start */
-    //     this._toastService.showToast('changed flags reset, 2s until check for Exclusive Cut', 'info');
+    //     this._toastService.showToast('changed flags reset, 2s until check for Exclusive Cut', 'info', 2000);
     //     await new Promise(resolve => setTimeout(resolve, 2000));
-    //     /* TODO - part to be modified - end */
     //     this._displayService.refreshData();
     //     let inputAccepted : boolean = false;
     //     if (!inputAccepted) {
     //         const checkEC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc]] = this.checkExclusiveCut(inOutGraph);
     //         inputAccepted = checkEC[0];
     //         if (inputAccepted) {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input accepted as EC, 3s until execution', 'success');
+    //             this._toastService.showToast('input accepted as EC, 3s until execution', 'success', 3000);
     //             await new Promise(resolve => setTimeout(resolve, 3000));
-    //             /* TODO - part to be modified - end */
     //             if (checkEC[1] !== undefined) {
     //                 this.executeExclusiveCut(inOutGraph, checkEC[1][0], checkEC[1][1], checkEC[1][2], checkEC[1][3], checkEC[1][4], checkEC[1][5]);
     //                 this._displayService.refreshData();
-    //                 /* TODO - part to be modified - start */
-    //                 this._toastService.showToast('EC executed, 4s until reset of marked flags', 'info');
+    //                 this._toastService.showToast('EC executed, 4s until reset of marked flags', 'info', 4000);
     //                 await new Promise(resolve => setTimeout(resolve, 4000));
-    //                 /* TODO - part to be modified - end */
     //                 inOutGraph.resetAllMarked();
     //             } else {
     //                 throw new Error('#srv.mnr.ccI.000: ' + 'input check failed - check identified exclusive cut, but did not return associated values');
     //             };
     //         } else {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input rejected as EC, 2s until check for SC', 'error');
+    //             this._toastService.showToast('input rejected as EC, 2s until check for SC', 'error', 2000);
     //             await new Promise(resolve => setTimeout(resolve, 2000));
-    //             /* TODO - part to be modified - end */
     //         };
     //     };
     //     if (!inputAccepted) {
     //         const checkSC : [boolean, undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean]] = this.checkSequenceCut(inOutGraph);
     //         inputAccepted = checkSC[0];
     //         if (inputAccepted) {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input accepted as SC, 3s until execution', 'success');
+    //             this._toastService.showToast('input accepted as SC, 3s until execution', 'success', 3000);
     //             await new Promise(resolve => setTimeout(resolve, 3000));
-    //             /* TODO - part to be modified - end */
     //             if (checkSC[1] !== undefined) {
     //                 this.executeSequenceCut(inOutGraph, checkSC[1][0], checkSC[1][1], checkSC[1][2], checkSC[1][3], checkSC[1][4]);
     //                 this._displayService.refreshData();
-    //                 /* TODO - part to be modified - start */
-    //                 this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info');
+    //                 this._toastService.showToast('SC executed, 4s until reset of marked flags', 'info', 4000);
     //                 await new Promise(resolve => setTimeout(resolve, 4000));
-    //                 /* TODO - part to be modified - end */
     //                 inOutGraph.resetAllMarked();
     //             } else {
     //                 throw new Error('#srv.mnr.ccI.001: ' + 'input check failed - check identified sequence cut, but did not return associated values');
     //             };
     //         } else {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input rejected as SC, 2s until check for PC', 'error');
+    //             this._toastService.showToast('input rejected as SC, 2s until check for PC', 'error', 2000);
     //             await new Promise(resolve => setTimeout(resolve, 2000));
-    //             /* TODO - part to be modified - end */
     //         };
     //     };
     //     if (!inputAccepted) {
@@ -593,62 +586,48 @@ export class InductiveMinerService {
     //         const checkPC : [boolean, undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc]] = this.checkParallelCut(inOutGraph);
     //         inputAccepted = checkPC[0];
     //         if (inputAccepted) {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input accepted as PC, 3s until execution', 'success');
+    //             this._toastService.showToast('input accepted as PC, 3s until execution', 'success', 3000);
     //             await new Promise(resolve => setTimeout(resolve, 3000));
-    //             /* TODO - part to be modified - end */
     //             if (checkPC[1] !== undefined) {
     //                 this.executeParallelCut(inOutGraph, checkPC[1][0], checkPC[1][1], checkPC[1][2], checkPC[1][3], checkPC[1][4], checkPC[1][5], checkPC[1][6]);
     //                 this._displayService.refreshData();
-    //                 /* TODO - part to be modified - start */
-    //                 this._toastService.showToast('PC executed, 4s until reset of marked flags', 'info');
+    //                 this._toastService.showToast('PC executed, 4s until reset of marked flags', 'info', 4000);
     //                 await new Promise(resolve => setTimeout(resolve, 4000));
-    //                 /* TODO - part to be modified - end */
     //                 inOutGraph.resetAllMarked();
     //             } else {
     //                 throw new Error('#srv.mnr.ccI.002: ' + 'input check failed - check identified parallel cut, but did not return associated values');
     //             };
     //         } else {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input rejected as PC, 2s until check for LC', 'error');
+    //             this._toastService.showToast('input rejected as PC, 2s until check for LC', 'error', 2000);
     //             await new Promise(resolve => setTimeout(resolve, 2000));
-    //             /* TODO - part to be modified - end */
     //         };
     //     };
     //     if (!inputAccepted) {
     //         const checkLC : [boolean, undefined | [DFG, Node[], Node[], Node[], Node[]]] = this.checkLoopCut(inOutGraph);
     //         inputAccepted = checkLC[0];
     //         if (inputAccepted) {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input accepted as LC, 3s until execution', 'success');
+    //             this._toastService.showToast('input accepted as LC, 3s until execution', 'success', 3000);
     //             await new Promise(resolve => setTimeout(resolve, 3000));
-    //             /* TODO - part to be modified - end */
     //             if (checkLC[1] !== undefined) {
     //                 this.executeLoopCut(inOutGraph, checkLC[1][0], checkLC[1][1], checkLC[1][2], checkLC[1][3], checkLC[1][4]);
     //                 this._displayService.refreshData();
-    //                 /* TODO - part to be modified - start */
-    //                 this._toastService.showToast('LC executed, 4s until reset of marked flags', 'info');
+    //                 this._toastService.showToast('LC executed, 4s until reset of marked flags', 'info', 4000);
     //                 await new Promise(resolve => setTimeout(resolve, 4000));
-    //                 /* TODO - part to be modified - end */
     //                 inOutGraph.resetAllMarked();
     //             } else {
     //                 throw new Error('#srv.mnr.ccI.003: ' + 'input check failed - check identified loop cut, but did not return associated values');
     //             };
     //         } else {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input rejected as LC, 2s until check for BC', 'error');
+    //             this._toastService.showToast('input rejected as LC, 2s until check for BC', 'error', 2000);
     //             await new Promise(resolve => setTimeout(resolve, 2000));
-    //             /* TODO - part to be modified - end */
     //         };
     //     };
     //     if (!inputAccepted) {
     //         const checkBC : [boolean, undefined | [DFG, Node | undefined]] = this.checkBaseCase(inOutGraph);
     //         inputAccepted = checkBC[0];
     //         if (inputAccepted) {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input accepted as BC, 3s until execution', 'success');
+    //             this._toastService.showToast('input accepted as BC, 3s until execution', 'success', 3000);
     //             await new Promise(resolve => setTimeout(resolve, 3000));
-    //             /* TODO - part to be modified - end */
     //             if (checkBC[1] !== undefined) {
     //                 if (checkBC[1][1] !== undefined) {
     //                     this.executeBaseCase(inOutGraph, checkBC[1][0], checkBC[1][1]);
@@ -656,47 +635,43 @@ export class InductiveMinerService {
     //                     this.executeBaseCase(inOutGraph, checkBC[1][0]);
     //                 };
     //                 this._displayService.refreshData();
-    //                 /* TODO - part to be modified - start */
-    //                 this._toastService.showToast('BC executed, 4s until reset of marked flags', 'info');
+    //                 this._toastService.showToast('BC executed, 4s until reset of marked flags', 'info', 4000);
     //                 await new Promise(resolve => setTimeout(resolve, 4000));
-    //                 /* TODO - part to be modified - end */
     //                 inOutGraph.resetAllMarked();
     //             } else {
     //                 throw new Error('#srv.mnr.ccI.004: ' + 'input check failed - check identified base case, but did not return associated values');
     //             };
     //         } else {
-    //             /* TODO - part to be modified - start */
-    //             this._toastService.showToast('input rejected as BC, end of checks reached --> no matching pattern found', 'error');
+    //             this._toastService.showToast('input rejected as BC, end of checks reached --> no matching pattern found', 'error', 1000);
     //             await new Promise(resolve => setTimeout(resolve, 1000));
-    //             /* TODO - part to be modified - end */
     //         };
     //     };
     //     //
-    //     /* TODO - alternative implementation for test purposes - start */
+    //     /* alternative implementation for test purposes - start */
     //     //
     //     // inOutGraph.resetAllMarked();
     //     // this._displayService.refreshData();
-    //     // this._toastService.showToast('marked flags reset, 2s until automated check for all BC', 'info');
+    //     // this._toastService.showToast('marked flags reset, 2s until automated check for all BC', 'info', 2000);
     //     // await new Promise(resolve => setTimeout(resolve, 2000));
     //     // const cases : number = this.autoCheckBaseCase(inOutGraph);
-    //     // this._toastService.showToast('end of checks reached, found ' + cases.toString() + ' BC', 'error');
+    //     // this._toastService.showToast('end of checks reached, found ' + cases.toString() + ' BC', 'error', 1000);
     //     // await new Promise(resolve => setTimeout(resolve, 1000));
     //     //
-    //     /* TODO - alternative implementation for test purposes - end */
+    //     /* alternative implementation for test purposes - end */
     //     //
     //     this._displayService.refreshData();
-    //     /* TODO - part to be modified - start */
     //     if (this.checkTermination(inOutGraph)) {
-    //         this._toastService.showToast('the inductive miner has terminated', 'success');
+    //         this._toastService.showToast('the inductive miner has terminated', 'success', 3000);
     //     } else {
-    //         this._toastService.showToast('termination condition of inductive miner is not met', 'error');
+    //         this._toastService.showToast('termination condition of inductive miner is not met', 'error', 3000);
     //     };
-    //     /* TODO - part to be modified - end */
     // };
 
-    /* to be removed - start */
+
+    /* do not remove - legacy function for test purposes */
+    //
     public testCutSearch(inOutGraph: Graph) : void {
-        console.log('testing cut search');
+        console.debug('testing cut search');
         for (const dfg of inOutGraph.dfgArray) {
             let cut : [Node[], Arc[]] | undefined = undefined;
             cut = this.searchExclusiveCut(inOutGraph, dfg);
@@ -708,7 +683,7 @@ export class InductiveMinerService {
                     inOutGraph.setElementMarkedFlag(arc, true);
                 };
                 this._displayService.refreshData();
-                this._toastService.showToast(('Exclusive Cut found in DFG ' + dfg.id.toString()), 'info');
+                this._toastService.showToast(('Exclusive Cut found in DFG ' + dfg.id.toString()), 'info', 3000);
                 return;
             };
             cut = this.searchSequenceCut(inOutGraph, dfg);
@@ -720,7 +695,7 @@ export class InductiveMinerService {
                     inOutGraph.setElementMarkedFlag(arc, true);
                 };
                 this._displayService.refreshData();
-                this._toastService.showToast(('Sequence Cut found in DFG ' + dfg.id.toString()), 'info');
+                this._toastService.showToast(('Sequence Cut found in DFG ' + dfg.id.toString()), 'info', 3000);
                 return;
             };
             cut = this.searchParallelCut(inOutGraph, dfg);
@@ -732,7 +707,7 @@ export class InductiveMinerService {
                     inOutGraph.setElementMarkedFlag(arc, true);
                 };
                 this._displayService.refreshData();
-                this._toastService.showToast(('Parallel Cut found in DFG ' + dfg.id.toString()), 'info');
+                this._toastService.showToast(('Parallel Cut found in DFG ' + dfg.id.toString()), 'info', 3000);
                 return;
             };
             cut = this.searchLoopCut(inOutGraph, dfg);
@@ -744,13 +719,12 @@ export class InductiveMinerService {
                     inOutGraph.setElementMarkedFlag(arc, true);
                 };
                 this._displayService.refreshData();
-                this._toastService.showToast(('Loop Cut found in DFG ' + dfg.id.toString()), 'info');
+                this._toastService.showToast(('Loop Cut found in DFG ' + dfg.id.toString()), 'info', 3000);
                 return;
             };
         };
-        this._toastService.showToast('no more cuts possible', 'info');
+        this._toastService.showToast('no more cuts possible', 'info', 3000);
     };
-    /* to be removed - end */
 
     private checkAllBaseCases(
         inOutGraph : Graph
@@ -758,9 +732,7 @@ export class InductiveMinerService {
         number,
         [DFG, Node | undefined][]
     ] {
-        /* to be removed - start */
-        console.log('im_service started automated check for base cases');
-        /* to be removed - end */
+        console.debug('im_service started automated check for base cases');
         inOutGraph.resetAllChanged();
         inOutGraph.resetAllNew();
         const casesArray : [DFG, Node | undefined][] = [];
@@ -784,85 +756,61 @@ export class InductiveMinerService {
     private checkExclusiveCut(
         inOutGraph : Graph
     ) : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc] {
-        /* to be removed - start */
-        console.log('im_service started check of exclusive cut');
-        /* to be removed - end */
+        console.debug('im_service started check of exclusive cut');
         if (inOutGraph.markedArcs.length !== 2) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 1');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 1) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 2');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 2');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 3');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 3');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 4');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 4');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const endpointsMarked : boolean | undefined = this.checkEndpointsEqual(dfg);
         if (endpointsMarked === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 5');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 5');
             return undefined;
         };
         const cutArcs : [Arc, Arc] | undefined = this.checkCutArcsEC(inOutGraph, dfg);
         if (cutArcs === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 6');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 6');
             return undefined;
         };
         const splitM : [Node[], Arc[]] = [[], []];
         const splitU : [Node[], Arc[]] = [[], []];
         const arcSplit : [Arc[], Arc[]] | undefined = this.splitArcsEC(dfg);
         if (arcSplit === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 7');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 7');
             return undefined;
         };
         splitM[1] = arcSplit[0];
         splitU[1] = arcSplit[1];
         const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesMU(dfg);
         if (nodeSplit === undefined) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 8');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 8');
             return undefined;
         };
         splitM[0] = nodeSplit[0];
         splitU[0] = nodeSplit[1];
         if ((splitM[1].length) < (splitM[0].length - 1)) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 9');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 9');
             return undefined;
         };
         if ((splitU[1].length) < (splitU[0].length - 1)) {
-            /* to be removed - start */
-            console.log('exclusive cut rejected on check 10');
-            /* to be removed - end */
+            console.debug('exclusive cut rejected on check 10');
             return undefined;
         };
-        /* to be removed - start */
-        console.log('found exclusive cut');
-        /* to be removed - end */
+        console.debug('found exclusive cut');
         return [dfg, splitM, splitU, endpointsMarked, cutArcs[0], cutArcs[1]];
     };
 
@@ -871,47 +819,35 @@ export class InductiveMinerService {
     ) : 
         undefined | [DFG, Arc[], [Node[], Arc[]], [Node[], Arc[]], boolean] {
         if (inOutGraph.markedArcs.length < 1) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 1');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 2) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 2');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 2');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 3');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 3');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 4');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 4');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const cutsStartOnMarked : boolean = inOutGraph.markedArcs[0].source.marked;
         const endpointsCheck : boolean | undefined = this.checkEndpointsSC(dfg, cutsStartOnMarked);
         if (endpointsCheck === undefined) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 5');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 5');
             return undefined;
         };
         const splitT : [Node[], Arc[]] = [[], []];
         const splitB : [Node[], Arc[]] = [[], []];
         const arcSplit : [Arc[], Arc[], Arc[]] | undefined = this.splitArcsSC(dfg, cutsStartOnMarked);
         if (arcSplit === undefined) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 6');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 6');
             return undefined;
         };
         const cutArcs = arcSplit[0];
@@ -919,73 +855,53 @@ export class InductiveMinerService {
         splitB[1] = arcSplit[2];
         const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesTB(dfg, cutsStartOnMarked);
         if (nodeSplit === undefined) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 7');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 7');
             return undefined;
         };
         splitT[0] = nodeSplit[0];
         splitB[0] = nodeSplit[1];
         const reachability : boolean = this.checkReachabilitySC(splitT[0], splitB[0], dfg.arcs);
         if (!(reachability)) {
-            /* to be removed - start */
-            console.log('sequence cut rejected on check 8');
-            /* to be removed - end */
+            console.debug('sequence cut rejected on check 8');
             return undefined;
         };
-        /* to be removed - start */
-        console.log('found sequence cut');
-        /* to be removed - end */
+        console.debug('found sequence cut');
         return [dfg, cutArcs, splitT, splitB, cutsStartOnMarked];
     };
 
     private checkParallelCut(
         inOutGraph : Graph
     ) : undefined | [DFG, [Node[], Arc[]], [Node[], Arc[]], boolean, Arc, Arc[], Arc] {
-        /* to be removed - start */
-        console.log('im_service started check of parallel cut');
-        /* to be removed - end */
+        console.debug('im_service started check of parallel cut');
         if (inOutGraph.markedArcs.length < 4) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 1');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 1) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 2');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 2');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 3');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 3');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 4');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 4');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const endpointsMarked : boolean | undefined = this.checkEndpointsEqual(dfg);
         if (endpointsMarked === undefined) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 5');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 5');
             return undefined;
         };
         const splitM : [Node[], Arc[]] = [[], []];
         const splitU : [Node[], Arc[]] = [[], []];
         const arcSplit : [Arc, Arc[], Arc, Arc[], Arc[]] | undefined = this.splitArcsPC(dfg);
         if (arcSplit === undefined) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 6');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 6');
             return undefined;
         };
         let cutPlayArc : Arc = arcSplit[0];
@@ -995,83 +911,59 @@ export class InductiveMinerService {
         splitU[1] = arcSplit[4];
         const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesMU(dfg);
         if (nodeSplit === undefined) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 7');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 7');
             return undefined;
         };
         splitM[0] = nodeSplit[0];
         splitU[0] = nodeSplit[1];
         const reachability : boolean = this.checkReachabilityPC(dfg.startNode, dfg.endNode, endpointsMarked, splitM[0], splitU[0], splitM[1], splitU[1], cutPlayArc, cutMidArcs, cutStopArc);
         if (!(reachability)) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 8');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 8');
             return undefined;
         };
         if ((splitM[1].length) < (splitM[0].length - 1)) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 9');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 9');
             return undefined;
         };
         if ((splitU[1].length) < (splitU[0].length - 1)) {
-            /* to be removed - start */
-            console.log('parallel cut rejected on check 10');
-            /* to be removed - end */
+            console.debug('parallel cut rejected on check 10');
             return undefined;
         };
-        /* to be removed - start */
-        console.log('found parallel cut');
-        /* to be removed - end */
+        console.debug('found parallel cut');
         return [dfg, splitM, splitU, endpointsMarked, cutPlayArc, cutMidArcs, cutStopArc];
     };
 
     private checkLoopCut(
         inOutGraph : Graph
     ) : undefined | [DFG, Node[], Node[], Node[], Node[], boolean] {
-        /* to be removed - start */
-        console.log('im_service started check of loop cut');
-        /* to be removed - end */
+        console.debug('im_service started check of loop cut');
         if (inOutGraph.markedArcs.length < 2) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 1');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 1) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 2');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 2');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 3');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 3');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 4');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 4');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         const endpointsMarked : boolean | undefined = this.checkEndpointsEqual(dfg);
         if (endpointsMarked === undefined) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 5');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 5');
             return undefined;
         };
         const nodeSplit : [Node[], Node[]] | undefined = this.splitNodesMU(dfg);
         if (nodeSplit === undefined) {
-            /* to be removed - start */
-            console.log('loop cut rejected on check 6');
-            /* to be removed - end */
+            console.debug('loop cut rejected on check 6');
             return undefined;
         };
         const splitM : Node[] = nodeSplit[0];
@@ -1089,61 +981,43 @@ export class InductiveMinerService {
                 A1 = splitM;
                 A2 = splitU;
             } else {
-                /* to be removed - start */
-                console.log('loop cut rejected on check 7');
-                /* to be removed - end */
+                console.debug('loop cut rejected on check 7');
                 return undefined;
             };
         };
-        /* to be removed - start */
-        console.log('found loop cut');
-        /* to be removed - end */
+        console.debug('found loop cut');
         return [dfg, A1, A2, checkLoop.A2_play, checkLoop.A2_stop, endpointsMarked];
     };
 
     private checkBaseCase(
         inOutGraph : Graph
     ) : undefined | [DFG, Node | undefined] {
-        /* to be removed - start */
-        console.log('im_service started check of base case');
-        /* to be removed - end */
+        console.debug('im_service started check of base case');
         if (inOutGraph.markedArcs.length !== 0) {
-            /* to be removed - start */
-            console.log('base case rejected on check 1');
-            /* to be removed - end */
+            console.debug('base case rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 2) {
-            /* to be removed - start */
-            console.log('base case rejected on check 2');
-            /* to be removed - end */
+            console.debug('base case rejected on check 2');
             return undefined;
         };
         if (inOutGraph.markedNodes.length > 3) {
-            /* to be removed - start */
-            console.log('base case rejected on check 3');
-            /* to be removed - end */
+            console.debug('base case rejected on check 3');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('base case rejected on check 4');
-            /* to be removed - end */
+            console.debug('base case rejected on check 4');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('base case rejected on check 5');
-            /* to be removed - end */
+            console.debug('base case rejected on check 5');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         if (dfg.nodes.length > 3) {
-            /* to be removed - start */
-            console.log('base case rejected on check 6');
-            /* to be removed - end */
+            console.debug('base case rejected on check 6');
             return undefined;
         };
         if (dfg.startNode.type !== 'support') {
@@ -1160,21 +1034,15 @@ export class InductiveMinerService {
         };
         if (dfg.nodes.length === 3) {
             if (inOutGraph.markedNodes.length !== 3) {
-                /* to be removed - start */
-                console.log('base case rejected on check 7');
-                /* to be removed - end */
+                console.debug('base case rejected on check 7');
                 return undefined;
             };
             if (dfg.arcs.length !== 2) {
-                /* to be removed - start */
-                console.log('base case rejected on check 8');
-                /* to be removed - end */
+                console.debug('base case rejected on check 8');
                 return undefined;
             };
             if (dfg.arcs[0].weight !== dfg.arcs[1].weight) {
-                /* to be removed - start */
-                console.log('base case rejected on check 9');
-                /* to be removed - end */
+                console.debug('base case rejected on check 9');
                 return undefined;
             };
             let midNode : Node | undefined;
@@ -1199,54 +1067,38 @@ export class InductiveMinerService {
             for (const arc of dfg.arcs) {
                 if (arc.source === dfg.startNode) {
                     if (arc.target !== midNode) {
-                        /* to be removed - start */
-                        console.log('base case rejected on check 10');
-                        /* to be removed - end */
+                        console.debug('base case rejected on check 10');
                         return undefined;
                     };
                 } else if (arc.source === midNode) {
                     if (arc.target !== dfg.endNode) {
-                        /* to be removed - start */
-                        console.log('base case rejected on check 11');
-                        /* to be removed - end */
+                        console.debug('base case rejected on check 11');
                         return undefined;
                     };
                 } else {
-                    /* to be removed - start */
-                    console.log('base case rejected on check 12');
-                    /* to be removed - end */
+                    console.debug('base case rejected on check 12');
                     return undefined;
                 };
             };
             return [dfg, midNode];
         } else if (dfg.nodes.length === 2) {
             if (inOutGraph.markedNodes.length !== 2) {
-                /* to be removed - start */
-                console.log('base case rejected on check 13');
-                /* to be removed - end */
+                console.debug('base case rejected on check 13');
                 return undefined;
             };
             if (dfg.arcs.length !== 1) {
-                /* to be removed - start */
-                console.log('base case rejected on check 14');
-                /* to be removed - end */
+                console.debug('base case rejected on check 14');
                 return undefined;
             };
             if (dfg.arcs[0].source !== dfg.startNode) {
-                /* to be removed - start */
-                console.log('base case rejected on check 15');
-                /* to be removed - end */
+                console.debug('base case rejected on check 15');
                 return undefined;
             };
             if (dfg.arcs[0].target !== dfg.endNode) {
-                /* to be removed - start */
-                console.log('base case rejected on check 16');
-                /* to be removed - end */
+                console.debug('base case rejected on check 16');
                 return undefined;
             };
-            /* to be removed - start */
-            console.log('found base case');
-            /* to be removed - end */
+            console.debug('found base case');
             return [dfg, undefined];
         } else {
             throw new Error('#srv.mnr.cbc.015: ' + 'base case check failed - inconsitent dfg detected (less than two nodes) detected');
@@ -1256,40 +1108,28 @@ export class InductiveMinerService {
     private checkFallThrough(
         inOutGraph : Graph,
     ) : undefined | [DFG, Node | undefined] {
-        /* to be removed - start */
-        console.log('im_service started check of fall through');
-        /* to be removed - end */
+        console.debug('im_service started check of fall through');
         if (inOutGraph.markedArcs.length !== 0) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 1');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 1');
             return undefined;
         };
         if (inOutGraph.markedNodes.length < 3) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 2');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 2');
             return undefined;
         };
         let cutDFG : number | undefined = this.checkMarkedDFG(inOutGraph);
         if (cutDFG === undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 3');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 3');
             return undefined;
         };
         const dfgPos : number | undefined = this.checkDfgPosition(inOutGraph, cutDFG);
         if (dfgPos === undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 4');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 4');
             return undefined;
         };
         const dfg : DFG = inOutGraph.dfgArray[dfgPos];
         if (inOutGraph.markedNodes.length !== dfg.nodes.length) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 5');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 5');
             return undefined;
         };
         const previouslyMarkedNodes : Node[] = inOutGraph.markedNodes.slice();
@@ -1297,30 +1137,22 @@ export class InductiveMinerService {
         let cut : [Node[], Arc[]] | undefined = undefined;
         cut = this.searchExclusiveCut(inOutGraph, dfg);
         if (cut !== undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 6');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 6');
             return undefined;
         };
         cut = this.searchSequenceCut(inOutGraph, dfg);
         if (cut !== undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 7');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 7');
             return undefined;
         };
         cut = this.searchParallelCut(inOutGraph, dfg);
         if (cut !== undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 8');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 8');
             return undefined;
         };
         cut = this.searchLoopCut(inOutGraph, dfg);
         if (cut !== undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 9');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 9');
             return undefined;
         };
         inOutGraph.resetAllMarked();
@@ -1331,9 +1163,7 @@ export class InductiveMinerService {
             inOutGraph.setElementMarkedFlag(arc, true);
         };
         if (this.checkBaseCase(inOutGraph) !== undefined) {
-            /* to be removed - start */
-            console.log('fall through rejected on check 10');
-            /* to be removed - end */
+            console.debug('fall through rejected on check 10');
             return undefined;
         };
         let AOPT : Node | undefined = undefined;
@@ -1369,10 +1199,10 @@ export class InductiveMinerService {
         };
         if (candidates.length > 0) {
             AOPT = candidates[0];
+            console.debug('found activity once per trace fall through');
+        } else {
+            console.debug('found flower model fall through');
         };
-        /* to be removed - start */
-        console.log('found fall through');
-        /* to be removed - end */
         return [dfg, AOPT];
     };
 

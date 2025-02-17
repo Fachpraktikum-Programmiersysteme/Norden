@@ -243,7 +243,7 @@ export class SvgService implements OnDestroy {
                 svg.setAttribute('stroke', this.graphicsConfig.defaultNodeStroke);
             };
             if (inNode.active) {
-                svg.setAttribute('fill', this.graphicsConfig.activeNodeFill);
+                svg.setAttribute('fill', this.graphicsConfig.activeNodeFillDFG);
             } else {
                 if (inNode.dfg !== undefined) {
                     svg.setAttribute('fill', GraphGraphicsConfig.getDfgColor(inNode.dfg))
@@ -253,8 +253,8 @@ export class SvgService implements OnDestroy {
             };
         } else {
             if (inNode.active) {
-                svg.setAttribute('stroke', this.graphicsConfig.activeNodeStroke);
-                svg.setAttribute('fill', this.graphicsConfig.activeNodeFill);
+                svg.setAttribute('stroke', this.graphicsConfig.activeNodeStrokeCGS);
+                svg.setAttribute('fill', this.graphicsConfig.activeNodeFillCGS);
             } else if (inNode.changed) {
                 svg.setAttribute('stroke', this.graphicsConfig.changedNodeStroke);
                 svg.setAttribute('fill', this.graphicsConfig.changedNodeFill);
@@ -531,8 +531,8 @@ export class SvgService implements OnDestroy {
         };
         if (this._displayMode === 'dfg') {
             if (inArc.active  && !(inArc.overrideMarking)) {
-                svg.setAttribute('stroke', this.graphicsConfig.activeArcStroke);
-                svg.setAttribute('marker-end', 'url(#arrow_head_active)');
+                svg.setAttribute('stroke', this.graphicsConfig.activeArcStrokeDFG);
+                svg.setAttribute('marker-end', 'url(#arrow_head_active_dfg)');
             } else if (inArc.marked) {
                 svg.setAttribute('stroke', this.graphicsConfig.markedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_marked)');
@@ -545,8 +545,8 @@ export class SvgService implements OnDestroy {
             };
         } else {
             if (inArc.active) {
-                svg.setAttribute('stroke', this.graphicsConfig.activeArcStroke);
-                svg.setAttribute('marker-end', 'url(#arrow_head_active)');
+                svg.setAttribute('stroke', this.graphicsConfig.activeArcStrokeCGS);
+                svg.setAttribute('marker-end', 'url(#arrow_head_active_cgs)');
             } else if (inArc.changed) {
                 svg.setAttribute('stroke', this.graphicsConfig.changedArcStroke);
                 svg.setAttribute('marker-end', 'url(#arrow_head_changed)');
@@ -626,11 +626,11 @@ export class SvgService implements OnDestroy {
         svg.setAttribute('r', `${this.graphicsConfig.defaultTraceRadius}`);
         svg.setAttribute('stroke-width', '2');
         if (this._displayMode === 'dfg') {
-            svg.setAttribute('stroke', `${this.graphicsConfig.dfgTraceStroke}`);
-            svg.setAttribute('fill', `${this.graphicsConfig.dfgTraceFill}`);
+            svg.setAttribute('stroke', `${this.graphicsConfig.defaultTraceStrokeDFG}`);
+            svg.setAttribute('fill', `${this.graphicsConfig.defaultTraceFillDFG}`);
         } else {
-            svg.setAttribute('stroke', `${this.graphicsConfig.defaultTraceStroke}`);
-            svg.setAttribute('fill', `${this.graphicsConfig.defaultTraceFill}`);
+            svg.setAttribute('stroke', `${this.graphicsConfig.defaultTraceStrokeCGS}`);
+            svg.setAttribute('fill', `${this.graphicsConfig.defaultTraceFillCGS}`);
         };
         const animation : SVGElement = this.createSvgElement('animateMotion');
         animation.setAttribute('begin', `${inAnimationDelay}s`);
@@ -679,7 +679,7 @@ export class SvgService implements OnDestroy {
         arrowPathM.setAttribute('d', `M 0 0 L ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius} L 0 ${this.graphicsConfig.defaultArrowRadius * 2} z`);
         arrowPathM.setAttribute('fill', this.graphicsConfig.markedArcStroke);
         const arrowMarkA : SVGElement = this.createSvgElement('marker');
-        arrowMarkA.setAttribute('id', 'arrow_head_active');
+        arrowMarkA.setAttribute('id', 'arrow_head_active_dfg');
         arrowMarkA.setAttribute('viewBox', `0 0 ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius * 2}`);
         arrowMarkA.setAttribute('refX', `${(this.graphicsConfig.defaultArrowRadius * 2) + Math.floor(this.graphicsConfig.defaultNodeRadius / 6)}`);
         arrowMarkA.setAttribute('refY', `${this.graphicsConfig.defaultArrowRadius}`);
@@ -689,7 +689,19 @@ export class SvgService implements OnDestroy {
         arrowMarkA.setAttribute('orient', 'auto');
         const arrowPathA : SVGElement = this.createSvgElement('path');
         arrowPathA.setAttribute('d', `M 0 0 L ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius} L 0 ${this.graphicsConfig.defaultArrowRadius * 2} z`);
-        arrowPathA.setAttribute('fill', this.graphicsConfig.activeArcStroke);
+        arrowPathA.setAttribute('fill', this.graphicsConfig.activeArcStrokeDFG);
+        const arrowMarkB : SVGElement = this.createSvgElement('marker');
+        arrowMarkB.setAttribute('id', 'arrow_head_active_cgs');
+        arrowMarkB.setAttribute('viewBox', `0 0 ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius * 2}`);
+        arrowMarkB.setAttribute('refX', `${(this.graphicsConfig.defaultArrowRadius * 2) + Math.floor(this.graphicsConfig.defaultNodeRadius / 6)}`);
+        arrowMarkB.setAttribute('refY', `${this.graphicsConfig.defaultArrowRadius}`);
+        arrowMarkB.setAttribute('markerHeight', `${this.graphicsConfig.defaultArrowRadius * 2}`);
+        arrowMarkB.setAttribute('markerWidth', `${this.graphicsConfig.defaultArrowRadius * 2}`);
+        arrowMarkB.setAttribute('markerUnits', 'strokeWidth');
+        arrowMarkB.setAttribute('orient', 'auto');
+        const arrowPathB : SVGElement = this.createSvgElement('path');
+        arrowPathB.setAttribute('d', `M 0 0 L ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius} L 0 ${this.graphicsConfig.defaultArrowRadius * 2} z`);
+        arrowPathB.setAttribute('fill', this.graphicsConfig.activeArcStrokeCGS);
         const arrowMarkV : SVGElement = this.createSvgElement('marker');
         arrowMarkV.setAttribute('id', 'arrow_head_visited');
         arrowMarkV.setAttribute('viewBox', `0 0 ${this.graphicsConfig.defaultArrowRadius * 2} ${this.graphicsConfig.defaultArrowRadius * 2}`);
@@ -744,6 +756,8 @@ export class SvgService implements OnDestroy {
         arrowDefs.appendChild(arrowMarkM);
         arrowMarkA.appendChild(arrowPathA);
         arrowDefs.appendChild(arrowMarkA);
+        arrowMarkB.appendChild(arrowPathB);
+        arrowDefs.appendChild(arrowMarkB);
         arrowMarkV.appendChild(arrowPathV);
         arrowDefs.appendChild(arrowMarkV);
         arrowMarkC.appendChild(arrowPathC);

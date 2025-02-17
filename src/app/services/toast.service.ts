@@ -18,7 +18,9 @@ export class ToastService {
     showToast(
         message: string,
         type: "success" | "error" | "warning" | "info" = 'info',
-        duration: number = 3000) {
+        duration: number = 3000
+    ) {
         this.toastSubject.next({ message, type, duration });
-    }
+    };
+    
 };
