@@ -30,9 +30,9 @@ export class GraphLogService {
             for (const event of trace) {
                 let eventColor : string;
                 if (event.active) {
-                    eventColor = GraphGraphicsConfig.getActiveNodeColor();
+                    eventColor = GraphGraphicsConfig.getActiveColorDFG();
                 } else if (event.marked) {
-                    eventColor = GraphGraphicsConfig.getMarkedNodeColor();
+                    eventColor = GraphGraphicsConfig.getMarkedColor();
                 } else {
                     eventColor = GraphGraphicsConfig.getDfgColor(event.dfg);
                 };
@@ -66,11 +66,11 @@ export class GraphLogService {
             for (const event of trace) {
                 let eventColor : string;
                 if (event.active) {
-                    eventColor = GraphGraphicsConfig.getActiveNodeColor();
+                    eventColor = GraphGraphicsConfig.getActiveColorCGS();
                 } else if (event.newlyCreated) {
-                    eventColor = GraphGraphicsConfig.getNewNodeColor();
+                    eventColor = GraphGraphicsConfig.getNewColor();
                 } else if (event.changed) {
-                    eventColor = GraphGraphicsConfig.getChangedNodeColor();
+                    eventColor = GraphGraphicsConfig.getChangedColor();
                 } else {
                     eventColor = 'Black'
                 };
